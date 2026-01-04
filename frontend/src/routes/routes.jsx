@@ -1,28 +1,54 @@
-import { Navigate } from 'react-router-dom';
-import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
-import Home from '@/pages/Home'; // We'll create this next
-import ProtectedRoute from './ProtectedRoute';
+import { Navigate } from "react-router-dom";
+
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+
+import ProtectedRoute from "./ProtectedRoute";
+import MainLayout from "@/components/layout/MainLayout";
+import ProjectDetailPage from "@/pages/ProjectDetailPage";
 
 export const routes = [
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <MainLayout>
+        <Home />
+      </MainLayout>
+    ),
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <MainLayout>
+        <Login />
+      </MainLayout>
+    ),
   },
   {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <Dashboard />
+        <MainLayout>
+          <Dashboard />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/projects/:projectId",
+    element: (
+      <ProtectedRoute>
+        <ProjectDetailPage />
       </ProtectedRoute>
     ),
   },
   {
     path: "*",
-    element: <div className="flex h-screen items-center justify-center">404 - Page Not Found</div>,
+    element: (
+      <div className="flex h-screen items-center justify-center">
+        404 - Page Not Found
+      </div>
+    ),
   },
 ];
