@@ -1,14 +1,24 @@
+// backend/src/controllers/auth.controller.js
 import Developer from "../models/developer.model.js";
+import EndUser from "../models/endUsers.models.js";
 import { getGoogleAuthURL, getGoogleUser } from "../services/google.service.js";
 import { getGithubAuthURL, getGithubUser } from "../services/github.service.js";
-import {
-  getDiscordAuthURL,
-  getDiscordUser,
-} from "../services/discord.service.js";
+import { getDiscordAuthURL, getDiscordUser } from "../services/discord.service.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { handleSDKCallback } from "./sdk.controller.js";
+import bcrypt from "bcrypt";
 import fetch from "node-fetch";
 
-const handleSocialAuth = async (res, userData, cli) => {
+const handleSocialAuth = async (res, userData, cli, req) => {
+  // Check if this is an SDK request
+  const sdkRequest = req.query.sdk_request;
+  
+  if (sdkRequest) {
+    // Handle SDK flow differently
+    return await handleSDKFlow(res, userData, req);
+  }
+
+  // Regular developer authentication flow
   let developer = await Developer.findOne({ email: userData.email });
 
   if (!developer) {
@@ -53,6 +63,57 @@ const handleSocialAuth = async (res, userData, cli) => {
   return res.redirect("http://localhost:5173/dashboard");
 };
 
+const handleSDKFlow = async (res, userData, req) => {
+  try {
+    const { authCodes } = await import("./sdk.controller.js");
+    const authData = authCodes.get(req.query.sdk_request);
+
+    if (!authData) {
+      return res.status(400).send("Invalid SDK request");
+    }
+
+    // Find or create end user in the project
+    let endUser = await EndUser.findOne({
+      email: userData.email,
+      projectId: authData.projectId,
+    });
+
+    if (!endUser) {
+      // Generate a random password for OAuth users
+      const randomPassword = await bcrypt.hash(
+        Math.random().toString(36),
+        10
+      );
+
+      // Generate unique username within project
+      let baseUsername = userData.username || userData.email.split("@")[0];
+      let username = baseUsername;
+
+      while (
+        await EndUser.findOne({
+          username,
+          projectId: authData.projectId,
+        })
+      ) {
+        username = baseUsername + Math.floor(Math.random() * 1000);
+      }
+
+      endUser = await EndUser.create({
+        email: userData.email,
+        username,
+        password: randomPassword,
+        projectId: authData.projectId,
+      });
+    }
+
+    // Use the SDK callback handler
+    return await handleSDKCallback(req, res, endUser, userData.provider);
+  } catch (error) {
+    console.error("SDK Flow Error:", error);
+    return res.status(500).send("Authentication failed");
+  }
+};
+
 /* ---------------------- GOOGLE ---------------------- */
 export async function googleLogin(req, res) {
   try {
@@ -68,9 +129,7 @@ export async function googleCallback(req, res) {
     const { code, cli } = req.query;
     if (!code) return res.status(400).send("Missing code");
 
-
     const googleUser = await getGoogleUser(code);
-
 
     await handleSocialAuth(
       res,
@@ -81,7 +140,8 @@ export async function googleCallback(req, res) {
         provider: "Google",
         providerId: googleUser.sub,
       },
-      cli
+      cli,
+      req
     );
   } catch (err) {
     console.error("Google callback error:", err);
@@ -109,12 +169,13 @@ export async function githubCallback(req, res) {
       res,
       {
         email: githubUser.email,
-        username: githubUser.login, // GitHub uses 'login' for username
+        username: githubUser.login,
         picture: githubUser.avatar_url,
         provider: "GitHub",
         providerId: String(githubUser.id),
       },
-      cli
+      cli,
+      req
     );
   } catch (err) {
     res.status(500).send("GitHub authentication failed");
@@ -146,7 +207,8 @@ export async function discordCallback(req, res) {
         provider: "Discord",
         providerId: discordUser.id,
       },
-      cli
+      cli,
+      req
     );
   } catch (err) {
     res.status(500).send("Discord authentication failed");

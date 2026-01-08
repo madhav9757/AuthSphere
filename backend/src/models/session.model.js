@@ -2,23 +2,20 @@ import mongoose from "mongoose";
 
 const sessionSchema = new mongoose.Schema(
   {
-    token: {
-      type: String,
-      required: true,
-    },
+    token: { type: String, required: true, index: true },
     expiresAt: {
       type: Date,
       required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
+      index: { expires: 0 }, 
     },
     endUserId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "EndUser",
-        required: true,
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "EndUser",
+      required: true,
+    },
+    ipAddress: { type: String },
+    userAgent: { type: String },
+    isValid: { type: Boolean, default: true }, 
   },
   { timestamps: true }
 );

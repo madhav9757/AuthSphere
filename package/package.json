@@ -1,19 +1,53 @@
 {
-  "name": "authsphere",
-  "version": "0.1.0",
-  "description": "Simple auth SDK to redirect users to a hosted login page",
+  "name": "@authsphere/sdk",
+  "version": "1.0.0",
+  "description": "Secure OAuth2 SDK with PKCE for AuthSphere authentication",
   "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "test": "echo \"No tests yet\""
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Tests coming soon\"",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
   },
-  "keywords": ["auth", "login", "sdk", "redirect"],
-  "author": "Your Name",
+  "keywords": [
+    "auth",
+    "oauth",
+    "oauth2",
+    "pkce",
+    "authentication",
+    "login",
+    "sdk",
+    "security"
+  ],
+  "author": "AuthSphere Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/authsphere-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/authsphere-sdk/issues"
+  },
+  "homepage": "https://github.com/yourusername/authsphere-sdk#readme",
   "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

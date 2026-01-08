@@ -1,7 +1,14 @@
-export function buildUrl(base: string, params: Record<string, string>) {
+export function buildUrl(
+  base: string,
+  params: Record<string, string | undefined>
+) {
   const url = new URL(base);
-  for (const key in params) {
-    url.searchParams.set(key, params[key]);
-  }
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      url.searchParams.set(key, value);
+    }
+  });
+
   return url.toString();
 }

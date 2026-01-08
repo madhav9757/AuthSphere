@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
+import Register from "@/pages/Register"; // ADD THIS
 import Dashboard from "@/pages/Dashboard";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -26,6 +27,14 @@ export const routes = [
     ),
   },
   {
+    path: "/register", // ADD THIS ROUTE
+    element: (
+      <MainLayout>
+        <Register />
+      </MainLayout>
+    ),
+  },
+  {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
@@ -39,7 +48,9 @@ export const routes = [
     path: "/projects/:projectId",
     element: (
       <ProtectedRoute>
-        <ProjectDetailPage />
+        <MainLayout>
+          <ProjectDetailPage />
+        </MainLayout>
       </ProtectedRoute>
     ),
   },
@@ -47,7 +58,10 @@ export const routes = [
     path: "*",
     element: (
       <div className="flex h-screen items-center justify-center">
-        404 - Page Not Found
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold">404</h1>
+          <p className="text-muted-foreground">Page Not Found</p>
+        </div>
       </div>
     ),
   },

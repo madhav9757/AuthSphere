@@ -4,17 +4,27 @@ import { Router } from "express";
 import developerRoutes from "./developer.routes.js";
 import projectRoutes from "./project.routes.js";
 import authRoutes from "./auth.routes.js";
+import sdkRoutes from "./sdk.routes.js";
 
 const router = Router();
 
 // API base version
 const API_PREFIX = "/api/v1";
 
-// Mount versioned API routes
+// ================================
+// Versioned APIs (business logic)
+// ================================
 router.use(`${API_PREFIX}/developers`, developerRoutes);
 router.use(`${API_PREFIX}/projects`, projectRoutes);
 
-// Auth routes (NO versioning → login URLs stay clean)
-router.use(`/auth`, authRoutes);
+// ================================
+// Auth routes (OAuth providers)
+// ================================
+router.use("/auth", authRoutes);
+
+// ================================
+// SDK routes (public, unversioned)
+// ================================
+router.use("/sdk", sdkRoutes);
 
 export default router;

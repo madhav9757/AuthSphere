@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner'; // ADD THIS
 import { AuthProvider } from './context/AuthContext';
 import { routes } from './routes/routes';
 
@@ -15,6 +16,8 @@ function App() {
             />
           ))}
         </Routes>
+        {/* ADD TOASTER FOR NOTIFICATIONS */}
+        <Toaster position="top-right" richColors />
       </BrowserRouter>
     </AuthProvider>
   );
