@@ -6,7 +6,6 @@ import { getDiscordAuthURL, getDiscordUser } from "../services/discord.service.j
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { handleSDKCallback, authRequests } from "./sdk.controller.js";
 import bcrypt from "bcrypt";
-import fetch from "node-fetch";
 import crypto from "crypto";
 import { conf } from "../configs/env.js";
 
