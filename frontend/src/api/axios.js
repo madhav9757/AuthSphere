@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/v1",
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
@@ -47,15 +47,15 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        
+
         // ✅ CLEAR SESSION AND REDIRECT TO LOGIN
         window.dispatchEvent(new Event("auth-failed"));
-        
+
         // Prevent infinite reload loop if already on login page
         if (window.location.pathname !== "/login") {
-            window.location.href = "/login";
+          window.location.href = "/login";
         }
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

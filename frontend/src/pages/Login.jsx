@@ -33,7 +33,7 @@ const Login = () => {
   }, [user, navigate]);
 
   const handleSocialLogin = (provider) => {
-    window.location.href = `http://localhost:8000/auth/${provider}`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/${provider}`;
   };
 
   const handleLocalLogin = async (e) => {

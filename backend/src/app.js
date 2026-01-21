@@ -20,14 +20,9 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
 
-      const allowedOrigins = [
-        conf.corsOrigin,
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175"
-      ];
+      const allowedOrigins = conf.corsOrigin.split(",");
 
-      if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes("*") || process.env.NODE_ENV !== "production") {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
