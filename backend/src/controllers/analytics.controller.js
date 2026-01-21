@@ -6,15 +6,15 @@ import mongoose from "mongoose";
 const getDateRanges = () => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const prev30Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    return { today, last7Days, last30Days };
+    return { today, last30Days, prev30Days };
 };
 
 // Simple In-memory Cache
 const analyticsCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 1000; // Reduced to 30s for better "live" feel
 
 const getCachedData = (key) => {
     const cached = analyticsCache.get(key);
@@ -38,28 +38,51 @@ export const getAnalyticsOverview = async (req, res) => {
             return res.status(200).json({ success: true, data: cached });
         }
 
-        const { today, last7Days, last30Days } = getDateRanges();
+        const { today, last30Days, prev30Days } = getDateRanges();
         const pId = new mongoose.Types.ObjectId(projectId);
 
-        // Signups count
-        const signupsToday = await EndUser.countDocuments({ projectId: pId, createdAt: { $gte: today } });
-        const signupsWeek = await EndUser.countDocuments({ projectId: pId, createdAt: { $gte: last7Days } });
+        // Signups this month vs last month
         const signupsMonth = await EndUser.countDocuments({ projectId: pId, createdAt: { $gte: last30Days } });
+        const signupsPrevMonth = await EndUser.countDocuments({ projectId: pId, createdAt: { $gte: prev30Days, $lt: last30Days } });
 
-        // Logins count
+        // Logins today
         const loginsToday = await Session.countDocuments({ projectId: pId, createdAt: { $gte: today } });
-        const loginsWeek = await Session.countDocuments({ projectId: pId, createdAt: { $gte: last7Days } });
-        const loginsMonth = await Session.countDocuments({ projectId: pId, createdAt: { $gte: last30Days } });
+        const loginsYesterday = await Session.countDocuments({
+            projectId: pId,
+            createdAt: {
+                $gte: new Date(today.getTime() - 24 * 60 * 60 * 1000),
+                $lt: today
+            }
+        });
 
-        // Active Users (DAU, WAU, MAU)
-        const dau = await Session.distinct("endUserId", { projectId: pId, createdAt: { $gte: today }, isValid: true }).then(ids => ids.length);
-        const wau = await Session.distinct("endUserId", { projectId: pId, createdAt: { $gte: last7Days }, isValid: true }).then(ids => ids.length);
+        // MAU (Monthly Active Users)
         const mau = await Session.distinct("endUserId", { projectId: pId, createdAt: { $gte: last30Days }, isValid: true }).then(ids => ids.length);
+        const totalUsers = await EndUser.countDocuments({ projectId: pId });
+
+        // Calculate trends
+        const calcTrend = (curr, prev) => {
+            if (prev === 0) return curr > 0 ? "+100%" : "0%";
+            const diff = ((curr - prev) / prev) * 100;
+            return (diff >= 0 ? "+" : "") + diff.toFixed(1) + "%";
+        };
 
         const result = {
-            signups: { today: signupsToday, week: signupsWeek, month: signupsMonth, trend: "+12%" },
-            logins: { today: loginsToday, week: loginsWeek, month: loginsMonth, trend: "+8%" },
-            activeUsers: { dau, wau, mau }
+            signups: {
+                month: signupsMonth,
+                trend: calcTrend(signupsMonth, signupsPrevMonth)
+            },
+            logins: {
+                today: loginsToday,
+                trend: calcTrend(loginsToday, loginsYesterday)
+            },
+            activeUsers: {
+                mau,
+                retention: totalUsers > 0 ? ((mau / totalUsers) * 100).toFixed(1) + "%" : "0%"
+            },
+            health: {
+                latency: "102ms", // Simulated
+                uptime: "99.99%"   // Simulated
+            }
         };
 
         setCacheData(cacheKey, result);
@@ -87,7 +110,7 @@ export const getAnalyticsCharts = async (req, res) => {
         const pId = new mongoose.Types.ObjectId(projectId);
 
         // Daily Signups over last 30 days
-        const dailySignups = await EndUser.aggregate([
+        const rawDailySignups = await EndUser.aggregate([
             { $match: { projectId: pId, createdAt: { $gte: last30Days } } },
             {
                 $group: {
@@ -97,6 +120,18 @@ export const getAnalyticsCharts = async (req, res) => {
             },
             { $sort: { _id: 1 } }
         ]);
+
+        // Fill in missing days for a "perfect" chart
+        const dailySignups = [];
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(last30Days.getTime() + i * 24 * 60 * 60 * 1000);
+            const dateStr = date.toISOString().split('T')[0];
+            const found = rawDailySignups.find(d => d._id === dateStr);
+            dailySignups.push({
+                date: dateStr,
+                count: found ? found.count : 0
+            });
+        }
 
         // Provider breakdown
         const providerBreakdown = await EndUser.aggregate([
@@ -110,9 +145,10 @@ export const getAnalyticsCharts = async (req, res) => {
         ]);
 
         const result = {
-            dailySignups: dailySignups.map(item => ({ date: item._id, count: item.count })),
+            dailySignups,
             providerDistribution: providerBreakdown.reduce((acc, curr) => {
-                acc[curr._id || 'password'] = curr.count;
+                const name = curr._id === "local" ? "Email" : curr._id;
+                acc[name || 'Email'] = curr.count;
                 return acc;
             }, {})
         };
@@ -136,11 +172,7 @@ export const getRecentActivity = async (req, res) => {
         const recentSessions = await Session.find({ projectId: pId })
             .sort({ createdAt: -1 })
             .limit(10)
-            .populate("endUserId", "username email picture");
-
-        const recentSignups = await EndUser.find({ projectId: pId })
-            .sort({ createdAt: -1 })
-            .limit(10);
+            .populate("endUserId", "username email picture provider");
 
         return res.status(200).json({
             success: true,
@@ -149,14 +181,9 @@ export const getRecentActivity = async (req, res) => {
                     user: s.endUserId ? s.endUserId.username : 'Unknown',
                     email: s.endUserId ? s.endUserId.email : 'Unknown',
                     picture: s.endUserId ? s.endUserId.picture : null,
+                    provider: s.endUserId ? s.endUserId.provider : 'local',
                     timestamp: s.createdAt,
-                    device: s.userAgent
-                })),
-                recentSignups: recentSignups.map(u => ({
-                    user: u.username,
-                    email: u.email,
-                    picture: u.picture,
-                    timestamp: u.createdAt
+                    device: s.userAgent || 'Desktop'
                 }))
             }
         });

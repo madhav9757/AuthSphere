@@ -1,15 +1,15 @@
 
 import { conf } from "./configs/env.js"
-import { app } from "./app.js";
+import app from "./app.js";
 import connectDB from "./database/connectDB.js";
 import { logStartup } from "./utils/startup.js";
 
 const startServer = async () => {
   try {
-    await connectDB();  
+    await connectDB();
 
-    app.listen( conf.port , () => {
-      logStartup(conf.port);   
+    app.listen(conf.port, () => {
+      logStartup(conf.port);
     });
 
   } catch (error) {

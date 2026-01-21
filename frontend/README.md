@@ -1,56 +1,59 @@
-# 🌌 AuthSphere Frontend
+# 🌌 AuthSphere Frontend Dashboard
 
-AuthSphere is a high-performance, premium authentication platform designed for developers. This repository contains the frontend dashboard and developer documentation hub.
+The AuthSphere Frontend is a premium, high-performance developer dashboard built with React 19. It allows developers to manage their authentication projects, view user analytics, and configure social login providers.
 
-## ✨ Features
+## ✨ Key Features
 
-- **🚀 Developer Dashboard**: Manage projects, API keys, and social providers in one place.
-- **🛡️ Secure Auth Hub**: Built with PKCE, JWT, and modern security best practices.
-- **📖 Documentation Hub**: Interactive, sidebar-driven documentation for easy SDK integration.
-- **🎨 Premium UI**: Built with React, Tailwind CSS, and Radix UI for a world-class experience.
-- **📱 Fully Responsive**: Seamless experience across mobile, tablet, and desktop devices.
+- **🚀 Project Management**: Create and configure multiple authentication environments.
+- **🛡️ API Key Hub**: Generate and rotate Public and Private keys securely.
+- **📊 User Analytics**: Monitor user sign-ups, active sessions, and provider distribution.
+- **⚙️ Provider Configuration**: One-click enablement for Google, GitHub, and Discord.
+- **📖 Documentation**: Built-in interactive documentation for SDK integration.
+- **🎨 Premium UI**: Dark-mode primary design with Radix UI and Tailwind CSS 4.
 
 ## 🛠️ Tech Stack
 
 - **Framework**: [React 19](https://react.dev/)
-- **Bundler**: [Vite](https://vitejs.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Components**: [Radix UI](https://www.radix-ui.com/) + [Shadcn UI](https://ui.shadcn.com/)
+- **Components**: [Radix UI](https://www.radix-ui.com/)
 - **Routing**: [React Router 7](https://reactrouter.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-## 🚀 Getting Started
+## 🏁 Getting Started
 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- npm or yarn
+- Backend running at `http://localhost:8000`
 
 ### Installation
 
-1. Clone the repository
-2. Navigate to the frontend directory:
+1. Navigate to the frontend directory:
    ```bash
    cd frontend
    ```
-3. Install dependencies:
+
+2. Install dependencies:
    ```bash
    npm install
    ```
-4. Start the development server:
+
+3. Configure Environment (Optional):
+   The frontend is pre-configured to talk to `localhost:8000`. You can adjust this in `src/config/api.js` if necessary.
+
+4. Run Development Server:
    ```bash
    npm run dev
    ```
 
-## 📖 Documentation
+## 📂 Project Structure
 
-The full documentation for the AuthSphere SDK is available directly within the app at `/docs`. It covers:
-
-- SDK Initialization
-- Authentication Flow
-- Session Management
-- Protected Routes
-- API Reference
+- `/src/components`: Reusable UI components (buttons, cards, inputs).
+- `/src/pages`: Main page views (Dashboard, ProjectDetail, Docs).
+- `/src/hooks`: Custom React hooks for auth and data fetching.
+- `/src/services`: API abstraction layer using Axios.
+- `/src/layouts`: Dashboard and Auth layouts.
 
 ---
 

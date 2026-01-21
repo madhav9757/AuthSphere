@@ -6,8 +6,8 @@ import { getDiscordAuthURL, getDiscordUser } from "../services/discord.service.j
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { handleSDKCallback, authRequests } from "./sdk.controller.js";
 import bcrypt from "bcrypt";
-import fetch from "node-fetch";
 import crypto from "crypto";
+import { conf } from "../configs/env.js";
 
 /* ============================================================
    SOCIAL AUTH HANDLER
@@ -73,7 +73,7 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
   if (cli === "true" || cli === true) {
     try {
       await fetch(
-        `http://localhost:5001/cli-update?name=${developer.username}&email=${developer.email}&id=${developer._id}&provider=${userData.provider}`
+        `${conf.cliUrl}/cli-update?name=${developer.username}&email=${developer.email}&id=${developer._id}&provider=${userData.provider}`
       );
       return res.send("<script>window.close();</script>");
     } catch (error) {
@@ -83,7 +83,7 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
   }
 
   // ---------- REDIRECT DEVELOPER ----------
-  return res.redirect("http://localhost:5173/dashboard");
+  return res.redirect(`${conf.frontendUrl}/dashboard`);
 };
 
 /* ============================================================

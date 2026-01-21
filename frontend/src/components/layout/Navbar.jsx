@@ -18,6 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { ModeToggle } from "@/components/mode-toggle";
 import {
   User, LogOut, LayoutDashboard, Settings,
   Menu, Shield, Zap, BookOpen, CreditCard, ChevronDown
@@ -44,28 +45,34 @@ const Navbar = () => {
 
   return (
     <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-        ? "border-b bg-white/80 backdrop-blur-md py-2"
-        : "bg-transparent py-4"
+      ? "border-b bg-background/80 backdrop-blur-md py-2"
+      : "bg-transparent py-4"
       }`}>
       <div className="container mx-auto px-4 lg:px-6 flex items-center justify-between">
 
-        {/* LOGO */}
-        <Link to="/" className="flex items-center gap-2.5 group outline-none">
-          <div className="bg-blue-600 p-1.5 rounded-xl flex items-center justify-center group-hover:rotate-6 transition-transform shadow-lg shadow-blue-200">
-            <div className="w-5 h-5 border-2 border-white rounded-[4px]" />
-          </div>
-          <span className="font-bold text-xl tracking-tight bg-slate-900 bg-clip-text">
-            AuthSphere
+        <Link to="/" className="flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1">
+          <img
+            src="/assets/logo.png"
+            alt="AuthSphere Logo"
+            className="w-10 h-10 object-contain 
+               /* Light Mode: removes white background */
+               mix-blend-multiply 
+               /* Dark Mode: inverts black to white and removes blending */
+               dark:invert dark:mix-blend-normal 
+               transition-all group-hover:scale-110"
+          />
+
+          <span className="font-black text-2xl tracking-tighter text-foreground italic">
+            AuthSphere<span className="text-blue-600 transition-colors group-hover:text-blue-400">.</span>
           </span>
         </Link>
-
         {/* DESKTOP NAV */}
-        <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-slate-600">
+        <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-muted-foreground">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.href}
-              className={`hover:text-blue-600 transition-colors ${location.pathname === link.href ? "text-blue-600" : ""
+              className={`hover:text-primary transition-colors ${location.pathname === link.href ? "text-primary" : ""
                 }`}
             >
               {link.name}
@@ -73,56 +80,58 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* AUTH SECTION */}
-        <div className="flex items-center gap-3">
+        {/* AUTH SECTION + TOGGLE */}
+        <div className="flex items-center gap-2">
+
+          <ModeToggle />
 
           {loading ? (
-            <div className="h-9 w-9 animate-pulse bg-slate-200 rounded-full" />
+            <div className="h-9 w-9 animate-pulse bg-muted rounded-full" />
           ) : user ? (
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-10 flex items-center gap-2 pl-1 pr-2 rounded-full border border-slate-100 bg-slate-50/50 hover:bg-slate-100 transition-all outline-none"
+                    className="relative h-10 flex items-center gap-2 pl-1 pr-2 rounded-full border border-border bg-card/50 hover:bg-accent transition-all outline-none"
                   >
-                    <div className="h-8 w-8 rounded-full overflow-hidden border border-white shadow-sm">
+                    <div className="h-8 w-8 rounded-full overflow-hidden border border-background shadow-sm">
                       {user.picture ? (
                         <img src={user.picture} alt="Avatar" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex items-center justify-center h-full w-full bg-blue-100 text-blue-600 font-bold text-xs">
+                        <div className="flex items-center justify-center h-full w-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-bold text-xs">
                           {user.username?.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <span className="hidden sm:inline text-xs font-bold text-slate-700">
+                    <span className="hidden sm:inline text-xs font-bold text-foreground">
                       {user.username}
                     </span>
-                    <ChevronDown className="h-3 w-3 text-slate-400" />
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-60 mt-2 p-2 rounded-2xl shadow-xl border-slate-100">
+                <DropdownMenuContent align="end" className="w-60 mt-2 p-2 rounded-2xl shadow-xl border-border">
                   <DropdownMenuLabel className="p-3">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-bold text-slate-900">{user.username}</p>
-                      <p className="text-xs text-slate-500 font-medium truncate">{user.email}</p>
+                      <p className="text-sm font-bold text-foreground">{user.username}</p>
+                      <p className="text-xs text-muted-foreground font-medium truncate">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="mx-2" />
 
                   <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg cursor-pointer py-2.5">
-                    <LayoutDashboard className="mr-3 h-4 w-4 text-slate-500" />
+                    <LayoutDashboard className="mr-3 h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Dashboard</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="rounded-lg cursor-pointer py-2.5">
-                    <Settings className="mr-3 h-4 w-4 text-slate-500" />
+                    <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Settings</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={() => navigate("/settings/sessions")} className="rounded-lg cursor-pointer py-2.5">
-                    <Shield className="mr-3 h-4 w-4 text-slate-500" />
+                    <Shield className="mr-3 h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Security</span>
                   </DropdownMenuItem>
 
@@ -130,7 +139,7 @@ const Navbar = () => {
 
                   <DropdownMenuItem
                     onClick={logout}
-                    className="rounded-lg cursor-pointer py-2.5 text-red-600 focus:bg-red-50 focus:text-red-600"
+                    className="rounded-lg cursor-pointer py-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive"
                   >
                     <LogOut className="mr-3 h-4 w-4" />
                     <span className="font-bold">Log out</span>
@@ -141,10 +150,10 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login" className="hidden sm:block">
-                <Button variant="ghost" size="sm" className="font-bold text-slate-600">Login</Button>
+                <Button variant="ghost" size="sm" className="font-bold text-muted-foreground transition-colors hover:text-foreground">Login</Button>
               </Link>
               <Link to="/register">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-5 shadow-md shadow-blue-100 transition-all active:scale-95">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-5 shadow-md shadow-blue-100 dark:shadow-blue-900/20 transition-all active:scale-95">
                   Get Started
                 </Button>
               </Link>
@@ -162,9 +171,7 @@ const Navbar = () => {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <SheetHeader className="text-left mb-8">
                   <SheetTitle className="flex items-center gap-2">
-                    <div className="bg-blue-600 p-1 rounded-md">
-                      <div className="w-4 h-4 border-2 border-white rounded-sm" />
-                    </div>
+                    <img src="/assets/logo.png" alt="AuthSphere Logo" className="w-8 h-8 object-contain border border-border rounded-lg p-1" />
                     AuthSphere
                   </SheetTitle>
                 </SheetHeader>
@@ -193,8 +200,8 @@ const Navbar = () => {
           </div>
 
         </div>
-      </div>
-    </header>
+      </div >
+    </header >
   );
 };
 

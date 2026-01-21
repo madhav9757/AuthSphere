@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { getProject } from "@/api/ProjectAPI";
 
+// Component Imports
 import ProjectDetailHeader from "./ProjectDetailHeader";
 import ProjectKeysCard from "./ProjectKeysCard";
 import ProjectSettings from "./ProjectSettings";
@@ -9,8 +10,10 @@ import ProjectDangerZone from "./ProjectDangerZone";
 import ProjectUsersCard from "./ProjectUsersCard";
 import ProjectDetailSkeleton from "./ProjectDetailSkeleton";
 
-import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+// UI Imports
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, ArrowLeft, RefreshCw, Loader2 } from "lucide-react";
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
@@ -22,6 +25,7 @@ const ProjectDetail = () => {
   const loadProject = async () => {
     try {
       setLoading(true);
+      setError("");
       const res = await getProject(projectId);
 
       if (!res?.success) {
@@ -37,51 +41,105 @@ const ProjectDetail = () => {
   };
 
   useEffect(() => {
-    loadProject();
+    if (projectId) loadProject();
   }, [projectId]);
 
-  /* -------------------- LOADING -------------------- */
+  /* -------------------- LOADING STATE -------------------- */
   if (loading) {
-    return <ProjectDetailSkeleton />;
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center gap-6 animate-in fade-in duration-700">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pulling project resources...</p>
+      </div>
+    );
   }
 
-  /* -------------------- ERROR -------------------- */
+  /* -------------------- ERROR STATE -------------------- */
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto mt-20">
-        <Card className="p-6 border-destructive/40">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
-            <p className="font-semibold">Unable to load project</p>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {error}
-          </p>
+      <div className="max-w-2xl mx-auto mt-20 animate-in fade-in zoom-in-95 duration-300">
+        <Card className="border-rose-100 dark:border-rose-900 shadow-xl shadow-rose-500/5 bg-card">
+          <CardContent className="pt-12 pb-12 text-center">
+            <div className="h-20 w-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="h-10 w-10 text-rose-500" />
+            </div>
+            <h2 className="text-2xl font-black text-foreground italic">Resource Error.</h2>
+            <p className="text-muted-foreground mt-3 max-w-sm mx-auto font-medium leading-relaxed">
+              We encountered an issue while retrieving the details for this project: <br />
+              <span className="text-rose-600 dark:text-rose-400 font-bold">{error}</span>
+            </p>
+            <div className="flex items-center justify-center gap-4 mt-10">
+              <Link to="/dashboard">
+                <Button variant="outline" className="rounded-full px-6 border-border font-bold">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Exit to Dashboard
+                </Button>
+              </Link>
+              <Button onClick={loadProject} className="bg-foreground text-background hover:bg-muted-foreground rounded-full px-8 font-bold transition-all">
+                <RefreshCw className="mr-2 h-4 w-4" /> Force Reload
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  /* -------------------- CONTENT -------------------- */
+  /* -------------------- MAIN RENDER -------------------- */
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-12 pb-24 px-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+      {/* Page Branding & Meta */}
       <ProjectDetailHeader project={project} />
 
-      <ProjectKeysCard
-        project={project}
-        onKeysRotated={loadProject}
-      />
+      <div className="grid grid-cols-1 gap-14">
 
-      <ProjectUsersCard projectId={projectId} />
+        {/* Section 1: API & Credentials */}
+        <section className="space-y-6">
+          <div className="px-1 flex items-center gap-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground whitespace-nowrap">
+              Security Credentials
+            </h3>
+            <div className="h-[1px] w-full bg-border opacity-50" />
+          </div>
+          <ProjectKeysCard
+            project={project}
+            onKeysRotated={loadProject}
+          />
+        </section>
 
-      <ProjectSettings
-        project={project}
-        onUpdated={loadProject}
-      />
+        {/* Section 2: User Directory */}
+        <section className="space-y-6">
+          <div className="px-1 flex items-center gap-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground whitespace-nowrap">
+              Identity Graph
+            </h3>
+            <div className="h-[1px] w-full bg-border opacity-50" />
+          </div>
+          <ProjectUsersCard projectId={projectId} />
+        </section>
 
-      <ProjectDangerZone
-        project={project}
-      />
+        {/* Section 3: Configuration */}
+        <section className="space-y-6">
+          <div className="px-1 flex items-center gap-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground whitespace-nowrap">
+              Environment Variables
+            </h3>
+            <div className="h-[1px] w-full bg-border opacity-50" />
+          </div>
+          <ProjectSettings
+            project={project}
+            onUpdated={loadProject}
+          />
+        </section>
+
+        {/* Section 4: Critical Actions */}
+        <section className="pt-8 border-t border-border/50">
+          <ProjectDangerZone
+            project={project}
+          />
+        </section>
+
+      </div>
     </div>
   );
 };

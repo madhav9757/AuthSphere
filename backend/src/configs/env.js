@@ -12,7 +12,7 @@ const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missingVars.length > 0) {
   console.error(`❌ Missing required environment variables: ${missingVars.join(", ")}`);
-  process.exit(1);
+  // Do not call process.exit(1) in serverless; let the application handle missing vars or throw an error later.
 }
 
 const _conf = {
@@ -23,6 +23,10 @@ const _conf = {
   accessTokenExpiry: String(process.env.ACCESS_TOKEN_EXPIRY || "1d"),
   refreshTokenSecret: String(process.env.REFRESH_TOKEN_SECRET),
   refreshTokenExpiry: String(process.env.REFRESH_TOKEN_EXPIRY || "10d"),
+  // URLs
+  frontendUrl: String(process.env.FRONTEND_URL || "http://localhost:5173"),
+  cliUrl: String(process.env.CLI_URL || "http://localhost:5001"),
+
   // Google
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,

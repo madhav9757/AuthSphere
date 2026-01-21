@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { httpLogger } from "./utils/logger.js";
 import { conf } from "./configs/env.js";
 import routes from "./routes/index.js"; // centralized routes
+import homeHandler from "./home.js";
 
 const app = express();
 
@@ -20,14 +21,9 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
 
-      const allowedOrigins = [
-        conf.corsOrigin,
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175"
-      ];
+      const allowedOrigins = conf.corsOrigin.split(",");
 
-      if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes("*") || process.env.NODE_ENV !== "production") {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -44,7 +40,9 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// --- Health Check ---
+// --- Home & Health Check ---
+app.get("/", homeHandler);
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -72,4 +70,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-export { app };
+export default app;

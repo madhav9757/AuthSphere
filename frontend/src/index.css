@@ -124,6 +124,18 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+    @apply font-semibold;
   }
 }
 
@@ -143,40 +155,43 @@
 
 
 /* Custom Scrollbar for AuthSphere */
-
-/* 1. The container (track) */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
-  /* For horizontal scrollbars */
 }
 
-/* 2. The background of the scrollbar */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* 3. The moving part (thumb) */
 ::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  /* slate-200 */
+  background: oklch(0.922 0 0);
+  /* --border equivalent for light */
   border-radius: 20px;
   border: 3px solid transparent;
-  /* Creates a "padding" effect around the thumb */
   background-clip: content-box;
   transition: all 0.3s ease;
 }
 
-/* 4. Hover effect */
-::-webkit-scrollbar-thumb:hover {
-  background: #6366f1;
-  /* indigo-500 - Matches your AuthSphere branding */
-  border: 2px solid transparent;
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 15%);
+  /* --input equivalent for dark */
+  border: 3px solid transparent;
   background-clip: content-box;
 }
 
-/* 5. Firefox Support */
+::-webkit-scrollbar-thumb:hover {
+  background: #6366f1 !important;
+  border: 2px solid transparent !important;
+  background-clip: content-box !important;
+}
+
+/* Firefox Support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #e2e8f0 transparent;
+  scrollbar-color: oklch(0.922 0 0) transparent;
+}
+
+.dark * {
+  scrollbar-color: oklch(1 0 0 / 15%) transparent;
 }

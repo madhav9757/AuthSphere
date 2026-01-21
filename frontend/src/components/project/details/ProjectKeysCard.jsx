@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyRound, Copy, Check, RefreshCcw } from "lucide-react";
+import { KeyRound, Copy, Check, RefreshCcw, ShieldAlert, Code2, Globe } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -10,23 +10,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { rotateProjectKeys } from "@/api/ProjectAPI"; // Your API call
+import { rotateProjectKeys } from "@/api/ProjectAPI";
 
 const ProjectKeysCard = ({ project, onKeysRotated }) => {
   const [copied, setCopied] = useState(false);
   const [rotating, setRotating] = useState(false);
 
-  /* -------------------- COPY PUBLIC KEY -------------------- */
   const handleCopy = async () => {
     await navigator.clipboard.writeText(project.publicKey);
     setCopied(true);
+    toast.success("Public Key copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  /* -------------------- ROTATE KEYS -------------------- */
   const handleRotateKeys = async () => {
     const confirm = window.confirm(
-      "Are you sure you want to rotate keys? This will invalidate existing sessions."
+      "WARNING: Rotating keys will immediately invalidate all existing client sessions and API integrations. This action cannot be undone. Proceed?"
     );
     if (!confirm) return;
 
@@ -35,7 +34,7 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
       const res = await rotateProjectKeys(project._id);
       if (res.success) {
         toast.success("Keys rotated successfully");
-        onKeysRotated?.(); // Refresh project data
+        onKeysRotated?.();
       } else {
         toast.error(res.message || "Failed to rotate keys");
       }
@@ -47,113 +46,151 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5 text-primary" />
-          API Keys
-        </CardTitle>
-        <CardDescription>
-          Use these keys to integrate AuthSphere into your application.
-        </CardDescription>
+    <Card className="border-border shadow-sm bg-card overflow-hidden transition-all duration-300">
+      <CardHeader className="pb-6 border-b border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-xl font-black text-foreground">
+              <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              API Credentials
+            </CardTitle>
+            <CardDescription className="text-muted-foreground font-medium">
+              Use these environment variables to authenticate your SDK.
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRotateKeys}
+            disabled={rotating}
+            className="text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 border-border transition-all rounded-full px-4"
+          >
+            <RefreshCcw className={`h-3.5 w-3.5 mr-2 font-bold ${rotating ? "animate-spin" : ""}`} />
+            Rotate Secret Keys
+          </Button>
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-
-        {/* Public Key */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border rounded-lg p-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Public Key</p>
-            <Badge variant="secondary" className="font-mono text-xs break-all">
+      <CardContent className="space-y-10 pt-8">
+        {/* Public Key Field */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground ml-1">
+            Public Identification Key
+          </label>
+          <div className="flex items-center gap-2 p-2 bg-muted/30 border border-border rounded-2xl group focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/5 transition-all">
+            <code className="flex-1 px-4 py-2 font-mono text-sm text-foreground/90 break-all select-all">
               {project.publicKey}
-            </Badge>
-          </div>
-
-          <div className="flex gap-2">
+            </code>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleCopy}
-              className="w-fit"
+              className="rounded-xl h-10 px-6 font-bold bg-background border border-border hover:bg-muted transition-all active:scale-95"
             >
               {copied ? (
-                <>
-                  <Check className="h-4 w-4 mr-1 text-green-600" />
-                  Copied
-                </>
+                <Check className="h-4 w-4 text-emerald-500" />
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-1" />
+                  <Copy className="h-4 w-4 mr-2" />
                   Copy
                 </>
               )}
             </Button>
-
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleRotateKeys}
-              disabled={rotating}
-            >
-              {rotating ? (
-                <>
-                  <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
-                  Rotating...
-                </>
-              ) : (
-                <>
-                  <RefreshCcw className="h-4 w-4 mr-1" />
-                  Rotate Keys
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
-        {/* Redirect URIs */}
-        {project.redirectUris?.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Redirect URIs</p>
-            <ul className="text-xs font-mono space-y-1 list-disc list-inside">
-              {project.redirectUris.map((uri) => (
-                <li key={uri}>{uri}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Enabled Providers */}
-        {project.providers?.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Enabled Providers</p>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Redirect URIs */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-foreground">
+              <div className="h-6 w-6 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Globe size={14} className="text-blue-500" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">Whitelist Redirects</span>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {project.providers.map((p) => (
-                <Badge key={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</Badge>
+              {project.redirectUris?.map((uri) => (
+                <Badge key={uri} variant="secondary" className="font-mono text-[10px] bg-background text-muted-foreground border border-border px-2">
+                  {uri}
+                </Badge>
               ))}
+              {(!project.redirectUris || project.redirectUris.length === 0) && (
+                <p className="text-xs text-muted-foreground italic">No URIs configured.</p>
+              )}
             </div>
           </div>
-        )}
 
-        {/* SDK Snippet */}
-        <div>
-          <p className="text-sm font-medium">SDK Integration Snippet</p>
-          <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">
-            {`import { initAuth } from "authsphere";
-
-const auth = initAuth({
-  clientId: "${project.publicKey}",
-  redirectUri: "YOUR_REDIRECT_URI",
-  authBaseUrl: "https://auth.yourplatform.com"
-});
-
-auth.redirectToLogin();`}
-          </pre>
+          {/* Providers */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-foreground">
+              <div className="h-6 w-6 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <ShieldAlert size={14} className="text-indigo-500" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">Identity Brokers</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {project.providers?.map((p) => (
+                <Badge key={p} className="bg-indigo-600 dark:bg-indigo-500 text-white border-none font-bold text-[10px] px-3">
+                  {p.toUpperCase()}
+                </Badge>
+              ))}
+              {(!project.providers || project.providers.length === 0) && (
+                <p className="text-xs text-muted-foreground italic">No brokers enabled.</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Security Notice */}
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Keep your API keys secure. Do not expose your private keys in client-side code. Rotating keys will invalidate existing sessions.
-        </p>
+        {/* SDK Integration Code Block */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-foreground">
+              <div className="h-6 w-6 rounded-lg bg-muted flex items-center justify-center">
+                <Code2 size={14} className="text-muted-foreground" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">SDK Entry Point</span>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-mono opacity-50 uppercase border-border">esm / react</Badge>
+          </div>
+          <div className="relative group overflow-hidden rounded-2xl shadow-2xl">
+            <pre className="bg-slate-950 text-slate-300 p-6 rounded-2xl text-[13px] font-mono leading-relaxed overflow-x-auto border border-white/5 ring-1 ring-white/10">
+              <code className="text-indigo-400">import</code> {`{ initAuth } `} <code className="text-indigo-400">from</code> <code className="text-emerald-400">"@authsphere/sdk"</code>;{"\n\n"}
+              <code className="text-slate-500">// Initialize with your Identification Key</code>{"\n"}
+              <code className="text-indigo-400">const</code> auth = <code className="text-amber-400">initAuth</code>({"{"}{"\n"}
+              {`  publicKey: `}<code className="text-emerald-400">"{project.publicKey}"</code>,{"\n"}
+              {`  redirectUri: `}<code className="text-emerald-400">"https://yourapp.com/callback"</code>{"\n"}
+              {"}"});
+            </pre>
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => {
+                  navigator.clipboard.writeText(`import { initAuth } from "@authsphere/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  redirectUri: "https://yourapp.com/callback"\n});`);
+                  toast.success("Snippet copied");
+                }}
+                className="h-9 w-9 rounded-xl bg-white/10 text-white hover:bg-white/20 backdrop-blur-md border border-white/10"
+              >
+                <Copy size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Security Warning */}
+        <div className="p-6 bg-amber-500/5 rounded-2xl border border-amber-500/20 flex gap-4 items-start animate-pulse hover:pause">
+          <div className="h-10 w-10 shrink-0 bg-amber-500/10 rounded-xl flex items-center justify-center">
+            <ShieldAlert className="h-5 w-5 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed font-bold uppercase tracking-wider mb-1">
+              Data Sovereignty Advisory
+            </p>
+            <p className="text-xs text-amber-800 dark:text-amber-500/80 leading-relaxed font-medium">
+              These identification keys define your project's security perimeter. Rotate immediately if exposed in client-side source control or insecure logs.
+            </p>
+          </div>
+        </div>
 
       </CardContent>
     </Card>

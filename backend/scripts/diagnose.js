@@ -168,8 +168,7 @@ async function diagnose() {
     'bcrypt',
     'cors',
     'cookie-parser',
-    'dotenv',
-    'node-fetch'
+    'dotenv'
   ];
 
   let missingDeps = [];

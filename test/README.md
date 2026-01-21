@@ -1,53 +1,63 @@
-# AuthSphere SDK Test Application
+# 🧪 AuthSphere SDK Demo App
 
-This is a demonstration project showing how to integrate the `@authsphere/sdk` into a modern React application.
+This is a demonstration project built with React and Vite to showcase the seamless integration of the `@authsphere/sdk`. It provides a practical example of how to implement a full authentication flow from scratch.
 
-## Key Features Demonstrated
-- **SDK Initialization**: How to set up the SDK using your Public Key.
-- **Provider Login**: Implementing social login redirects (Google, GitHub, Discord).
-- **Callback Handling**: Processing the OAuth2 response and securing the session.
-- **Protected Routes**: Checking user authentication status.
-- **Session Management**: Accessing user profile data and logging out.
+## 🚀 Key Features Demonstrated
 
-## Getting Started
+- **SDK Initialization**: How to properly configure the SDK with a Public Key.
+- **Provider Login**: Implementing redirects for Google, GitHub, and Discord.
+- **Callback Handling**: Processing the OAuth2 response to establish a secure session.
+- **Protected Routes**: Restricting access to dashboard views based on auth status.
+- **User Hook**: Accessing user profile data and session state throughout the app.
+- **Logout Flow**: Safely clearing sessions and redirecting users.
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+## 🛠️ Implementation Highlights
 
-2. **Run the Backend**:
-   Ensure your AuthSphere backend is running at `http://localhost:8000`.
+### SDK Setup
+The SDK is initialized in the main entry point to ensure auth state is available globally.
 
-3. **Run the Test App**:
-   ```bash
-   npm run dev
-   ```
+### Secure Callbacks
+The `/callback` route demonstrates the use of `AuthSphere.handleAuthCallback()` which handles the PKCE code exchange automatically.
 
-4. **Experience the Flow**:
-   - Open your browser to the local dev server.
-   - Click a login provider.
-   - You will be redirected to the AuthSphere Auth Hub.
-   - After authenticating, you'll be returned to the `/callback` route.
-   - The SDK will handle the rest and redirect you to your secure `/dashboard`.
+### Session Management
+Once authenticated, the user profile is accessible via the SDK's `getUser()` method, persisting across page reloads.
 
-## Basic Usage Snippet
+## 🏁 Getting Started
 
-```javascript
-import AuthSphere from '@authsphere/sdk';
+### Prerequisites
 
-// 1. Initialize
-AuthSphere.initAuth({
-  publicKey: 'your_public_key',
-  redirectUri: 'http://localhost:3000/callback'
-});
+1.  **Run the Backend**: Ensure the AuthSphere backend is running at `http://localhost:8000`.
+2.  **Create a Project**: Go to the [Frontend Dashboard](http://localhost:5173), create a project, and get your **Public Key**.
 
-// 2. Login
-AuthSphere.redirectToLogin('google');
+### Installation
 
-// 3. Callback (in your /callback route)
-await AuthSphere.handleAuthCallback();
+1.  Navigate to the test directory:
+    ```bash
+    cd test
+    ```
 
-// 4. Get User
-const user = AuthSphere.getUser();
-```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Update Config:
+    Open `src/App.jsx` (or your config file) and replace the `publicKey` with your project's key.
+
+4.  Run the App:
+    ```bash
+    npm run dev
+    ```
+
+## 📸 Common Flow
+
+1. User clicks **"Login with Google"**.
+2. App redirects to AuthSphere Auth Hub.
+3. User authenticates.
+4. AuthSphere redirects back to `http://localhost:5174/callback?code=...`.
+5. SDK exchanges code for tokens.
+6. User is redirected to `/dashboard`.
+
+---
+
+Built with ❤️ by the AuthSphere Team.
