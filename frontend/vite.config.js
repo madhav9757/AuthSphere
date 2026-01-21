@@ -15,4 +15,19 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
-})
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts')) return 'recharts';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('@radix-ui')) return 'radix';
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
+});
