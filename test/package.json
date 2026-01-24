@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@authsphere/sdk": "file:../package",
+    "@authspherejs/sdk": "^1.0.2",
     "@tailwindcss/vite": "^4.1.18",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

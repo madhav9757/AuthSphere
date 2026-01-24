@@ -1,6 +1,6 @@
 # 🧪 AuthSphere SDK Demo App
 
-This is a demonstration project built with React and Vite to showcase the seamless integration of the `@authsphere/sdk`. It provides a practical example of how to implement a full authentication flow from scratch.
+This is a demonstration project built with React and Vite to showcase the seamless integration of the `@authspherejs/sdk`. It provides a practical example of how to implement a full authentication flow from scratch.
 
 ## 🚀 Key Features Demonstrated
 

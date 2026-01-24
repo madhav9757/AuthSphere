@@ -180,7 +180,7 @@ const Docs = () => {
                     <span className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-100 dark:shadow-none">1</span>
                     Install the SDK
                   </h3>
-                  <CodeBlock id="install" code="npm install @authsphere/sdk" language="terminal" />
+                  <CodeBlock id="install" code="npm install @authspherejs/sdk" language="terminal" />
                 </div>
 
                 <div>
@@ -188,7 +188,7 @@ const Docs = () => {
                     <span className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-100 dark:shadow-none">2</span>
                     Initialize client
                   </h3>
-                  <CodeBlock id="init" code={`import AuthSphere from '@authsphere/sdk'\n\nAuthSphere.initAuth({\n  publicKey: 'pub_live_f28sh92...', \n  redirectUri: 'https://yourapp.com/callback'\n})`} language="typescript" />
+                  <CodeBlock id="init" code={`import AuthSphere from '@authspherejs/sdk'\n\nAuthSphere.initAuth({\n  publicKey: 'pub_live_f28sh92...', \n  redirectUri: 'https://yourapp.com/callback'\n})`} language="typescript" />
                 </div>
               </div>
             </article>

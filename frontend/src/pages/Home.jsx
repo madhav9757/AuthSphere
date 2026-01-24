@@ -179,7 +179,7 @@ const Home = () => {
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">auth-init.ts</span>
                 </div>
                 <pre className="p-8 text-[15px] font-mono leading-relaxed text-indigo-300 overflow-x-auto">
-                  <code>{`import { createClient } from "@authsphere/sdk";
+                  <code>{`import { createClient } from "@authspherejs/sdk";
 
 // Initialize secure identity shard
 const auth = createClient({

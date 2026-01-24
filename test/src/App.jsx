@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import AuthSphere from '@authsphere/sdk';
+import AuthSphere from '@authspherejs/sdk';
 import { LogOut, Sparkles, ArrowRight, Github, Chrome, MessageSquare, Shield } from 'lucide-react';
 
 // --- Initialize SDK ---

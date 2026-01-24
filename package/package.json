@@ -1,6 +1,6 @@
 {
-  "name": "@authsphere/sdk",
-  "version": "1.0.0",
+  "name": "@authspherejs/sdk",
+  "version": "1.0.2",
   "description": "Secure OAuth2 SDK with PKCE for AuthSphere authentication",
   "type": "module",
   "main": "dist/index.js",
@@ -15,9 +15,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Tests coming soon\"",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "test": "echo \"Tests coming soon\""
   },
   "keywords": [
     "auth",
@@ -33,18 +31,18 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/authsphere-sdk.git"
+    "url": "git+https://github.com/madhav9757/AuthSphere.git",
+    "directory": "package"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/authsphere-sdk/issues"
+    "url": "https://github.com/madhav9757/AuthSphere/issues"
   },
-  "homepage": "https://github.com/yourusername/authsphere-sdk#readme",
+  "homepage": "https://github.com/madhav9757/AuthSphere/tree/main/package#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "prettier": "^3.0.0",
     "typescript": "^5.2.2"
   },
   "engines": {

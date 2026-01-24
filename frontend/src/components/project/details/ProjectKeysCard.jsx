@@ -154,7 +154,7 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
           </div>
           <div className="relative group overflow-hidden rounded-2xl shadow-2xl">
             <pre className="bg-muted/50 text-foreground/80 p-6 rounded-2xl text-[13px] font-mono leading-relaxed overflow-x-auto border border-border ring-1 ring-border/50">
-              <code className="text-indigo-400">import</code> {`{ initAuth } `} <code className="text-indigo-400">from</code> <code className="text-emerald-400">"@authsphere/sdk"</code>;{"\n\n"}
+              <code className="text-indigo-400">import</code> {`{ initAuth } `} <code className="text-indigo-400">from</code> <code className="text-emerald-400">"@authspherejs/sdk"</code>;{"\n\n"}
               <code className="text-slate-500">// Initialize with your Identification Key</code>{"\n"}
               <code className="text-indigo-400">const</code> auth = <code className="text-amber-400">initAuth</code>({"{"}{"\n"}
               {`  publicKey: `}<code className="text-emerald-400">"{project.publicKey}"</code>,{"\n"}
@@ -166,7 +166,7 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
                 variant="secondary"
                 size="icon"
                 onClick={() => {
-                  navigator.clipboard.writeText(`import { initAuth } from "@authsphere/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  redirectUri: "https://yourapp.com/callback"\n});`);
+                  navigator.clipboard.writeText(`import { initAuth } from "@authspherejs/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  redirectUri: "https://yourapp.com/callback"\n});`);
                   toast.success("Snippet copied");
                 }}
                 className="h-9 w-9 rounded-xl bg-white/10 text-white hover:bg-white/20 backdrop-blur-md border border-white/10"

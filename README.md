@@ -8,7 +8,7 @@ The AuthSphere ecosystem consists of four main components:
 
 - **[`/backend`](./backend)**: The core API server built with Express and MongoDB. It handles OAuth2 flows, PKCE validation, session management, and project configurations.
 - **[`/frontend`](./frontend)**: A premium developer dashboard built with React 19 and Tailwind CSS. This is where developers manage their projects, API keys, and view user analytics.
-- **[`/package`](./package)**: The official `@authsphere/sdk` written in TypeScript. It provides a seamless way for developers to integrate AuthSphere into their client-side applications with built-in PKCE support.
+- **[`/package`](./package)**: The official [`@authspherejs/sdk`](https://www.npmjs.com/package/@authspherejs/sdk) written in TypeScript. It provides a seamless way for developers to integrate AuthSphere into their client-side applications with built-in PKCE support.
 - **[`/test`](./test)**: A demonstration React application showcasing the implementation and capabilities of the AuthSphere SDK.
 
 ## ✨ Key Features
@@ -18,6 +18,14 @@ The AuthSphere ecosystem consists of four main components:
 - **📊 Developer Dashboard**: Manage multiple projects, rotate API keys, and monitor user logins.
 - **📦 Lightweight SDK**: A type-safe TypeScript SDK for effortless integration.
 - **🎨 Premium UI/UX**: Dark-mode first design with smooth animations and responsive layouts.
+
+## 📦 Installation
+
+Social authentication is as simple as:
+
+```bash
+npm install @authspherejs/sdk
+```
 
 ## 🚀 Quick Start
 

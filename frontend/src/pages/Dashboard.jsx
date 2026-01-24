@@ -216,7 +216,7 @@ const Dashboard = () => {
                   <CardContent className="space-y-4">
                     {[
                       { t: "Initialize Project", d: "Configure callback URIs" },
-                      { t: "Install AuthSphere SDK", d: "@authsphere/react-sdk" },
+                      { t: "Install AuthSphere SDK", d: "@authspherejs/sdk" },
                       { t: "Generate API Keys", d: "Public & Secret pair" },
                       { t: "User Login Flow", d: "Test social providers" }
                     ].map((step, i) => (
