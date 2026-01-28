@@ -5,7 +5,7 @@ import { LogOut, Sparkles, ArrowRight, Github, Chrome, MessageSquare, Shield } f
 
 // --- Initialize SDK ---
 AuthSphere.initAuth({
-  publicKey: '86f2a6184bef2c6d9967a12fe75e516d',
+  publicKey: '1b2eb92b0fff434e40146da67219a346',
   redirectUri: window.location.origin + '/callback',
   baseUrl: 'http://localhost:8000'
 });
@@ -79,22 +79,32 @@ const Login = () => {
           <p className="text-slate-500 mt-2 text-sm">Choose a provider to continue</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { id: 'google', icon: Chrome, label: 'Google' },
-            { id: 'github', icon: Github, label: 'GitHub' },
-            { id: 'discord', icon: MessageSquare, label: 'Discord' }
+            { id: 'google', logo: 'https://authjs.dev/img/providers/google.svg', label: 'Google' },
+            { id: 'github', logo: 'https://authjs.dev/img/providers/github.svg', label: 'GitHub' },
+            { id: 'discord', logo: 'https://authjs.dev/img/providers/discord.svg', label: 'Discord' },
+            { id: 'linkedin', logo: 'https://authjs.dev/img/providers/linkedin.svg', label: 'LinkedIn' },
+            { id: 'gitlab', logo: 'https://authjs.dev/img/providers/gitlab.svg', label: 'GitLab' },
+            { id: 'twitch', logo: 'https://authjs.dev/img/providers/twitch.svg', label: 'Twitch' },
+            { id: 'bitbucket', logo: 'https://authjs.dev/img/providers/bitbucket.svg', label: 'Bitbucket' },
+            { id: 'microsoft', logo: 'https://authjs.dev/img/providers/microsoft.svg', label: 'Microsoft' },
           ].map((p) => (
             <button
               key={p.id}
               onClick={() => handleLogin(p.id)}
-              className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-400 hover:shadow-md transition-all group"
+              className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-400 hover:shadow-lg transition-all group gap-3 text-center"
             >
-              <div className="flex items-center gap-4">
-                <p.icon size={20} className="text-slate-400 group-hover:text-indigo-600" />
-                <span className="font-medium text-slate-700">Continue with {p.label}</span>
+              <div className="h-10 w-10 p-1">
+                <img
+                  src={p.logo}
+                  alt={p.label}
+                  className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all opacity-70 group-hover:opacity-100"
+                />
               </div>
-              <ArrowRight size={16} className="text-slate-300 group-hover:translate-x-1 group-hover:text-indigo-600 transition-all" />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-indigo-600 truncate w-full">
+                {p.label}
+              </span>
             </button>
           ))}
         </div>

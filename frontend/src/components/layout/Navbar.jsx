@@ -21,58 +21,51 @@ import {
 import { ModeToggle } from "@/components/mode-toggle";
 import {
   User, LogOut, LayoutDashboard, Settings,
-  Menu, Shield, Zap, BookOpen, CreditCard, ChevronDown
+  Menu, Shield, ChevronDown, Github, Activity
 } from "lucide-react";
 
 const Navbar = () => {
-  const { user, loading, logout } = useContext(AuthContext);
+  const { user, loading, logout, loggingOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Add shadow/border on scroll
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navLinks = [
-    { name: "Features", href: "/#features", icon: Zap },
-    { name: "Pricing", href: "/pricing", icon: CreditCard },
-    { name: "Documentation", href: "/docs", icon: BookOpen },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Documentation", href: "/docs" },
   ];
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-      ? "border-b bg-background/80 backdrop-blur-md py-2"
-      : "bg-transparent py-4"
+    <header className={`sticky top-0 z-50 w-full transition-all ${isScrolled
+      ? "border-b bg-background/95 backdrop-blur"
+      : "bg-transparent"
       }`}>
-      <div className="container mx-auto px-4 lg:px-6 flex items-center justify-between">
+      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
 
-        <Link to="/" className="flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1">
-          <img
-            src="/assets/logo.png"
-            alt="AuthSphere Logo"
-            className="w-10 h-10 object-contain 
-               /* Light Mode: removes white background */
-               mix-blend-multiply 
-               /* Dark Mode: inverts black to white and removes blending */
-               dark:invert dark:mix-blend-normal 
-               transition-all group-hover:scale-110"
-          />
-
-          <span className="font-black text-2xl tracking-tighter text-foreground italic">
-            AuthSphere<span className="text-blue-600 transition-colors group-hover:text-blue-400">.</span>
-          </span>
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="h-8 w-8 rounded-lg border flex items-center justify-center">
+            <img
+              src="/assets/logo.png"
+              alt="AuthSphere"
+              className="h-6 w-6 object-contain dark:invert"
+            />
+          </div>
+          <span className="font-bold text-xl">AuthSphere</span>
         </Link>
-        {/* DESKTOP NAV */}
-        <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-muted-foreground">
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex gap-6 items-center text-sm font-medium">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.href}
-              className={`hover:text-primary transition-colors ${location.pathname === link.href ? "text-primary" : ""
+              className={`hover:text-primary transition-colors ${location.pathname === link.href ? "text-primary" : "text-muted-foreground"
                 }`}
             >
               {link.name}
@@ -80,119 +73,139 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* AUTH SECTION + TOGGLE */}
+        {/* Auth Section */}
         <div className="flex items-center gap-2">
 
+          <Button variant="ghost" size="icon" asChild className="rounded-full w-9 h-9">
+            <a
+              href="https://github.com/madhav9757/AuthSphere"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center"
+            >
+              <Github className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">GitHub repository</span>
+            </a>
+          </Button>
           <ModeToggle />
 
           {loading ? (
-            <div className="h-9 w-9 animate-pulse bg-muted rounded-full" />
+            <div className="h-8 w-8 animate-pulse bg-muted rounded-full" />
           ) : user ? (
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 flex items-center gap-2 pl-1 pr-2 rounded-full border border-border bg-card/50 hover:bg-accent transition-all outline-none"
-                  >
-                    <div className="h-8 w-8 rounded-full overflow-hidden border border-background shadow-sm">
-                      {user.picture ? (
-                        <img src={user.picture} alt="Avatar" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex items-center justify-center h-full w-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-bold text-xs">
-                          {user.username?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <span className="hidden sm:inline text-xs font-bold text-foreground">
-                      {user.username}
-                    </span>
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-8 flex items-center gap-2 rounded-full"
+                >
+                  <div className="h-7 w-7 rounded-full border flex items-center justify-center bg-muted">
+                    {user.picture ? (
+                      <img src={user.picture} alt="Avatar" className="h-full w-full rounded-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-semibold">
+                        {user.username?.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {user.username}
+                  </span>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-60 mt-2 p-2 rounded-2xl shadow-xl border-border">
-                  <DropdownMenuLabel className="p-3">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-bold text-foreground">{user.username}</p>
-                      <p className="text-xs text-muted-foreground font-medium truncate">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="mx-2" />
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{user.username}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
 
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg cursor-pointer py-2.5">
-                    <LayoutDashboard className="mr-3 h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Dashboard</span>
-                  </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Dashboard
+                </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={() => navigate("/settings")} className="rounded-lg cursor-pointer py-2.5">
-                    <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Settings</span>
-                  </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={() => navigate("/settings/sessions")} className="rounded-lg cursor-pointer py-2.5">
-                    <Shield className="mr-3 h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Security</span>
-                  </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings/sessions")}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Security
+                </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="mx-2" />
+                <DropdownMenuItem onClick={() => navigate("/audit-logs")}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  Audit Logs
+                </DropdownMenuItem>
 
-                  <DropdownMenuItem
-                    onClick={logout}
-                    className="rounded-lg cursor-pointer py-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive"
-                  >
-                    <LogOut className="mr-3 h-4 w-4" />
-                    <span className="font-bold">Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={logout}
+                  disabled={loggingOut}
+                  className="text-destructive focus:text-destructive"
+                >
+                  {loggingOut ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login" className="hidden sm:block">
-                <Button variant="ghost" size="sm" className="font-bold text-muted-foreground transition-colors hover:text-foreground">Login</Button>
+                <Button variant="ghost" size="sm">Login</Button>
               </Link>
               <Link to="/register">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-5 shadow-md shadow-blue-100 dark:shadow-blue-900/20 transition-all active:scale-95">
-                  Get Started
-                </Button>
+                <Button size="sm">Get Started</Button>
               </Link>
             </div>
           )}
 
-          {/* MOBILE MENU (SHEET) */}
+          {/* Mobile Menu */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
-                  <Menu className="h-5 w-5 text-slate-700" />
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetHeader className="text-left mb-8">
-                  <SheetTitle className="flex items-center gap-2">
-                    <img src="/assets/logo.png" alt="AuthSphere Logo" className="w-8 h-8 object-contain border border-border rounded-lg p-1" />
-                    AuthSphere
-                  </SheetTitle>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 mt-6">
                   {navLinks.map((link) => (
                     <Link
                       key={link.name}
                       to={link.href}
-                      className="flex items-center gap-3 p-3 text-lg font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                     >
-                      <link.icon className="h-5 w-5 text-blue-600" />
                       {link.name}
                     </Link>
                   ))}
-                  <DropdownMenuSeparator />
                   {!user && (
-                    <Link to="/login">
-                      <Button variant="outline" className="w-full justify-start py-6 rounded-xl border-slate-200">
-                        Log In
-                      </Button>
-                    </Link>
+                    <>
+                      <DropdownMenuSeparator />
+                      <Link to="/login">
+                        <Button variant="outline" className="w-full">
+                          Log In
+                        </Button>
+                      </Link>
+                    </>
                   )}
                 </div>
               </SheetContent>
@@ -200,8 +213,8 @@ const Navbar = () => {
           </div>
 
         </div>
-      </div >
-    </header >
+      </div>
+    </header>
   );
 };
 

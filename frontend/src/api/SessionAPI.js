@@ -1,23 +1,23 @@
-import axios from "axios";
+import api from "./axios";
 
-const API_URL = "/api/v1/sessions";
+const SESSION_BASE = "/sessions";
 
 export const getSessions = async () => {
-  const response = await axios.get(`${API_URL}/`, { withCredentials: true });
-  return response.data;
+  const { data } = await api.get(`${SESSION_BASE}/`);
+  return data;
 };
 
 export const revokeSession = async (sessionId) => {
-  const response = await axios.delete(`${API_URL}/${sessionId}`, { withCredentials: true });
-  return response.data;
+  const { data } = await api.delete(`${SESSION_BASE}/${sessionId}`);
+  return data;
 };
 
 export const revokeAllOtherSessions = async () => {
-  const response = await axios.post(`${API_URL}/revoke-others`, {}, { withCredentials: true });
-  return response.data;
+  const { data } = await api.post(`${SESSION_BASE}/revoke-others`);
+  return data;
 };
 
 export const revokeAllSessions = async () => {
-  const response = await axios.post(`${API_URL}/revoke-all`, {}, { withCredentials: true });
-  return response.data;
+  const { data } = await api.post(`${SESSION_BASE}/revoke-all`);
+  return data;
 };

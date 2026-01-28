@@ -1,6 +1,7 @@
 import DeveloperSession from "../models/developerSession.model.js";
 import Developer from "../models/developer.model.js";
 import { parseUserAgent } from "../utils/userAgentParser.js";
+import { logEvent } from "../utils/auditLogger.js";
 
 export const getDeveloperSessions = async (req, res) => {
   try {
@@ -42,6 +43,20 @@ export const revokeSession = async (req, res) => {
       return res.status(404).json({ success: false, message: "Session not found" });
     }
 
+    // Log the event
+    await logEvent({
+      developerId: req.developer._id,
+      action: "SESSION_REVOKED",
+      description: `Active session on ${session.deviceInfo?.os || 'unknown device'} was revoked.`,
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: sessionId,
+        details: { deviceInfo: session.deviceInfo }
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Session revoked successfully"
@@ -56,12 +71,24 @@ export const revokeAllOtherSessions = async (req, res) => {
     const currentRefreshToken = req.cookies.refreshToken;
 
     await DeveloperSession.updateMany(
-      { 
-        developer: req.developer._id, 
-        refreshToken: { $ne: currentRefreshToken } 
+      {
+        developer: req.developer._id,
+        refreshToken: { $ne: currentRefreshToken }
       },
       { isValid: false }
     );
+
+    // Log the event
+    await logEvent({
+      developerId: req.developer._id,
+      action: "OTHER_SESSIONS_REVOKED",
+      description: "All other active sessions were revoked.",
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
 
     return res.status(200).json({
       success: true,
@@ -81,6 +108,18 @@ export const revokeAllSessions = async (req, res) => {
 
     // Also clear refresh token in developer model
     await Developer.findByIdAndUpdate(req.developer._id, { refreshToken: null });
+
+    // Log the event
+    await logEvent({
+      developerId: req.developer._id,
+      action: "ALL_SESSIONS_REVOKED",
+      description: "All active sessions (including current) were revoked.",
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
 
     return res.status(200).json({
       success: true,

@@ -7,6 +7,7 @@ import { conf } from "../configs/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import DeveloperSession from "../models/developerSession.model.js";
 import { parseUserAgent } from "../utils/userAgentParser.js";
+import { logEvent } from "../utils/auditLogger.js";
 import axios from "axios";
 
 // ✅ CONSISTENT COOKIE OPTIONS
@@ -31,8 +32,8 @@ export const registerDeveloper = async (req, res) => {
     });
 
     if (existedDeveloper) {
-      return res.status(409).json({ 
-        message: "Developer with email or username already exists" 
+      return res.status(409).json({
+        message: "Developer with email or username already exists"
       });
     }
 
@@ -93,7 +94,7 @@ export const loginDeveloper = async (req, res) => {
     try {
       const userAgent = req.headers['user-agent'] || '';
       const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      
+
       let location = { city: "Unknown", country: "Unknown", countryCode: "???" };
       try {
         // Optional geolocation - using a free service (ipapi.co is limited but works for demo)
@@ -158,8 +159,8 @@ export const refreshAccessToken = async (req, res) => {
     const developer = await Developer.findById(decodedToken?._id);
 
     if (!developer || incomingRefreshToken !== developer.refreshToken) {
-      return res.status(401).json({ 
-        message: "Refresh token is expired or invalid" 
+      return res.status(401).json({
+        message: "Refresh token is expired or invalid"
       });
     }
 
@@ -173,10 +174,10 @@ export const refreshAccessToken = async (req, res) => {
     try {
       await DeveloperSession.findOneAndUpdate(
         { refreshToken: incomingRefreshToken, developer: developer._id },
-        { 
-          refreshToken: newRefreshToken, 
+        {
+          refreshToken: newRefreshToken,
           lastActive: new Date(),
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         }
       );
     } catch (sessionError) {
@@ -248,35 +249,147 @@ export const getCurrentDeveloper = async (req, res) => {
 
 /* ---------------------- DASHBOARD STATS ---------------------- */
 export const getDashboardStats = async (req, res) => {
-    try {
-        const developerId = req.developer._id;
+  try {
+    const developerId = req.developer._id;
 
-        // Count projects
-        const totalProjects = await Project.countDocuments({ developer: developerId });
+    // Count projects
+    const totalProjects = await Project.countDocuments({ developer: developerId });
 
-        // Get all project IDs for this developer
-        const projects = await Project.find({ developer: developerId }).select('_id');
-        const projectIds = projects.map(p => p._id);
+    // Get all project IDs for this developer
+    const projects = await Project.find({ developer: developerId }).select('_id');
+    const projectIds = projects.map(p => p._id);
 
-        // Count end users across all those projects
-        const totalEndUsers = await EndUser.countDocuments({ projectId: { $in: projectIds } });
+    // Count end users across all those projects
+    const totalEndUsers = await EndUser.countDocuments({ projectId: { $in: projectIds } });
 
-        // Get latest end users
-        const recentUsers = await EndUser.find({ projectId: { $in: projectIds } })
-            .select('email username createdAt projectId')
-            .populate('projectId', 'name')
-            .sort({ createdAt: -1 })
-            .limit(5);
+    // Get latest end users
+    const recentUsers = await EndUser.find({ projectId: { $in: projectIds } })
+      .select('email username createdAt projectId')
+      .populate('projectId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(5);
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                totalProjects,
-                totalEndUsers,
-                recentUsers
-            }
-        });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
+    // Aggregation for global signup trend (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const rawTrend = await EndUser.aggregate([
+      {
+        $match: {
+          projectId: { $in: projectIds },
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Fill missing days
+    const signupTrend = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const found = rawTrend.find(item => item._id === dateStr);
+      signupTrend.push({
+        date: dateStr,
+        count: found ? found.count : 0
+      });
     }
+    signupTrend.reverse();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalProjects,
+        totalEndUsers,
+        recentUsers,
+        signupTrend: signupTrend.map(d => ({ ...d, signups: d.count }))
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/* ---------------------- UPDATE PROFILE ---------------------- */
+export const updateDeveloperProfile = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const developerId = req.developer._id;
+
+    if (!username || username.trim() === "") {
+      return res.status(400).json({ message: "Username is required" });
+    }
+
+    // Check if username is taken by another developer
+    const existing = await Developer.findOne({
+      username,
+      _id: { $ne: developerId }
+    });
+
+    if (existing) {
+      return res.status(409).json({ message: "Username is already taken" });
+    }
+
+    const updatedDeveloper = await Developer.findByIdAndUpdate(
+      developerId,
+      { $set: { username } },
+      { new: true }
+    ).select("-password -refreshToken");
+
+    // Log the event
+    await logEvent({
+      developerId,
+      action: "PROFILE_UPDATED",
+      description: `Developer profile updated. Username changed to "${username}".`,
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedDeveloper
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/* ---------------------- DELETE ACCOUNT ---------------------- */
+export const deleteDeveloperAccount = async (req, res) => {
+  try {
+    const developerId = req.developer._id;
+
+    // 1. Delete all projects for this developer
+    await Project.deleteMany({ developer: developerId });
+
+    // 2. Delete all sessions for this developer
+    await DeveloperSession.deleteMany({ developer: developerId });
+
+    // 3. Delete the developer record itself
+    await Developer.findByIdAndDelete(developerId);
+
+    const options = getCookieOptions();
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json({
+        success: true,
+        message: "Account and all associated data deleted permanently"
+      });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };

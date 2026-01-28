@@ -12,6 +12,8 @@ import ProjectDetailPage from "@/pages/ProjectDetailPage";
 import ProjectAnalytics from "@/pages/ProjectAnalytics";
 import SessionManagement from "@/pages/SessionManagement";
 import Pricing from "@/pages/Pricing";
+import Settings from "@/pages/Settings";
+import AuditLogs from "@/pages/AuditLogs";
 
 export const routes = [
   {
@@ -85,6 +87,16 @@ export const routes = [
     ),
   },
   {
+    path: "/settings",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <Settings />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/settings/sessions",
     element: (
       <ProtectedRoute>
@@ -95,14 +107,26 @@ export const routes = [
     ),
   },
   {
+    path: "/audit-logs",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <AuditLogs />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "*",
     element: (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">404</h1>
-          <p className="text-muted-foreground">Page Not Found</p>
+      <MainLayout>
+        <div className="flex h-[calc(100vh-160px)] items-center justify-center">
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-bold">404</h1>
+            <p className="text-muted-foreground">Page Not Found</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     ),
   },
 ];

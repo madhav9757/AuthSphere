@@ -19,6 +19,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { deleteProject } from "@/api/ProjectAPI";
 
@@ -34,7 +35,7 @@ const ProjectDangerZone = ({ project }) => {
       const res = await deleteProject(project._id);
 
       if (res?.success) {
-        toast.success("Project permanently deleted");
+        toast.success("Project deleted successfully");
         navigate("/dashboard");
       } else {
         toast.error(res?.message || "Failed to delete project");
@@ -48,25 +49,23 @@ const ProjectDangerZone = ({ project }) => {
   };
 
   return (
-    <Card className="border-rose-500/30 bg-rose-500/5 dark:bg-rose-500/[0.02] overflow-hidden transition-all hover:bg-rose-500/10 dark:hover:bg-rose-500/[0.05] group">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 text-rose-600 dark:text-rose-500 text-lg font-black uppercase tracking-widest">
-          <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
-            <AlertTriangle className="h-5 w-5" />
-          </div>
-          Irreversible Actions
+    <Card className="border-destructive/50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-destructive">
+          <AlertTriangle className="h-5 w-5" />
+          Danger Zone
         </CardTitle>
-        <CardDescription className="text-rose-700/70 dark:text-rose-400/50 font-medium">
-          These operations dismantle project infrastructure and cannot be rolled back.
+        <CardDescription>
+          Irreversible actions that will permanently delete this project
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pt-4 pb-8">
-        <div className="space-y-1">
-          <p className="font-black text-foreground text-base tracking-tight italic">Purge project ecosystem</p>
-          <p className="text-xs text-muted-foreground leading-relaxed max-w-lg font-medium">
-            Decommission all identity shards, invalidate every active session, and purge the user directory from our global graph.
-            All API keys for <span className="text-foreground font-bold">{project.name}</span> will be instantly revoked.
+      <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p className="font-semibold mb-1">Delete this project</p>
+          <p className="text-sm text-muted-foreground max-w-lg">
+            Permanently delete all project data, including API keys and user sessions. 
+            This action cannot be undone.
           </p>
         </div>
 
@@ -74,56 +73,54 @@ const ProjectDangerZone = ({ project }) => {
           <DialogTrigger asChild>
             <Button
               variant="destructive"
-              className="rounded-full px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-rose-500/20 hover:shadow-none transition-all active:scale-95 border-none"
+              className="gap-2 shrink-0"
             >
-              <Trash2 className="h-4 w-4 mr-3" />
-              Terminate Shard
+              <Trash2 className="h-4 w-4" />
+              Delete Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[450px] rounded-3xl border-border bg-card shadow-2xl overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-rose-600" />
-
-            <DialogHeader className="items-center text-center pt-8">
-              <div className="h-20 w-20 bg-rose-500/10 rounded-[2.5rem] flex items-center justify-center mb-6">
-                <AlertTriangle className="h-10 w-10 text-rose-500 animate-bounce hover:pause" />
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <div className="h-12 w-12 bg-destructive/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
-              <DialogTitle className="text-2xl font-black text-foreground italic">Confirm Termination?</DialogTitle>
-              <DialogDescription className="text-muted-foreground pt-3 font-medium text-sm leading-relaxed px-4">
-                This action is final and will purge all data associated with this identity shard.
-                Verify by entering <span className="font-mono font-black text-foreground bg-muted px-2 py-0.5 rounded border border-border">{project.name}</span> below.
+              <DialogTitle className="text-center">Delete Project?</DialogTitle>
+              <DialogDescription className="text-center">
+                This action cannot be undone. Type <strong>{project.name}</strong> to confirm.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="py-8 px-6">
+            <div className="py-4">
+              <Label htmlFor="confirm" className="sr-only">Project name</Label>
               <Input
-                placeholder="Identity Name"
+                id="confirm"
+                placeholder={project.name}
                 value={confirmName}
                 onChange={(e) => setConfirmName(e.target.value)}
-                className="rounded-2xl border-border bg-background focus:ring-4 focus:ring-rose-500/10 text-center font-black text-lg py-8 uppercase tracking-widest"
+                className="text-center"
               />
             </div>
 
-            <DialogFooter className="sm:justify-center gap-3 pb-8 px-6">
+            <DialogFooter>
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => setOpen(false)}
-                className="rounded-full px-8 font-black text-muted-foreground hover:bg-muted transition-all uppercase tracking-widest text-[10px]"
               >
-                Abort
+                Cancel
               </Button>
               <Button
                 variant="destructive"
                 disabled={confirmName !== project.name || isDeleting}
                 onClick={handleDelete}
-                className="rounded-full px-10 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl shadow-rose-500/20 active:scale-95 border-none"
+                className="gap-2"
               >
                 {isDeleting ? (
                   <>
-                    <Loader2 className="mr-3 h-4 w-4 animate-spin text-white" />
-                    Purging...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
                   </>
                 ) : (
-                  "Confirm Deletion"
+                  "Delete Project"
                 )}
               </Button>
             </DialogFooter>
