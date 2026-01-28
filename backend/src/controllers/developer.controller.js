@@ -7,6 +7,7 @@ import { conf } from "../configs/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import DeveloperSession from "../models/developerSession.model.js";
 import { parseUserAgent } from "../utils/userAgentParser.js";
+import { logEvent } from "../utils/auditLogger.js";
 import axios from "axios";
 
 // ✅ CONSISTENT COOKIE OPTIONS
@@ -268,12 +269,47 @@ export const getDashboardStats = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5);
 
+    // Aggregation for global signup trend (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const rawTrend = await EndUser.aggregate([
+      {
+        $match: {
+          projectId: { $in: projectIds },
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Fill missing days
+    const signupTrend = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const found = rawTrend.find(item => item._id === dateStr);
+      signupTrend.push({
+        date: dateStr,
+        count: found ? found.count : 0
+      });
+    }
+    signupTrend.reverse();
+
     return res.status(200).json({
       success: true,
       data: {
         totalProjects,
         totalEndUsers,
-        recentUsers
+        recentUsers,
+        signupTrend: signupTrend.map(d => ({ ...d, signups: d.count }))
       }
     });
   } catch (error) {
@@ -306,6 +342,18 @@ export const updateDeveloperProfile = async (req, res) => {
       { $set: { username } },
       { new: true }
     ).select("-password -refreshToken");
+
+    // Log the event
+    await logEvent({
+      developerId,
+      action: "PROFILE_UPDATED",
+      description: `Developer profile updated. Username changed to "${username}".`,
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
 
     return res.status(200).json({
       success: true,

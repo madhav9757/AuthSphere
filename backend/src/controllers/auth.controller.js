@@ -10,10 +10,12 @@ import { getBitbucketAuthURL, getBitbucketUser } from "../services/bitbucket.ser
 import { getMicrosoftAuthURL, getMicrosoftUser } from "../services/microsoft.service.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { handleSDKCallback, authRequests } from "./sdk.controller.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import axios from "axios";
+import Project from "../models/project.model.js";
 import DeveloperSession from "../models/developerSession.model.js";
+import { logEvent } from "../utils/auditLogger.js";
 import { parseUserAgent } from "../utils/userAgentParser.js";
 import { conf } from "../configs/env.js";
 
@@ -53,6 +55,18 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
       picture: userData.picture || null,
       provider: userData.provider,
       providerId: userData.providerId,
+    });
+
+    // Log account creation
+    await logEvent({
+      developerId: developer._id,
+      action: "ACCOUNT_CREATED",
+      description: `New developer account created via ${userData.provider}. Welcome to AuthSphere!`,
+      category: "project",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      }
     });
   } else {
     // Update existing developer info
@@ -104,6 +118,19 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
       deviceInfo: parseUserAgent(userAgent),
       location: location,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    // Log the event
+    await logEvent({
+      developerId: developer._id,
+      action: "DEVELOPER_LOGIN",
+      description: `Successful login via ${userData.provider || 'Social Auth'} from ${location?.city || 'unknown location'}.`,
+      category: "security",
+      metadata: {
+        ip: ipAddress,
+        userAgent: userAgent,
+        details: { location }
+      },
     });
   } catch (sessionError) {
     console.error("Failed to create developer session in social auth:", sessionError.message);
@@ -169,6 +196,23 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
         providerId: userData.providerId || "",
       });
       console.log("✨ EndUser created:", endUser._id);
+
+      // Log the event
+      const project = await Project.findById(authRequest.projectId);
+      if (project) {
+        await logEvent({
+          developerId: project.developer,
+          projectId: project._id,
+          action: "USER_REGISTERED",
+          description: `New user (${userData.email}) registered via ${userData.provider || 'Email'}.`,
+          category: "user",
+          metadata: {
+            ip: req.ip,
+            userAgent: req.headers["user-agent"],
+            resourceId: endUser._id,
+          },
+        });
+      }
     } else {
       console.log("✅ EndUser found, updating profile info...");
       endUser.picture = userData.picture || endUser.picture;

@@ -13,6 +13,7 @@ import ProjectAnalytics from "@/pages/ProjectAnalytics";
 import SessionManagement from "@/pages/SessionManagement";
 import Pricing from "@/pages/Pricing";
 import Settings from "@/pages/Settings";
+import AuditLogs from "@/pages/AuditLogs";
 
 export const routes = [
   {
@@ -101,6 +102,16 @@ export const routes = [
       <ProtectedRoute>
         <MainLayout>
           <SessionManagement />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/audit-logs",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <AuditLogs />
         </MainLayout>
       </ProtectedRoute>
     ),

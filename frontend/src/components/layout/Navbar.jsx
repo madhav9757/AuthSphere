@@ -21,7 +21,7 @@ import {
 import { ModeToggle } from "@/components/mode-toggle";
 import {
   User, LogOut, LayoutDashboard, Settings,
-  Menu, Shield, ChevronDown, Github
+  Menu, Shield, ChevronDown, Github, Activity
 } from "lucide-react";
 
 const Navbar = () => {
@@ -136,6 +136,11 @@ const Navbar = () => {
                 <DropdownMenuItem onClick={() => navigate("/settings/sessions")}>
                   <Shield className="mr-2 h-4 w-4" />
                   Security
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={() => navigate("/audit-logs")}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  Audit Logs
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />

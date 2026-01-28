@@ -1,6 +1,7 @@
 import Project from "../models/project.model.js";
 import EndUser from "../models/endUsers.models.js";
 import crypto from "crypto";
+import { logEvent } from "../utils/auditLogger.js";
 
 /* ============================================================
    CREATE PROJECT
@@ -44,6 +45,19 @@ export const createProject = async (req, res) => {
       redirectUris,
       providers,
       logoUrl,
+    });
+
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId: project._id,
+      action: "PROJECT_CREATED",
+      description: `New project "${name}" was created.`,
+      category: "project",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
     });
 
     return res.status(201).json({
@@ -128,6 +142,20 @@ export const updateProject = async (req, res) => {
         .json({ success: false, message: "Project not found" });
     }
 
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId: updated._id,
+      action: "PROJECT_UPDATED",
+      description: `Project settings for "${updated.name}" were updated.`,
+      category: "project",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        details: { updates: Object.keys(updates) }
+      },
+    });
+
     return res.status(200).json({ success: true, data: updated });
   } catch (err) {
     console.error("Update Project Error:", err);
@@ -158,6 +186,19 @@ export const rotateKeys = async (req, res) => {
         .json({ success: false, message: "Project not found" });
     }
 
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId: project._id,
+      action: "API_KEY_ROTATED",
+      description: "Project API keys were rotated.",
+      category: "security",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Keys rotated successfully",
@@ -187,6 +228,19 @@ export const deleteProject = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Project not found" });
     }
+
+    // Log the event
+    await logEvent({
+      developerId,
+      action: "PROJECT_DELETED",
+      description: `Project "${project.name}" was deleted permanently.`,
+      category: "project",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: project._id,
+      },
+    });
 
     return res.status(200).json({
       success: true,
