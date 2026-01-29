@@ -19,7 +19,35 @@ import salesforce from './salesforce.svg';
 import hubspot from './hubspot.svg';
 import instagram from './instagram.svg';
 import pinterest from './pinterest.svg';
-import yahoo from './yahoo.svg'
+import yahoo from './yahoo.svg';
+import okta from './okta.svg';
+import notion from './notion.svg';
+import asana from './asana.svg';
+import digitalocean from './digitalocean.svg';
+import heroku from './heroku.svg';
+import netlify from './netlify.svg';
+import paypal from './paypal.svg';
+import stripe from './stripe.svg';
+import shopify from './shopify.svg';
+import tiktok from './tiktok.svg';
+import line from './line.svg';
+import kakao from './kakao.svg';
+import naver from './naver.svg';
+import yandex from './yandex.svg';
+import vk from './vk.svg';
+import box from './box.svg';
+import wordpress from './wordpress.svg';
+import strava from './strava.svg';
+import fitbit from './fitbit.svg';
+import evernote from './evernote.svg';
+import magiclink from './magic-link.svg';
+import stackexchange from './stackexchange.svg';
+import medium from './medium.svg';
+import atlassian from './atlassian.svg';
+import auth0 from './auth0.svg';
+import firebase from './firebase.svg';
+import pingidentity from './ping-identity.svg';
+import onelogin from './onelogin.svg';
 
 export const ProviderLogos = {
     google,
@@ -42,5 +70,33 @@ export const ProviderLogos = {
     hubspot,
     instagram,
     pinterest,
-    yahoo
+    yahoo,
+    okta,
+    notion,
+    asana,
+    digitalocean,
+    heroku,
+    netlify,
+    paypal,
+    stripe,
+    shopify,
+    tiktok,
+    line,
+    kakao,
+    naver,
+    yandex,
+    vk,
+    box,
+    wordpress,
+    strava,
+    fitbit,
+    evernote,
+    'magic-link': magiclink,
+    stackexchange,
+    medium,
+    atlassian,
+    auth0,
+    firebase,
+    'ping-identity': pingidentity,
+    onelogin
 };

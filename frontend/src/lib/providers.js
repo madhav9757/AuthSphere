@@ -105,7 +105,7 @@ export const allProvidersList = [
     {
         id: "okta",
         name: "Okta",
-        logo: "https://www.okta.com/sites/default/files/Okta_Logo_BrightBlue_Medium.png",
+        logo: ProviderLogos.okta,
         status: "coming_soon",
         type: "SAML / OIDC",
         flows: ["Auth Code", "Device Flow"],
@@ -161,7 +161,7 @@ export const allProvidersList = [
     {
         id: "notion",
         name: "Notion",
-        logo: "https://www.notion.so/front-static/favicon.ico",
+        logo: ProviderLogos.notion,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -189,7 +189,7 @@ export const allProvidersList = [
     {
         id: "asana",
         name: "Asana",
-        logo: "https://assets.asana.biz/transform/7085145b-1662-421b-8575-b903e054ba92/logo-asana",
+        logo: ProviderLogos.asana,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code", "Implicit"],
@@ -233,7 +233,7 @@ export const allProvidersList = [
     {
         id: "digitalocean",
         name: "DigitalOcean",
-        logo: "https://www.digitalocean.com/favicon.ico",
+        logo: ProviderLogos.digitalocean,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -247,7 +247,7 @@ export const allProvidersList = [
     {
         id: "heroku",
         name: "Heroku",
-        logo: "https://www.herokucdn.com/favicon.ico",
+        logo: ProviderLogos.heroku,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -261,7 +261,7 @@ export const allProvidersList = [
     {
         id: "netlify",
         name: "Netlify",
-        logo: "https://www.netlify.com/favicon.ico",
+        logo: ProviderLogos.netlify,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -277,7 +277,7 @@ export const allProvidersList = [
     {
         id: "paypal",
         name: "PayPal",
-        logo: "https://www.paypalobjects.com/webstatic/icon/pp258.png",
+        logo: ProviderLogos.paypal,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -291,7 +291,7 @@ export const allProvidersList = [
     {
         id: "stripe",
         name: "Stripe",
-        logo: "https://stripe.com/favicon.ico",
+        logo: ProviderLogos.stripe,
         status: "available",
         type: "OAuth 2.0 (Connect)",
         flows: ["Auth Code"],
@@ -305,7 +305,7 @@ export const allProvidersList = [
     {
         id: "shopify",
         name: "Shopify",
-        logo: "https://cdn.shopify.com/shopifycloud/brochure/assets/brand-assets/shopify-logo-primary-eb60980cffb3699b8296a8497d39a3ff97f1fbc8e4f509ed964c76b17c18ed7b.svg",
+        logo: ProviderLogos.shopify,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -335,7 +335,7 @@ export const allProvidersList = [
     {
         id: "tiktok",
         name: "TikTok",
-        logo: "https://www.tiktok.com/favicon.ico",
+        logo: ProviderLogos.tiktok,
         status: "beta",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -393,7 +393,7 @@ export const allProvidersList = [
     {
         id: "line",
         name: "LINE",
-        logo: "https://scdn.line-apps.com/n/line_add_friends/logo/LINE_APP.png",
+        logo: ProviderLogos.line,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -407,7 +407,7 @@ export const allProvidersList = [
     {
         id: "kakao",
         name: "Kakao",
-        logo: "https://t1.kakaocdn.net/kakaocorp/kakaocorp/admin/5f9c58c2017800001.png",
+        logo: ProviderLogos.kakao,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -421,7 +421,7 @@ export const allProvidersList = [
     {
         id: "naver",
         name: "Naver",
-        logo: "https://s.pstatic.net/static/www/mobile/edit/2016/0705/mobile_212852414260.png",
+        logo: ProviderLogos.naver,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -435,7 +435,7 @@ export const allProvidersList = [
     {
         id: "yandex",
         name: "Yandex",
-        logo: "https://yastatic.net/s3/home/logos/services/yandex.svg",
+        logo: ProviderLogos.yandex,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -449,7 +449,7 @@ export const allProvidersList = [
     {
         id: "vk",
         name: "VK",
-        logo: "https://vk.com/images/icons/pwa/apple_touch_icon_152.png",
+        logo: ProviderLogos.vk,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -479,7 +479,7 @@ export const allProvidersList = [
     {
         id: "box",
         name: "Box",
-        logo: "https://www.box.com/favicon.ico",
+        logo: ProviderLogos.box,
         status: "available",
         type: "OAuth 2.0 / JWT",
         flows: ["Auth Code", "App Auth"],
@@ -493,7 +493,7 @@ export const allProvidersList = [
     {
         id: "wordpress",
         name: "WordPress",
-        logo: "https://wordpress.org/favicon.ico",
+        logo: ProviderLogos.wordpress,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -507,7 +507,7 @@ export const allProvidersList = [
     {
         id: "strava",
         name: "Strava",
-        logo: "https://www.strava.com/favicon.ico",
+        logo: ProviderLogos.strava,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code"],
@@ -521,7 +521,7 @@ export const allProvidersList = [
     {
         id: "fitbit",
         name: "Fitbit",
-        logo: "https://www.fitbit.com/favicon.ico",
+        logo: ProviderLogos.fitbit,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code", "PKCE"],
@@ -535,7 +535,7 @@ export const allProvidersList = [
     {
         id: "evernote",
         name: "Evernote",
-        logo: "https://evernote.com/favicon.ico",
+        logo: ProviderLogos.evernote,
         status: "available",
         type: "OAuth 1.0a (Legacy)",
         flows: ["Auth Code"],
@@ -577,7 +577,7 @@ export const allProvidersList = [
     {
         id: "magic-link",
         name: "Magic Link",
-        logo: "https://www.svgrepo.com/show/445831/magic-wand.svg",
+        logo: ProviderLogos["magic-link"],
         status: "available",
         type: "Passwordless / SMTP",
         flows: ["One-time Token"],
@@ -591,7 +591,7 @@ export const allProvidersList = [
     {
         id: "stackexchange",
         name: "Stack Exchange",
-        logo: "https://cdn.sstatic.net/Sites/stackoverflow/Img/apple-touch-icon.png",
+        logo: ProviderLogos.stackexchange,
         status: "available",
         type: "OAuth 2.0",
         flows: ["Auth Code", "Implicit"],
@@ -605,7 +605,7 @@ export const allProvidersList = [
     {
         id: "medium",
         name: "Medium",
-        logo: "https://miro.medium.com/v2/resize:fill:48:48/1*sHhtYhaZ2wL9uR6C_A9N1A.png",
+        logo: ProviderLogos.medium,
         status: "available",
         type: "OAuth 2.0 / Integration Token",
         flows: ["Auth Code"],
@@ -619,7 +619,7 @@ export const allProvidersList = [
     {
         id: "atlassian",
         name: "Atlassian",
-        logo: "https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png",
+        logo: ProviderLogos.atlassian,
         status: "available",
         type: "OAuth 2.0 (3LO)",
         flows: ["Auth Code"],
@@ -633,7 +633,7 @@ export const allProvidersList = [
     {
         id: "auth0",
         name: "Auth0",
-        logo: "https://cdn.auth0.com/website/press/resources/auth0-logo-monochrome--black.svg",
+        logo: ProviderLogos.auth0,
         status: "beta",
         type: "OIDC / OAuth 2.0",
         flows: ["Auth Code", "PKCE", "Universal Login"],
@@ -647,7 +647,7 @@ export const allProvidersList = [
     {
         id: "firebase",
         name: "Firebase",
-        logo: "https://www.gstatic.com/devrel-devsite/prod/v86e680a133f6779532587570533f81525af166943896dfa0477e6206085a6a61/firebase/images/favicon.png",
+        logo: ProviderLogos.firebase,
         status: "coming_soon",
         type: "Identity Platform",
         flows: ["Custom Token", "Phone Auth"],
@@ -661,7 +661,7 @@ export const allProvidersList = [
     {
         id: "ping-identity",
         name: "Ping Identity",
-        logo: "https://www.pingidentity.com/content/dam/ping-6-2-assets/images/logos/Ping-Identity-Logo.png",
+        logo: ProviderLogos["ping-identity"],
         status: "coming_soon",
         type: "SAML / OIDC",
         flows: ["Auth Code", "Hybrid"],
@@ -675,7 +675,7 @@ export const allProvidersList = [
     {
         id: "onelogin",
         name: "OneLogin",
-        logo: "https://www.onelogin.com/favicon.ico",
+        logo: ProviderLogos.onelogin,
         status: "coming_soon",
         type: "SAML / OIDC",
         flows: ["Auth Code"],
@@ -686,32 +686,4 @@ export const allProvidersList = [
         env_vars: ["ONELOGIN_SUBDOMAIN", "ONELOGIN_CLIENT_ID", "ONELOGIN_CLIENT_SECRET"],
         description: "Cloud-based identity and access management for teams."
     },
-    {
-        id: "medium",
-        name: "Medium",
-        logo: "https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png",
-        status: "available",
-        type: "OAuth 2.0",
-        flows: ["Auth Code"],
-        platforms: ["Web"],
-        capabilities: ["Publication Control", "Unlisted Posts"],
-        limitations: "Integration restricted to certain user tiers.",
-        future: ["Clap-gate integration", "Newsletter sync"],
-        env_vars: ["MEDIUM_CLIENT_ID", "MEDIUM_CLIENT_SECRET"],
-        description: "Connect your app to the world of quality writing."
-    },
-    {
-        id: "digitalocean",
-        name: "DigitalOcean",
-        logo: "https://www.digitalocean.com/favicon.ico",
-        status: "available",
-        type: "OAuth 2.0",
-        flows: ["Auth Code"],
-        platforms: ["Web", "CLI"],
-        capabilities: ["Account Metadata", "Droplet Spin-up"],
-        limitations: "Requires personal access tokens for certain API paths.",
-        future: ["App platform logs auth", "Database users sync"],
-        env_vars: ["DO_CLIENT_ID", "DO_CLIENT_SECRET"],
-        description: "Simple, scalable infrastructure for modern developers."
-    }
 ];

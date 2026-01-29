@@ -42,7 +42,6 @@ import {
 
 import { getDashboardStats } from "@/api/DeveloperAPI";
 import CreateProjectModal from "@/components/project/CreateProjectModal";
-import GettingStartedWizard from "@/components/project/GettingStartedWizard";
 import { format, formatDistanceToNow } from "date-fns";
 import { ShineBorder } from "@/components/ui/shine-border";
 
@@ -58,8 +57,6 @@ const Dashboard = () => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [newProject, setNewProject] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const fetchStats = async () => {
