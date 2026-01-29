@@ -430,20 +430,9 @@ const Dashboard = () => {
           onClose={() => setCreateOpen(false)}
           onCreated={(project) => {
             setCreateOpen(false);
-            setNewProject(project);
-            // Small delay to allow CreateProjectModal to close fully before opening Wizard
-            setTimeout(() => {
-              setWizardOpen(true);
-            }, 300);
             fetchStats();
             setActiveTab('projects');
           }}
-        />
-
-        <GettingStartedWizard
-          open={wizardOpen}
-          onClose={() => setWizardOpen(false)}
-          project={newProject}
         />
 
       </div>
