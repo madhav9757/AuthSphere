@@ -14,6 +14,7 @@ import SessionManagement from "@/pages/SessionManagement";
 import Pricing from "@/pages/Pricing";
 import Settings from "@/pages/Settings";
 import AuditLogs from "@/pages/AuditLogs";
+import ProvidersPage from "@/pages/ProvidersPage";
 
 export const routes = [
   {
@@ -82,6 +83,16 @@ export const routes = [
       <ProtectedRoute>
         <MainLayout>
           <ProjectAnalytics />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/projects/:projectId/providers",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <ProvidersPage />
         </MainLayout>
       </ProtectedRoute>
     ),

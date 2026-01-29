@@ -42,7 +42,9 @@ import {
 
 import { getDashboardStats } from "@/api/DeveloperAPI";
 import CreateProjectModal from "@/components/project/CreateProjectModal";
+import GettingStartedWizard from "@/components/project/GettingStartedWizard";
 import { format, formatDistanceToNow } from "date-fns";
+import { ShineBorder } from "@/components/ui/shine-border";
 
 const Dashboard = () => {
   const { user, loading } = useContext(AuthContext);
@@ -56,6 +58,8 @@ const Dashboard = () => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [newProject, setNewProject] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const fetchStats = async () => {
@@ -427,11 +431,22 @@ const Dashboard = () => {
         <CreateProjectModal
           open={createOpen}
           onClose={() => setCreateOpen(false)}
-          onCreated={() => {
+          onCreated={(project) => {
             setCreateOpen(false);
+            setNewProject(project);
+            // Small delay to allow CreateProjectModal to close fully before opening Wizard
+            setTimeout(() => {
+              setWizardOpen(true);
+            }, 300);
             fetchStats();
             setActiveTab('projects');
           }}
+        />
+
+        <GettingStartedWizard
+          open={wizardOpen}
+          onClose={() => setWizardOpen(false)}
+          project={newProject}
         />
 
       </div>

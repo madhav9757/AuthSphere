@@ -72,6 +72,18 @@ export const getProjectUsers = async (projectId) => {
   }
 };
 
+/* ------------------- GET CONFIGURED PROVIDERS ------------------- */
+export const getConfiguredProviders = async (projectId) => {
+  try {
+    const { data } = await api.get(
+      `${PROJECTS_URL}/${projectId}/providers-config`
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
 /* ------------------- DELETE PROJECT ------------------- */
 export const deleteProject = async (projectId) => {
   try {
@@ -98,5 +110,5 @@ const normalizeError = (error) => {
     return new Error(error.message);
   }
 
-  return new Error("Unexpected error occurred");
+  return new Error("An unexpected error occurred");
 };
