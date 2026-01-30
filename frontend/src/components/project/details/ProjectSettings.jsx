@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Save, Settings, Plus, Trash2, Globe, ShieldCheck, Search } from "lucide-react";
+import { Save, Settings, Plus, Trash2, Globe, ShieldCheck, Lock, AlertTriangle, Clock } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -12,97 +12,101 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { updateProject } from "@/api/ProjectAPI";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { updateProject, deleteProject } from "@/api/ProjectAPI";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ProviderLogos } from "./assets";
+import { Link, useNavigate } from "react-router-dom";
+import { allProvidersList } from "@/lib/providers";
 
 const ProjectSettings = ({ project, onUpdated }) => {
+  const navigate = useNavigate();
+
+  // --- STATE ---
+
+  // General
   const [name, setName] = useState(project.name);
-  const [redirectUris, setRedirectUris] = useState(
-    project.redirectUris?.length ? project.redirectUris : [""]
-  );
-  const [providers, setProviders] = useState({
-    google: project.providers?.includes("google") ?? false,
-    github: project.providers?.includes("github") ?? false,
-    discord: project.providers?.includes("discord") ?? false,
-    linkedin: project.providers?.includes("linkedin") ?? false,
-    gitlab: project.providers?.includes("gitlab") ?? false,
-    twitch: project.providers?.includes("twitch") ?? false,
-    bitbucket: project.providers?.includes("bitbucket") ?? false,
-    microsoft: project.providers?.includes("microsoft") ?? false,
-    // Future providers
-    facebook: project.providers?.includes("facebook") ?? false,
-    twitter: project.providers?.includes("twitter") ?? false,
-    slack: project.providers?.includes("slack") ?? false,
-    apple: project.providers?.includes("apple") ?? false,
-    spotify: project.providers?.includes("spotify") ?? false,
-    reddit: project.providers?.includes("reddit") ?? false,
-    zoom: project.providers?.includes("zoom") ?? false,
-    dropbox: project.providers?.includes("dropbox") ?? false,
-    salesforce: project.providers?.includes("salesforce") ?? false,
-    hubspot: project.providers?.includes("hubspot") ?? false,
-    instagram: project.providers?.includes("instagram") ?? false,
-    pinterest: project.providers?.includes("pinterest") ?? false,
-    yahoo: project.providers?.includes("yahoo") ?? false,
+  const [logoUrl, setLogoUrl] = useState(project.logoUrl || "");
+
+  // URLs
+  const [redirectUris, setRedirectUris] = useState(project.redirectUris?.length ? project.redirectUris : [""]);
+  const [allowedOrigins, setAllowedOrigins] = useState(project.allowedOrigins?.length ? project.allowedOrigins : [""]);
+
+  // Security & Policies
+  const [requireEmail, setRequireEmail] = useState(project.settings?.requireEmailVerification || false);
+  const [mfaEnabled, setMfaEnabled] = useState(project.settings?.mfaEnabled || false);
+
+  // Tokens (Defaults to 15m and 7d if missing)
+  const [accessTokenVal, setAccessTokenVal] = useState(project.settings?.tokenValidity?.accessToken?.toString() || "900");
+  const [refreshTokenVal, setRefreshTokenVal] = useState(project.settings?.tokenValidity?.refreshToken?.toString() || "604800");
+
+  // Providers
+  const [providers, setProviders] = useState(() => {
+    const map = {};
+    allProvidersList.forEach(p => {
+      map[p.id] = project.providers?.includes(p.id) ?? false;
+    });
+    return map;
   });
 
+  // UI State
   const [saving, setSaving] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
 
-  const allProvidersList = [
-    { id: "google", name: "Google", logo: ProviderLogos.google, color: "hover:border-blue-500/50", status: "ready" },
-    { id: "github", name: "GitHub", logo: ProviderLogos.github, color: "hover:border-slate-500/50", status: "ready" },
-    { id: "discord", name: "Discord", logo: ProviderLogos.discord, color: "hover:border-indigo-500/50", status: "ready" },
-    { id: "linkedin", name: "LinkedIn", logo: ProviderLogos.linkedin, color: "hover:border-blue-600/50", status: "ready" },
-    { id: "gitlab", name: "GitLab", logo: ProviderLogos.gitlab, color: "hover:border-orange-500/50", status: "ready" },
-    { id: "twitch", name: "Twitch", logo: ProviderLogos.twitch, color: "hover:border-purple-500/50", status: "ready" },
-    { id: "bitbucket", name: "Bitbucket", logo: ProviderLogos.bitbucket, color: "hover:border-blue-400/50", status: "ready" },
-    { id: "microsoft", name: "Microsoft", logo: ProviderLogos.microsoft, color: "hover:border-teal-500/50", status: "ready" },
-    { id: "facebook", name: "Facebook", logo: ProviderLogos.facebook, color: "hover:border-blue-700/50", status: "planned" },
-    { id: "twitter", name: "Twitter (X)", logo: ProviderLogos.twitter, color: "hover:border-black/50", status: "planned" },
-    { id: "slack", name: "Slack", logo: ProviderLogos.slack, color: "hover:border-purple-600/50", status: "planned" },
-    { id: "apple", name: "Apple", logo: ProviderLogos.apple, color: "hover:border-black/50", status: "planned" },
-    { id: "spotify", name: "Spotify", logo: ProviderLogos.spotify, color: "hover:border-green-500/50", status: "planned" },
-    { id: "reddit", name: "Reddit", logo: ProviderLogos.reddit, color: "hover:border-orange-600/50", status: "planned" },
-    { id: "zoom", name: "Zoom", logo: ProviderLogos.zoom, color: "hover:border-blue-400/50", status: "planned" },
-    { id: "dropbox", name: "Dropbox", logo: ProviderLogos.dropbox, color: "hover:border-blue-600/50", status: "planned" },
-    { id: "salesforce", name: "Salesforce", logo: ProviderLogos.salesforce, color: "hover:border-blue-500/50", status: "planned" },
-    { id: "hubspot", name: "HubSpot", logo: ProviderLogos.hubspot, color: "hover:border-orange-500/50", status: "planned" },
-    { id: "instagram", name: "Instagram", logo: ProviderLogos.instagram, color: "hover:border-pink-500/50", status: "planned" },
-    { id: "pinterest", name: "Pinterest", logo: ProviderLogos.pinterest, color: "hover:border-red-600/50", status: "planned" },
-    { id: "yahoo", name: "Yahoo", logo: ProviderLogos.yahoo, color: "hover:border-purple-700/50", status: "planned" },
-  ];
+  const displayProviders = allProvidersList.filter(p => p.status === 'ready').slice(0, 6);
 
-  const filteredProviders = allProvidersList.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  // --- CHANGE DETECTION ---
   const hasChanges = useMemo(() => {
     const activeProviders = Object.keys(providers).filter(p => providers[p]).sort();
     const originalProviders = [...(project.providers || [])].sort();
 
     return (
       name !== project.name ||
+      logoUrl !== (project.logoUrl || "") ||
       JSON.stringify(redirectUris.filter(Boolean)) !== JSON.stringify(project.redirectUris || []) ||
+      JSON.stringify(allowedOrigins.filter(Boolean)) !== JSON.stringify(project.allowedOrigins || []) ||
+      requireEmail !== (project.settings?.requireEmailVerification || false) ||
+      mfaEnabled !== (project.settings?.mfaEnabled || false) ||
+      accessTokenVal !== (project.settings?.tokenValidity?.accessToken?.toString() || "900") ||
+      refreshTokenVal !== (project.settings?.tokenValidity?.refreshToken?.toString() || "604800") ||
       JSON.stringify(activeProviders) !== JSON.stringify(originalProviders)
     );
-  }, [name, redirectUris, providers, project]);
+  }, [name, logoUrl, redirectUris, allowedOrigins, requireEmail, mfaEnabled, accessTokenVal, refreshTokenVal, providers, project]);
 
-  const updateUri = (index, value) => {
-    const updated = [...redirectUris];
+  // --- HELPERS ---
+  const updateList = (list, setList, index, value) => {
+    const updated = [...list];
     updated[index] = value;
-    setRedirectUris(updated);
+    setList(updated);
   };
-
-  const addUri = () => setRedirectUris([...redirectUris, ""]);
-  const removeUri = (index) => setRedirectUris(redirectUris.filter((_, i) => i !== index));
+  const addToList = (list, setList) => setList([...list, ""]);
+  const removeFromList = (list, setList, index) => setList(list.filter((_, i) => i !== index));
 
   const toggleProvider = (id) => {
+    const provider = allProvidersList.find(p => p.id === id);
+    if (provider?.status !== 'ready') return;
     setProviders(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // --- HANDLERS ---
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -113,11 +117,23 @@ const ProjectSettings = ({ project, onUpdated }) => {
         return;
       }
 
-      const res = await updateProject(project._id, {
+      const payload = {
         name,
+        logoUrl,
         redirectUris: redirectUris.filter(Boolean),
+        allowedOrigins: allowedOrigins.filter(Boolean),
         providers: activeProviders,
-      });
+        settings: {
+          requireEmailVerification: requireEmail,
+          mfaEnabled,
+          tokenValidity: {
+            accessToken: parseInt(accessTokenVal),
+            refreshToken: parseInt(refreshTokenVal),
+          }
+        }
+      };
+
+      const res = await updateProject(project._id, payload);
 
       if (res?.success) {
         toast.success("Settings saved successfully");
@@ -125,124 +141,241 @@ const ProjectSettings = ({ project, onUpdated }) => {
       }
     } catch (err) {
       toast.error("Failed to update settings");
+      console.error(err);
     } finally {
       setSaving(false);
     }
   };
 
+  const handleDeleteProject = async () => {
+    try {
+      setDeleting(true);
+      await deleteProject(project._id);
+      toast.success("Project deleted");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error("Failed to delete project");
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <Settings className="h-5 w-5 text-primary" />
-          Project Settings
-        </CardTitle>
-        <CardDescription>
-          Configure your project settings and authentication providers
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
 
-      <CardContent className="space-y-8">
-        {/* Project Name */}
-        <div className="space-y-3">
-          <div>
-            <h4 className="font-semibold mb-1">Project Name</h4>
-            <p className="text-sm text-muted-foreground">
-              This name will be visible during the OAuth consent flow
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="name">Display Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="My Production App"
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Redirect URIs */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-primary" />
-            <h4 className="font-semibold">Redirect URIs</h4>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Only these URIs will be allowed for authentication callbacks
-          </p>
-          <div className="space-y-2">
-            {redirectUris.map((uri, index) => (
-              <div key={index} className="flex gap-2">
-                <Input
-                  placeholder="https://app.com/callback"
-                  value={uri}
-                  onChange={(e) => updateUri(index, e.target.value)}
-                  className="font-mono text-sm"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeUri(index)}
-                  disabled={redirectUris.length === 1}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={addUri}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add URI
-          </Button>
-        </div>
-
-        <Separator />
-
-        {/* Providers */}
-        <div className="space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                <h4 className="font-semibold">Authentication Providers</h4>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Enable social login methods for this project.
-              </p>
-            </div>
-            <div className="relative max-w-sm w-full">
+      {/* 1. General Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Settings className="h-5 w-5 text-primary" />
+            General Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Project Name</Label>
               <Input
-                placeholder="Search 20+ providers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-muted/30 border-none focus-visible:ring-1"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My Awesome App"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logo">Logo URL (Optional)</Label>
+              <Input
+                id="logo"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://myapp.com/logo.png"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Project ID</Label>
+            <div className="p-2 bg-muted rounded border font-mono text-xs text-muted-foreground select-all">
+              {project._id}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 2. Authentication Flow */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Globe className="h-5 w-5 text-primary" />
+            Authentication Flow
+          </CardTitle>
+          <CardDescription>
+            Configure how users interact with the login system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Redirect URIs */}
+          <div className="space-y-3">
+            <Label>OAuth Redirect URIs</Label>
+            <p className="text-sm text-muted-foreground">Callbacks after successful login.</p>
+            <div className="space-y-2">
+              {redirectUris.map((uri, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder="https://app.com/callback"
+                    value={uri}
+                    onChange={(e) => updateList(redirectUris, setRedirectUris, index, e.target.value)}
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeFromList(redirectUris, setRedirectUris, index)}
+                    disabled={redirectUris.length === 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={() => addToList(redirectUris, setRedirectUris)} className="gap-2">
+                <Plus className="h-4 w-4" /> Add URI
+              </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-4">
-            {filteredProviders.length > 0 ? (
-              filteredProviders.map((p) => (
+          <Separator />
+
+          {/* Allowed Origins */}
+          <div className="space-y-3">
+            <Label>Allowed Web Origins (CORS)</Label>
+            <p className="text-sm text-muted-foreground">Domains allowed to make API requests.</p>
+            <div className="space-y-2">
+              {allowedOrigins.map((origin, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder="https://myapp.com"
+                    value={origin}
+                    onChange={(e) => updateList(allowedOrigins, setAllowedOrigins, index, e.target.value)}
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeFromList(allowedOrigins, setAllowedOrigins, index)}
+                    disabled={allowedOrigins.length === 1 && allowedOrigins[0] === ""}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={() => addToList(allowedOrigins, setAllowedOrigins)} className="gap-2">
+                <Plus className="h-4 w-4" /> Add Origin
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 3. Security Policies (Token, Email, MFA) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Lock className="h-5 w-5 text-primary" />
+            Security Policies
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="flex items-start justify-between space-x-4 rounded-md border p-4">
+              <div className="space-y-1">
+                <Label className="font-semibold">Require Email Verification</Label>
+                <p className="text-sm text-muted-foreground">Force email check before login.</p>
+              </div>
+              <Switch checked={requireEmail} onCheckedChange={setRequireEmail} />
+            </div>
+
+            <div className="flex items-start justify-between space-x-4 rounded-md border p-4">
+              <div className="space-y-1">
+                <Label className="font-semibold">Enable MFA (Beta)</Label>
+                <p className="text-sm text-muted-foreground">Enforce Multi-Factor Auth.</p>
+              </div>
+              <Switch checked={mfaEnabled} onCheckedChange={setMfaEnabled} />
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              <h4 className="font-semibold">Session Management</h4>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Access Token Lifetime</Label>
+                <Select value={accessTokenVal} onValueChange={setAccessTokenVal}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="300">5 Minutes</SelectItem>
+                    <SelectItem value="900">15 Minutes (Default)</SelectItem>
+                    <SelectItem value="3600">1 Hour</SelectItem>
+                    <SelectItem value="14400">4 Hours</SelectItem>
+                    <SelectItem value="86400">24 Hours</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Short-lived token for API access.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Refresh Token Lifetime</Label>
+                <Select value={refreshTokenVal} onValueChange={setRefreshTokenVal}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="86400">24 Hours</SelectItem>
+                    <SelectItem value="604800">7 Days (Default)</SelectItem>
+                    <SelectItem value="2592000">30 Days</SelectItem>
+                    <SelectItem value="7776000">90 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Long-lived token to maintain session.</p>
+              </div>
+            </div>
+          </div>
+
+        </CardContent>
+      </Card>
+
+      {/* 4. Active Providers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            Active Providers
+          </CardTitle>
+          <CardDescription>
+            Select which identity providers are enabled for this project.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {displayProviders.map((p) => {
+              const isEnabled = providers[p.id];
+              return (
                 <div
                   key={p.id}
                   onClick={() => toggleProvider(p.id)}
                   className={`
-                    flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all duration-200
-                    ${providers[p.id] ? 'bg-primary/5 border-primary shadow-sm' : 'bg-card hover:bg-muted/50'} 
-                    ${p.color}
-                    ${p.status === 'planned' ? 'opacity-70 grayscale-[0.5]' : ''}
+                    flex items-center gap-3 p-3 border rounded-xl transition-all duration-200 cursor-pointer
+                    ${isEnabled ? "bg-primary/5 border-primary shadow-sm" : "bg-card hover:bg-muted/50"}
                   `}
                 >
-                  <div className={`h-10 w-10 flex-shrink-0 bg-white rounded-lg border p-2 flex items-center justify-center ${providers[p.id] ? 'ring-2 ring-primary/20' : ''}`}>
+                  <div className={`h-10 w-10 shrink-0 bg-white rounded-lg border p-2 flex items-center justify-center ${isEnabled ? "ring-2 ring-primary/20" : ""}`}>
                     <img
                       src={p.logo}
                       alt={p.name}
@@ -252,57 +385,109 @@ const ProjectSettings = ({ project, onUpdated }) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{p.name}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-                      {providers[p.id] ? 'Enabled' : (p.status === 'ready' ? 'Ready' : 'Coming Soon')}
+                    <p className={`text-[10px] font-bold ${isEnabled ? "text-primary" : "text-muted-foreground"}`}>
+                      {isEnabled ? "Enabled" : "Available"}
                     </p>
                   </div>
-                  <Checkbox
-                    id={p.id}
-                    checked={providers[p.id] || false}
+                  <Switch
+                    checked={isEnabled}
                     onCheckedChange={() => toggleProvider(p.id)}
                     onClick={(e) => e.stopPropagation()}
-                    className="rounded-full h-5 w-5"
                   />
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full py-12 text-center border-2 border-dashed rounded-xl">
-                <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-                <p className="text-muted-foreground">No providers found matching "{searchQuery}"</p>
-              </div>
-            )}
+              );
+            })}
           </div>
-        </div>
-      </CardContent>
+          <div className="mt-4 text-center">
+            <Button variant="link" asChild className="text-primary">
+              <Link to={`/projects/${project._id}/providers`}>Configure Advanced Provider Settings &rarr;</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      <CardFooter className="bg-muted/30 border-t flex justify-between items-center">
-        <div className="text-sm text-muted-foreground flex items-center gap-2">
-          {hasChanges && (
-            <>
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              Unsaved changes
-            </>
-          )}
-        </div>
-        <Button
-          onClick={handleSave}
-          disabled={saving || !hasChanges || !name.trim()}
-          className="gap-2"
-        >
-          {saving ? (
-            <>
-              <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              Save Changes
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+      {/* Action Bar */}
+      <div className="sticky bottom-4 z-10 flex justify-end">
+        <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <CardContent className="p-3 flex items-center gap-4">
+            <div className="text-sm text-muted-foreground">
+              {hasChanges ? "You have unsaved changes" : "All systems normal"}
+            </div>
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || saving}
+              size="lg"
+              className="shadow-lg"
+            >
+              {saving ? "Saving..." : "Save All Changes"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 5. Danger Zone */}
+      <Card className="border-red-500/20 bg-red-500/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl text-red-600">
+            <AlertTriangle className="h-5 w-5" />
+            Danger Zone
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-background">
+            <div>
+              <h4 className="font-semibold text-red-950">Delete Project</h4>
+              <p className="text-sm text-muted-foreground">Permanently delete this project and all data.</p>
+            </div>
+
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" className="gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Delete Project
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[450px]">
+                <DialogHeader>
+                  <div className="h-12 w-12 bg-destructive/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle className="h-6 w-6 text-destructive" />
+                  </div>
+                  <DialogTitle className="text-center">Delete Project?</DialogTitle>
+                  <DialogDescription className="text-center">
+                    This action cannot be undone. Type <strong>{project.name}</strong> to confirm.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-4">
+                  <Label htmlFor="confirm" className="sr-only">Project name</Label>
+                  <Input
+                    id="confirm"
+                    placeholder={project.name}
+                    value={confirmName}
+                    onChange={(e) => setConfirmName(e.target.value)}
+                    className="text-center"
+                  />
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    disabled={confirmName !== project.name || deleting}
+                    onClick={handleDeleteProject}
+                    className="gap-2"
+                  >
+                    {deleting ? "Deleting..." : "Delete Project"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

@@ -58,8 +58,8 @@ const SessionCard = ({ session, onRevoke }) => (
         <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-start gap-4">
                 <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${session.current
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground'
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground'
                     }`}>
                     <DeviceIcon device={session.deviceInfo?.device} />
                 </div>
@@ -304,23 +304,96 @@ const SessionManagement = () => {
                         ))}
                     </div>
 
-                    <Card className="bg-muted/30 border-dashed">
-                        <CardHeader className="text-center pb-3">
-                            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                                <Key className="h-6 w-6 text-primary" />
-                            </div>
-                            <CardTitle className="text-xl">Security Note</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center">
-                            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                                We recommend revoking sessions you don't recognize. AuthSphere automatically expires
-                                sessions after <span className="font-semibold text-foreground">7 days</span> of inactivity.
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Security Education & Best Practices
                             </p>
-                            <p className="text-xs text-muted-foreground mt-3">
-                                Encryption: AES-256-GCM / SHA-512
-                            </p>
-                        </CardContent>
-                    </Card>
+                            <Separator className="flex-1" />
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <Card className="bg-muted/30 border-none">
+                                <CardHeader>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                            <Shield className="h-4 w-4 text-emerald-600" />
+                                        </div>
+                                        <CardTitle className="text-lg">Why Revoke Sessions?</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-sm">
+                                        Maintaining a lean list of active sessions is critical for account security.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <ul className="text-sm space-y-2 text-muted-foreground">
+                                        <li className="flex gap-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                            <span><b>Unrecognized Activity:</b> If you see a device or location you don't recognize, revoke it immediately.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                            <span><b>Public Computers:</b> If you forgot to sign out on a shared device, you can force a logout from here.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                            <span><b>Lost Devices:</b> Revoking access prevents anyone from accessing your data if your phone or laptop is stolen.</span>
+                                        </li>
+                                    </ul>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-muted/30 border-none">
+                                <CardHeader>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                            <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                        </div>
+                                        <CardTitle className="text-lg">What Happens Next?</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-sm">
+                                        Understanding the lifecycle of a revoked session.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Upon Revocation:</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            All Refresh Tokens associated with that session are instantly blacklisted. Any subsequent request from that device will return a <b>401 Unauthorized</b> error, forcing an immediate redirect to the login page.
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">If Not Revoked:</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            The session remains valid for <b>7 days</b> from last activity. An attacker with access to an active session can bypass MFA and access sensitive project keys.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card className="bg-primary/5 border-primary/20">
+                            <CardContent className="p-6">
+                                <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Key className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-lg">System-Level Security</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            AuthSphere uses <b>AES-256-GCM</b> encryption for session storage and <b>SHA-512</b> for token hashing.
+                                            Revoking a session is a cryptographic operation that ensures zero-latency access termination across our global edge network.
+                                        </p>
+                                    </div>
+                                    <div className="md:ml-auto">
+                                        <Badge variant="outline" className="font-mono px-3 py-1">
+                                            Stateless-Sync v2.1
+                                        </Badge>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>

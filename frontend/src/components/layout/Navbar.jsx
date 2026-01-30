@@ -18,14 +18,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-import { ModeToggle } from "@/components/mode-toggle";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import {
   User, LogOut, LayoutDashboard, Settings,
-  Menu, Shield, ChevronDown
+  Menu, Shield, ChevronDown, Github, Activity
 } from "lucide-react";
 
 const Navbar = () => {
-  const { user, loading, logout } = useContext(AuthContext);
+  const { user, loading, logout, loggingOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,11 +42,10 @@ const Navbar = () => {
   ];
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all ${
-      isScrolled
-        ? "border-b bg-background/95 backdrop-blur"
-        : "bg-transparent"
-    }`}>
+    <header className={`sticky top-0 z-50 w-full transition-all ${isScrolled
+      ? "border-b bg-background/95 backdrop-blur"
+      : "bg-transparent"
+      }`}>
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
 
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -54,7 +53,7 @@ const Navbar = () => {
             <img
               src="/assets/logo.png"
               alt="AuthSphere"
-              className="h-6 w-6 object-contain mix-blend-multiply dark:invert"
+              className="h-6 w-6 object-contain dark:invert"
             />
           </div>
           <span className="font-bold text-xl">AuthSphere</span>
@@ -66,9 +65,8 @@ const Navbar = () => {
             <Link
               key={link.name}
               to={link.href}
-              className={`hover:text-primary transition-colors ${
-                location.pathname === link.href ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`hover:text-primary transition-colors ${location.pathname === link.href ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               {link.name}
             </Link>
@@ -78,7 +76,18 @@ const Navbar = () => {
         {/* Auth Section */}
         <div className="flex items-center gap-2">
 
-          <ModeToggle />
+          <Button variant="ghost" size="icon" asChild className="rounded-full w-9 h-9">
+            <a
+              href="https://github.com/madhav9757/AuthSphere"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center"
+            >
+              <Github className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">GitHub repository</span>
+            </a>
+          </Button>
+          <AnimatedThemeToggler />
 
           {loading ? (
             <div className="h-8 w-8 animate-pulse bg-muted rounded-full" />
@@ -129,14 +138,29 @@ const Navbar = () => {
                   Security
                 </DropdownMenuItem>
 
+                <DropdownMenuItem onClick={() => navigate("/audit-logs")}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  Audit Logs
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
                   onClick={logout}
+                  disabled={loggingOut}
                   className="text-destructive focus:text-destructive"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  {loggingOut ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

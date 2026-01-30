@@ -27,12 +27,23 @@ import {
   Zap,
   Plus,
   ChevronRight,
-  Loader2
+  Loader2,
+  FileSpreadsheet
 } from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 
 import { getDashboardStats } from "@/api/DeveloperAPI";
 import CreateProjectModal from "@/components/project/CreateProjectModal";
 import { format, formatDistanceToNow } from "date-fns";
+import { ShineBorder } from "@/components/ui/shine-border";
 
 const Dashboard = () => {
   const { user, loading } = useContext(AuthContext);
@@ -41,7 +52,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalEndUsers: 0,
-    recentUsers: []
+    recentUsers: [],
+    signupTrend: []
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -77,6 +89,21 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-card border rounded-lg p-2 shadow-sm text-xs">
+          <p className="text-muted-foreground mb-1">{format(new Date(label), "MMM dd, yyyy")}</p>
+          <p className="font-bold flex items-center gap-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6]" />
+            {payload[0].value} Signups
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen">
@@ -311,16 +338,89 @@ const Dashboard = () => {
 
           {/* ACTIVITY TAB */}
           <TabsContent value="activity">
-            <Card>
-              <CardContent className="py-16 text-center">
-                <Activity className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-                <h3 className="text-xl font-semibold mb-2">Activity Logs Coming Soon</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Real-time authentication events and activity logs are in development
-                </p>
-                <Button variant="outline" className="mt-6">Request Early Access</Button>
-              </CardContent>
-            </Card>
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-4">
+                  <div>
+                    <CardTitle className="text-xl">Authentication Activity</CardTitle>
+                    <CardDescription>Global user registrations across all your projects (Last 30 days)</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/audit-logs")} className="gap-2">
+                    <FileSpreadsheet className="h-4 w-4" /> View Full Audit Logs
+                  </Button>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  {stats.signupTrend?.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats.signupTrend}>
+                        <defs>
+                          <linearGradient id="colorSignupsDashboard" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                        <XAxis
+                          dataKey="date"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={(str) => format(new Date(str), "MMM d")}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="signups"
+                          stroke="#8b5cf6"
+                          strokeWidth={2}
+                          fillOpacity={1}
+                          fill="url(#colorSignupsDashboard)"
+                          animationDuration={1500}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                      <Activity className="h-12 w-12 opacity-20 mb-4" />
+                      <p>No activity data available for the selected period.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Activity className="text-primary h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">System Health</p>
+                      <p className="text-sm text-muted-foreground italic">All authentication services are operational.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate("/audit-logs")}>
+                  <CardContent className="p-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center border">
+                        <Clock className="text-muted-foreground h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-lg">Detailed Event Log</p>
+                        <p className="text-sm text-muted-foreground italic">View project metadata & IP records.</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
@@ -328,7 +428,7 @@ const Dashboard = () => {
         <CreateProjectModal
           open={createOpen}
           onClose={() => setCreateOpen(false)}
-          onCreated={() => {
+          onCreated={(project) => {
             setCreateOpen(false);
             fetchStats();
             setActiveTab('projects');

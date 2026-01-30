@@ -45,7 +45,7 @@ const CreateProjectModal = ({ open, onClose, onCreated }) => {
         toast.success("Project created successfully");
         setName("");
         setRedirectUri("");
-        onCreated();
+        onCreated(res.data);
         onClose();
       }
     } catch (err) {

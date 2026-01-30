@@ -14,6 +14,11 @@ const projectSchema = new mongoose.Schema(
     settings: {
       requireEmailVerification: { type: Boolean, default: false },
       mfaEnabled: { type: Boolean, default: false },
+      // Token Lifecycle Management
+      tokenValidity: {
+        accessToken: { type: Number, default: 900 }, // 15 mins in seconds
+        refreshToken: { type: Number, default: 604800 }, // 7 days in seconds
+      },
     },
     metadata: { type: mongoose.Schema.Types.Mixed },
   },

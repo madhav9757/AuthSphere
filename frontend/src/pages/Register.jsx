@@ -99,7 +99,7 @@ const Register = () => {
           <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center mb-2">
               <div className="h-12 w-12 rounded-lg border bg-card flex items-center justify-center">
-                <img src="/assets/logo.png" alt="AuthSphere" className="h-8 w-8 object-contain mix-blend-multiply dark:invert" />
+                <img src="/assets/logo.png" alt="AuthSphere" className="h-8 w-8 object-contain dark:invert" />
               </div>
             </div>
             <CardTitle className="text-2xl">Create an account</CardTitle>
@@ -110,23 +110,23 @@ const Register = () => {
 
           <CardContent className="space-y-4">
             {/* Social Registration */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => handleSocialLogin('google')}
-                type="button"
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleSocialLogin('github')}
-                type="button"
-              >
-                <Github className="mr-2 h-4 w-4" />
-                GitHub
-              </Button>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'google', logo: 'https://authjs.dev/img/providers/google.svg', label: 'Google' },
+                { id: 'github', logo: 'https://authjs.dev/img/providers/github.svg', label: 'GitHub' },
+                { id: 'discord', logo: 'https://authjs.dev/img/providers/discord.svg', label: 'Discord' },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handleSocialLogin(p.id)}
+                  className="flex flex-col items-center justify-center p-2 rounded-lg border bg-card hover:bg-muted/50 transition-all gap-1 group"
+                  title={`Sign up with ${p.label}`}
+                >
+                  <img src={p.logo} alt={p.label} className="h-5 w-5 grayscale group-hover:grayscale-0 transition-grayscale" />
+                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground">{p.label}</span>
+                </button>
+              ))}
             </div>
 
             {/* Separator */}

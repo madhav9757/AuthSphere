@@ -6,7 +6,7 @@ import { getProject } from "@/api/ProjectAPI";
 import ProjectDetailHeader from "./ProjectDetailHeader";
 import ProjectKeysCard from "./ProjectKeysCard";
 import ProjectSettings from "./ProjectSettings";
-import ProjectDangerZone from "./ProjectDangerZone";
+
 import ProjectUsersCard from "./ProjectUsersCard";
 
 // UI Imports
@@ -127,10 +127,7 @@ const ProjectDetail = () => {
           />
         </section>
 
-        {/* Danger Zone */}
-        <section className="pt-4">
-          <ProjectDangerZone project={project} />
-        </section>
+
 
       </div>
     </div>

@@ -115,37 +115,69 @@ export const getAnalyticsCharts = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
-        // Fill in missing days for a "perfect" chart
+        // Daily Active Users (DAU) over last 30 days
+        const rawDailyActiveUsers = await Session.aggregate([
+            { $match: { projectId: pId, createdAt: { $gte: startOfPeriod } } },
+            {
+                $group: {
+                    _id: {
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                        userId: "$endUserId"
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id.date",
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
         const dailySignups = [];
+        const dailyActiveUsers = [];
         for (let i = 0; i < 30; i++) {
             const date = new Date(startOfPeriod);
             date.setDate(date.getDate() + i);
             const dateStr = date.toISOString().split('T')[0];
-            const found = rawDailySignups.find(d => d._id === dateStr);
+
+            const signupFound = rawDailySignups.find(d => d._id === dateStr);
             dailySignups.push({
                 date: dateStr,
-                count: found ? found.count : 0
+                count: signupFound ? signupFound.count : 0
+            });
+
+            const activeFound = rawDailyActiveUsers.find(d => d._id === dateStr);
+            dailyActiveUsers.push({
+                date: dateStr,
+                count: activeFound ? activeFound.count : 0
             });
         }
 
-        // Provider breakdown
+        // Provider breakdown - Formatted for PieChart
         const providerBreakdown = await EndUser.aggregate([
             { $match: { projectId: pId } },
             {
                 $group: {
                     _id: "$provider",
-                    count: { $sum: 1 }
+                    value: { $sum: 1 }
                 }
-            }
+            },
+            {
+                $project: {
+                    name: { $cond: [{ $eq: ["$_id", "local"] }, "Email", "$_id"] },
+                    value: 1,
+                    _id: 0
+                }
+            },
+            { $sort: { value: -1 } }
         ]);
 
         const result = {
             dailySignups,
-            providerDistribution: providerBreakdown.reduce((acc, curr) => {
-                const name = curr._id === "local" ? "Email" : curr._id;
-                acc[name || 'Email'] = curr.count;
-                return acc;
-            }, {})
+            dailyActiveUsers,
+            providerDistribution: providerBreakdown
         };
 
         return res.status(200).json({

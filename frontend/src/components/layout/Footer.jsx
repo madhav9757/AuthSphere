@@ -13,7 +13,7 @@ const Footer = () => {
                                 <img
                                     src="/assets/logo.png"
                                     alt="AuthSphere"
-                                    className="h-6 w-6 object-contain mix-blend-multiply dark:invert"
+                                    className="h-6 w-6 object-contain dark:invert"
                                 />
                             </div>
                             <span className="font-bold text-xl">AuthSphere</span>

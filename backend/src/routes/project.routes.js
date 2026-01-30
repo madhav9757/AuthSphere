@@ -7,6 +7,7 @@ import {
   deleteProject,
   rotateKeys,
   getProjectUsers,
+  getConfiguredProviders,
 } from "../controllers/project.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -34,6 +35,9 @@ router.post("/:projectId/rotate-keys", rotateKeys);
 
 // 👥 Get project users
 router.get("/:projectId/users", getProjectUsers);
+
+// ⚙ Get backend provider configuration
+router.get("/:projectId/providers-config", getConfiguredProviders);
 
 // 🗑 Delete project
 router.delete("/:projectId", deleteProject);

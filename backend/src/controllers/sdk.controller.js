@@ -145,6 +145,19 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
       return res.status(400).send("Invalid or expired request (Server may have restarted)");
     }
 
+    // --- ENHANCEMENT: Security Checks ---
+    const project = await Project.findById(authRequest.projectId);
+
+    // 1. Email Verification Enforcement
+    if (project?.settings?.requireEmailVerification) {
+      // Social providers usually verify emails, but let's check our DB flag
+      if (!endUser.emailVerified && !endUser.providerCallsVerified) {
+        // Allow if provider verified it (often implied, but depending on schema)
+        // For now, strict check on the user object
+        return res.redirect(`${authRequest.redirectUri}?error=access_denied&error_description=Email+verification+required`);
+      }
+    }
+
     // Generate auth code
     const code = crypto.randomBytes(32).toString("hex");
 
@@ -170,9 +183,6 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
   }
 };
 
-/* ============================================================
-   TOKEN EXCHANGE
-============================================================ */
 /* ============================================================
    TOKEN EXCHANGE
 ============================================================ */
@@ -252,17 +262,34 @@ export const token = async (req, res) => {
       return res.status(400).json({ error: "invalid_client" });
     }
 
+    // --- ENHANCEMENT: Project Configuration Fetch ---
+    const project = await Project.findById(authData.projectId);
+    if (!project) return res.status(400).json({ error: "invalid_client" });
+
+    // 2. CORS / Allowed Origins Check
+    const origin = req.headers.origin;
+    if (project.allowedOrigins && project.allowedOrigins.length > 0) {
+      if (!origin || !project.allowedOrigins.includes(origin)) {
+        return res.status(403).json({ error: "access_denied", error_description: "CORS: Origin not allowed" });
+      }
+    }
+
     authCodes.delete(code);
 
     const { endUser, projectId } = authData;
+
+    // 3. Token Validity Settings
+    const tokenSettings = project.settings?.tokenValidity || {};
+    const accessSeconds = tokenSettings.accessToken || 900; // Default 15m
+    const refreshSeconds = tokenSettings.refreshToken || 604800; // Default 7d
 
     const refreshToken = crypto.randomBytes(40).toString("hex");
 
     await Session.create({
       token: refreshToken,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + refreshSeconds * 1000),
       endUserId: endUser._id,
-      projectId: projectId, // Fixed: Added required projectId
+      projectId: projectId,
       userAgent: req.headers["user-agent"],
       ipAddress: req.ip,
       isValid: true,
@@ -276,7 +303,7 @@ export const token = async (req, res) => {
         username: endUser.username
       },
       conf.accessTokenSecret,
-      { expiresIn: "1h" }
+      { expiresIn: accessSeconds } // Use project setting
     );
 
     // Prepare response matching AuthResponse interface in SDK
@@ -291,7 +318,7 @@ export const token = async (req, res) => {
         picture: endUser.picture || "",
         provider: endUser.provider || "local"
       },
-      expiresAt: Date.now() + 3600 * 1000
+      expiresAt: Date.now() + (accessSeconds * 1000)
     });
 
   } catch (err) {
@@ -331,6 +358,21 @@ export const refresh = async (req, res) => {
       });
     }
 
+    // --- ENHANCEMENT: Fetch Project for Settings ---
+    const project = await Project.findById(session.projectId);
+    if (!project) return res.status(400).json({ error: "invalid_client" });
+
+    // CORS Check
+    const origin = req.headers.origin;
+    if (project.allowedOrigins && project.allowedOrigins.length > 0) {
+      if (!origin || !project.allowedOrigins.includes(origin)) {
+        return res.status(403).json({ error: "access_denied", error_description: "CORS: Origin not allowed" });
+      }
+    }
+
+    const tokenSettings = project.settings?.tokenValidity || {};
+    const accessSeconds = tokenSettings.accessToken || 900;
+
     const endUser = session.endUserId;
 
     const accessToken = jwt.sign(
@@ -341,7 +383,7 @@ export const refresh = async (req, res) => {
         username: endUser.username
       },
       conf.accessTokenSecret,
-      { expiresIn: "1h" }
+      { expiresIn: accessSeconds }
     );
 
     // Return format matching AuthResponse (partial) or what refreshTokens expects.
@@ -349,8 +391,8 @@ export const refresh = async (req, res) => {
     return res.json({
       success: true,
       accessToken,
-      refreshToken: refreshToken, // Rotate if implemented, otherwise return same
-      expiresAt: Date.now() + 3600 * 1000
+      refreshToken: refreshToken,
+      expiresAt: Date.now() + (accessSeconds * 1000)
     });
   } catch (err) {
     console.error("Token Refresh Error:", err);

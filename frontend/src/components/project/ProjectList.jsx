@@ -15,6 +15,8 @@ const ProjectList = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [newProject, setNewProject] = useState(null);
 
   const loadProjects = async () => {
     setLoading(true);
@@ -87,7 +89,11 @@ const ProjectList = () => {
       <CreateProjectModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={loadProjects}
+        onCreated={(project) => {
+          loadProjects();
+          setNewProject(project);
+          setTimeout(() => setWizardOpen(true), 300);
+        }}
       />
     </section>
   );

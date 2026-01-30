@@ -75,7 +75,7 @@ const Login = () => {
           <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center mb-2">
               <div className="h-12 w-12 rounded-lg border bg-card flex items-center justify-center">
-                <img src="/assets/logo.png" alt="AuthSphere" className="h-8 w-8 object-contain mix-blend-multiply dark:invert" />
+                <img src="/assets/logo.png" alt="AuthSphere" className="h-8 w-8 object-contain dark:invert" />
               </div>
             </div>
             <CardTitle className="text-2xl">Welcome back</CardTitle>
@@ -91,11 +91,6 @@ const Login = () => {
                 { id: 'google', logo: 'https://authjs.dev/img/providers/google.svg', label: 'Google' },
                 { id: 'github', logo: 'https://authjs.dev/img/providers/github.svg', label: 'GitHub' },
                 { id: 'discord', logo: 'https://authjs.dev/img/providers/discord.svg', label: 'Discord' },
-                { id: 'linkedin', logo: 'https://authjs.dev/img/providers/linkedin.svg', label: 'LinkedIn' },
-                { id: 'gitlab', logo: 'https://authjs.dev/img/providers/gitlab.svg', label: 'GitLab' },
-                { id: 'twitch', logo: 'https://authjs.dev/img/providers/twitch.svg', label: 'Twitch' },
-                { id: 'bitbucket', logo: 'https://authjs.dev/img/providers/bitbucket.svg', label: 'Bitbucket' },
-                { id: 'microsoft', logo: 'https://authjs.dev/img/providers/microsoft.svg', label: 'Microsoft' },
               ].map((p) => (
                 <button
                   key={p.id}

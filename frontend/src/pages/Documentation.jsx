@@ -4,18 +4,55 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ModeToggle } from "@/components/mode-toggle";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import {
   BookOpen, Zap, ShieldCheck, Copy, CheckCircle2,
   Menu, X, Terminal, Github, RefreshCcw, ExternalLink,
   ArrowLeft, Layers, AlertCircle, Code2, Cpu, Globe, Lock,
-  FileJson, TerminalSquare, Info
+  FileJson, TerminalSquare, Info,
+  ChevronDown, Settings2
 } from "lucide-react";
+import { AuthContext } from "@/context/AuthContext";
+import { getProjects } from "@/api/ProjectAPI";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Docs = () => {
+  const { user } = React.useContext(AuthContext);
   const [activeSection, setActiveSection] = useState("introduction");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [copied, setCopied] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      const fetchProjects = async () => {
+        setProjectsLoading(true);
+        try {
+          const res = await getProjects();
+          if (res.success && res.data.length > 0) {
+            setProjects(res.data);
+            setSelectedProject(res.data[0]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch projects for docs", error);
+        } finally {
+          setProjectsLoading(false);
+        }
+      };
+      fetchProjects();
+    }
+  }, [user]);
+
+  const publicKey = selectedProject?.publicKey || "YOUR_PUBLIC_KEY";
+  const projectId = selectedProject?._id || "YOUR_PROJECT_ID";
 
   const copyCode = (code, id) => {
     navigator.clipboard.writeText(code);
@@ -72,14 +109,14 @@ const Docs = () => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="h-8 w-8 rounded-lg border flex items-center justify-center">
-              <img src="/assets/logo.png" alt="AuthSphere" className="h-6 w-6 object-contain mix-blend-multiply dark:invert" />
+              <img src="/assets/logo.png" alt="AuthSphere" className="h-6 w-6 object-contain dark:invert" />
             </div>
             <span className="font-bold">AuthSphere</span>
             <Badge variant="outline" className="hidden sm:inline-flex ml-2 text-xs">v2.4.0</Badge>
           </Link>
 
           <div className="hidden md:flex items-center gap-4">
-            <ModeToggle />
+            <AnimatedThemeToggler />
             <Button size="sm" variant="ghost" asChild>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer">
                 <Github className="h-4 w-4" />
@@ -91,7 +128,7 @@ const Docs = () => {
           </div>
 
           <div className="flex items-center md:hidden gap-2">
-            <ModeToggle />
+            <AnimatedThemeToggler />
             <button className="p-2" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -127,6 +164,44 @@ const Docs = () => {
 
         {/* MAIN CONTENT */}
         <main className="flex-1 px-6 md:px-12 py-12 max-w-4xl min-w-0">
+
+          {/* PROJECT SELECTOR FOR LOGGED IN USERS */}
+          {user && (
+            <div className="mb-10 p-6 rounded-2xl border bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-500">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <Settings2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Personalized Documentation</h3>
+                  <p className="text-sm text-muted-foreground italic">We've injected your real API keys into the snippets below.</p>
+                </div>
+              </div>
+
+              {projects.length > 0 ? (
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <span className="text-xs font-bold uppercase text-muted-foreground whitespace-nowrap">Active Project:</span>
+                  <Select
+                    value={selectedProject?._id}
+                    onValueChange={(val) => setSelectedProject(projects.find(p => p._id === val))}
+                  >
+                    <SelectTrigger className="w-full md:w-[240px] bg-background">
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map(p => (
+                        <SelectItem key={p._id} value={p._id}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/dashboard">Create a Project</Link>
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* INTRODUCTION */}
           {activeSection === "introduction" && (
@@ -217,7 +292,7 @@ const Docs = () => {
                   <p className="text-muted-foreground mb-4">Initialize the SDK at the root of your application with your Public Key.</p>
                   <CodeBlock
                     id="init"
-                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\nAuthSphere.init({\n  publicKey: 'pub_live_f28sh92...', // Found in Dashboard\n  domain: 'auth.authsphere.com'\n})`}
+                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\nAuthSphere.init({\n  publicKey: '${publicKey}', // Found in Dashboard\n  domain: 'auth.authsphere.com'\n})`}
                     language="typescript"
                   />
                 </div>
@@ -238,7 +313,7 @@ const Docs = () => {
 
               <CodeBlock
                 id="react-provider"
-                code={`import { AuthSphereProvider } from '@authspherejs/react';\n\nfunction Root() {\n  return (\n    <AuthSphereProvider publicKey="pub_..." redirectUri={window.location.origin}>\n      <App />\n    </AuthSphereProvider>\n  );\n}`}
+                code={`import { AuthSphereProvider } from '@authspherejs/react';\n\nfunction Root() {\n  return (\n    <AuthSphereProvider publicKey="${publicKey}" redirectUri={window.location.origin}>\n      <App />\n    </AuthSphereProvider>\n  );\n}`}
                 language="tsx"
               />
 
@@ -335,8 +410,8 @@ const Docs = () => {
                   <p className="text-xs text-muted-foreground mt-1 text-balance">Authenticates your CLI with your developer account.</p>
                 </div>
                 <div className="p-4 rounded-lg border bg-muted/20">
-                  <code className="text-sm font-bold text-primary">authsphere projects create "My App"</code>
-                  <p className="text-xs text-muted-foreground mt-1 text-balance">Instantly provisions a new project with its own keys.</p>
+                  <code className="text-sm font-bold text-primary">authsphere projects use "{projectId}"</code>
+                  <p className="text-xs text-muted-foreground mt-1 text-balance">Sets the active context for subsequent commands.</p>
                 </div>
                 <div className="p-4 rounded-lg border bg-muted/20">
                   <code className="text-sm font-bold text-primary">authsphere logs --tail</code>

@@ -6,6 +6,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     // ✅ LISTEN FOR TOKEN REFRESH SUCCESS
     useEffect(() => {
@@ -65,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const logout = async () => {
+        setLoggingOut(true);
         try {
             await api.post('/developers/logout');
         } catch (error) {
@@ -76,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, logout, setUser }}>
+        <AuthContext.Provider value={{ user, loading, logout, setUser, loggingOut }}>
             {loading ? (
                 <div className="flex h-screen items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
