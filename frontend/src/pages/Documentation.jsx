@@ -10,7 +10,7 @@ import {
   Menu, X, Terminal, Github, RefreshCcw, ExternalLink,
   ArrowLeft, Layers, AlertCircle, Code2, Cpu, Globe, Lock,
   FileJson, TerminalSquare, Info,
-  ChevronDown, Settings2
+  ChevronDown, Settings2, BarChart3
 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import { getProjects } from "@/api/ProjectAPI";
@@ -63,11 +63,10 @@ const Docs = () => {
   const sections = [
     { id: "introduction", title: "Introduction", icon: BookOpen },
     { id: "quick-start", title: "Quick Start", icon: Zap },
-    { id: "react-integration", title: "React Integration", icon: Code2 },
+    { id: "frameworks", title: "Frameworks", icon: Layers },
     { id: "authentication", title: "Authentication", icon: ShieldCheck },
+    { id: "configuration", title: "Configuration", icon: Settings2 },
     { id: "api-reference", title: "API Reference", icon: FileJson },
-    { id: "cli", title: "CLI Tool", icon: TerminalSquare },
-    { id: "session", title: "Sessions", icon: RefreshCcw },
     { id: "security", title: "Security", icon: Lock },
     { id: "errors", title: "Error Handling", icon: AlertCircle },
   ];
@@ -84,7 +83,7 @@ const Docs = () => {
 
   const CodeBlock = ({ code, id, language = "bash" }) => (
     <div className="relative group my-4">
-      <div className="absolute left-4 -top-2.5 px-2 py-0.5 bg-card rounded text-xs font-mono text-muted-foreground border">
+      <div className="absolute left-4 -top-2.5 px-2 py-0.5 bg-card rounded text-xs font-mono text-muted-foreground border shadow-sm">
         {language}
       </div>
       <div className="absolute right-3 top-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -95,8 +94,8 @@ const Docs = () => {
           {copied === id ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
         </button>
       </div>
-      <pre className="bg-muted/50 rounded-lg p-4 pt-6 overflow-x-auto border">
-        <code className="text-sm font-mono leading-relaxed">{code}</code>
+      <pre className="bg-zinc-950 dark:bg-zinc-900 rounded-lg p-5 pt-8 overflow-x-auto border border-zinc-800 shadow-sm">
+        <code className="text-sm font-mono leading-relaxed text-zinc-50">{code}</code>
       </pre>
     </div>
   );
@@ -105,25 +104,26 @@ const Docs = () => {
     <div className="min-h-screen">
 
       {/* TOP NAVIGATION */}
-      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="h-8 w-8 rounded-lg border flex items-center justify-center">
-              <img src="/assets/logo.png" alt="AuthSphere" className="h-6 w-6 object-contain dark:invert" />
+            <div className="h-8 w-8 rounded-lg border flex items-center justify-center bg-primary/5">
+              <img src="/assets/logo.png" alt="AuthSphere" className="h-5 w-5 object-contain dark:invert" />
             </div>
-            <span className="font-bold">AuthSphere</span>
-            <Badge variant="outline" className="hidden sm:inline-flex ml-2 text-xs">v2.4.0</Badge>
+            <span className="font-bold tracking-tight">AuthSphere</span>
+            <Badge variant="outline" className="hidden sm:inline-flex ml-2 text-[10px] h-5">v2.4.0</Badge>
           </Link>
 
           <div className="hidden md:flex items-center gap-4">
             <AnimatedThemeToggler />
-            <Button size="sm" variant="ghost" asChild>
+            <Button size="sm" variant="ghost" asChild className="gap-2">
               <a href="https://github.com" target="_blank" rel="noopener noreferrer">
                 <Github className="h-4 w-4" />
+                GitHub
               </a>
             </Button>
             <Button size="sm" asChild>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
 
@@ -140,19 +140,19 @@ const Docs = () => {
 
         {/* SIDEBAR */}
         <aside className={`
-          fixed inset-0 z-40 bg-background/90 md:bg-transparent
-          md:sticky md:top-16 md:h-[calc(100vh-64px)] md:block w-full md:w-64 border-r p-6 transition-transform
+          fixed inset-0 z-40 bg-background/90 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none
+          md:sticky md:top-16 md:h-[calc(100vh-64px)] md:block w-full md:w-64 border-r p-6 transition-transform duration-300
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}>
           <div className="space-y-1">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-4 px-3">Documentation</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase mb-4 px-3 tracking-wider">Documentation</p>
             {sections.map((s) => (
               <button
                 key={s.id}
                 onClick={() => navigateTo(s.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeSection === s.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeSection === s.id
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   }`}
               >
                 <s.icon className="h-4 w-4" />
@@ -167,25 +167,25 @@ const Docs = () => {
 
           {/* PROJECT SELECTOR FOR LOGGED IN USERS */}
           {user && (
-            <div className="mb-10 p-6 rounded-2xl border bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-500">
+            <div className="mb-10 p-6 rounded-2xl border bg-gradient-to-br from-background to-muted/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-500 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Settings2 className="h-6 w-6" />
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
+                  <Code2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold">Personalized Documentation</h3>
-                  <p className="text-sm text-muted-foreground italic">We've injected your real API keys into the snippets below.</p>
+                  <h3 className="font-bold text-lg">Personalized Guide</h3>
+                  <p className="text-sm text-muted-foreground">The examples below are tailored to your project configuration.</p>
                 </div>
               </div>
 
               {projects.length > 0 ? (
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                  <span className="text-xs font-bold uppercase text-muted-foreground whitespace-nowrap">Active Project:</span>
+                <div className="flex items-center gap-3 w-full md:w-auto bg-background p-1.5 rounded-lg border shadow-sm">
+                  <span className="text-xs font-bold uppercase text-muted-foreground whitespace-nowrap px-2">Project:</span>
                   <Select
                     value={selectedProject?._id}
                     onValueChange={(val) => setSelectedProject(projects.find(p => p._id === val))}
                   >
-                    <SelectTrigger className="w-full md:w-[240px] bg-background">
+                    <SelectTrigger className="w-full md:w-[200px] bg-transparent border-0 h-8 focus:ring-0">
                       <SelectValue placeholder="Select a project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -196,8 +196,8 @@ const Docs = () => {
                   </Select>
                 </div>
               ) : (
-                <Button size="sm" variant="outline" asChild>
-                  <Link to="/dashboard">Create a Project</Link>
+                <Button size="sm" variant="default" asChild className="shadow-md">
+                  <Link to="/dashboard">Create First Project</Link>
                 </Button>
               )}
             </div>
@@ -205,270 +205,217 @@ const Docs = () => {
 
           {/* INTRODUCTION */}
           {activeSection === "introduction" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <Badge variant="outline">Documentation / Introduction</Badge>
-              <h1 className="text-4xl font-bold tracking-tight">Modern Identity Infrastructure</h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                AuthSphere is the identity layer for modern internet companies. We provide a headless, developer-first
-                authentication engine that handles the heavy lifting of security, session persistence, and multi-provider
-                OAuth so you can focus on building your core product.
-              </p>
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <div className="space-y-4">
+                <Badge variant="outline" className="w-fit">docs / intro</Badge>
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Identity for Humans</h1>
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                  AuthSphere is the comprehensive identity platform for modern applications.
+                  From simple social logins to complex enterprise SSO, we handle the infrastructure so you can build the product.
+                </p>
+              </div>
 
-              <div className="grid md:grid-cols-3 gap-4 my-10">
+              <div className="grid md:grid-cols-2 gap-4 mt-10">
                 {[
-                  { icon: ShieldCheck, title: "Hardened Security", desc: "PKCE-compliant flows with automated token rotation." },
-                  { icon: Cpu, title: "Edge Auth", desc: "Global auth persistence with sub-30ms verification." },
-                  { icon: Globe, title: "Multi-Provider", desc: "One API for Google, GitHub, Discord, LinkedIn, GitLab, Twitch, Bitbucket, and Microsoft." }
+                  { icon: ShieldCheck, title: "Universal Auth", desc: "Connect Google, GitHub, Microsoft, and 20+ other providers with a single API." },
+                  { icon: Lock, title: "Zero-Trust Security", desc: "Automated token rotation, PKCE flows, and brute-force protection out of the box." },
+                  { icon: BarChart3, title: "Real-time Analytics", desc: "Track active users, login trends, and provider adoption in your dashboard." }, // Updated content
+                  { icon: Settings2, title: "Fine-Grained Control", desc: "Customize token lifetimes, MFA policies, and allowed domains per project." } // Updated content
                 ].map((item, i) => (
-                  <Card key={i} className="bg-muted/30 border-none shadow-none">
-                    <CardHeader className="p-4">
-                      <item.icon className="h-5 w-5 text-primary mb-2" />
-                      <CardTitle className="text-base">{item.title}</CardTitle>
-                      <CardDescription className="text-xs leading-relaxed">{item.desc}</CardDescription>
+                  <Card key={i} className="bg-card hover:bg-muted/50 transition-colors cursor-default">
+                    <CardHeader className="p-6">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription className="leading-relaxed mt-2">{item.desc}</CardDescription>
                     </CardHeader>
                   </Card>
                 ))}
               </div>
-
-              <Separator />
-
-              <h2 className="text-2xl font-bold mt-8">Core Concepts</h2>
-              <ul className="space-y-4 text-muted-foreground">
-                <li className="flex gap-3">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0 mt-1">1</div>
-                  <p><strong>Headless UI:</strong> We don't force a UI on you. Use our SDK to build the exact login experience you want.</p>
-                </li>
-                <li className="flex gap-3">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0 mt-1">2</div>
-                  <p><strong>Stateless Sessions:</strong> Transparently manage JWTs and refresh tokens using secure, encrypted browser storage.</p>
-                </li>
-                <li className="flex gap-3">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0 mt-1">3</div>
-                  <p><strong>Identity Unification:</strong> Automatically merge user identities across different providers based on verified emails.</p>
-                </li>
-              </ul>
             </article>
           )}
 
           {/* QUICK START */}
           {activeSection === "quick-start" && (
             <article className="space-y-8 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Quick Start Guide</h1>
-              <p className="text-lg text-muted-foreground">
-                Get AuthSphere running in your application in less than 5 minutes.
-              </p>
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">Quick Start</h1>
+                <p className="text-lg text-muted-foreground">
+                  Get up and running in under 5 minutes.
+                </p>
+              </div>
 
-              <div className="space-y-10">
-                <div>
-                  <h3 className="text-xl font-semibold mb-3 flex items-center gap-3">
-                    <span className="h-8 w-8 flex items-center justify-center bg-primary text-primary-foreground rounded-lg text-sm font-bold">1</span>
-                    Install the SDK
-                  </h3>
-                  <p className="text-muted-foreground mb-4">First, add our lightweight SDK to your project dependencies.</p>
+              <div className="space-y-12">
+                <div className="relative pl-8 border-l-2 border-primary/20">
+                  <span className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-primary border-4 border-background" />
+                  <h3 className="text-xl font-bold mb-3">1. Install the SDK</h3>
+                  <p className="text-muted-foreground mb-4">Add the AuthSphere core SDK to your web application.</p>
                   <CodeBlock id="install" code="npm install @authspherejs/sdk" language="terminal" />
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-semibold mb-3 flex items-center gap-3">
-                    <span className="h-8 w-8 flex items-center justify-center bg-primary text-primary-foreground rounded-lg text-sm font-bold">2</span>
-                    Configure Redirect URIs
-                  </h3>
+                <div className="relative pl-8 border-l-2 border-primary/20">
+                  <span className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-primary border-4 border-background" />
+                  <h3 className="text-xl font-bold mb-3">2. Configure Metadata</h3>
                   <p className="text-muted-foreground mb-4">
-                    Go to your <Link to="/dashboard" className="text-primary hover:underline font-medium">Dashboard</Link>,
-                    select your project, and add your development URL (e.g., <code>http://localhost:3000</code>) to the
-                    Allowed Redirect URIs list.
+                    In your <Link to={`/projects/${projectId}/settings`} className="text-primary hover:underline font-medium">Project Settings</Link>,
+                    ensure your <b>Allowed Origins</b> and <b>Redirect URIs</b> explicitly match your local environment.
                   </p>
-                  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-sm flex gap-3">
-                    <Info className="h-5 w-5 shrink-0" />
-                    Production environments MUST use HTTPS. Localhost is the only exception for HTTP.
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-sm flex gap-3 items-start">
+                    <Info className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div>
+                      <strong>Important:</strong> Security policies block all requests from unknown origins. Add <code>http://localhost:3000</code> (or your port) to test locally.
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-semibold mb-3 flex items-center gap-3">
-                    <span className="h-8 w-8 flex items-center justify-center bg-primary text-primary-foreground rounded-lg text-sm font-bold">3</span>
-                    Initialize the Client
-                  </h3>
-                  <p className="text-muted-foreground mb-4">Initialize the SDK at the root of your application with your Public Key.</p>
+                <div className="relative pl-8 border-l-2 border-muted">
+                  <span className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-muted border-4 border-background" />
+                  <h3 className="text-xl font-bold mb-3">3. Initialize</h3>
+                  <p className="text-muted-foreground mb-4">Initialize the client with your Public Key (Client ID).</p>
                   <CodeBlock
                     id="init"
-                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\nAuthSphere.init({\n  publicKey: '${publicKey}', // Found in Dashboard\n  domain: 'auth.authsphere.com'\n})`}
-                    language="typescript"
+                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\n// Initialize inside your app entry point\nAuthSphere.init({\n  publicKey: '${publicKey}',\n})`}
+                    language="javascript"
                   />
                 </div>
               </div>
             </article>
           )}
 
-          {/* REACT INTEGRATION */}
-          {activeSection === "react-integration" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">React Integration</h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                While the core SDK is vanilla JS, we provide a first-class React experience via context hooks.
+          {/* FRAMEWORKS */}
+          {activeSection === "frameworks" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <h1 className="text-4xl font-bold tracking-tight">Framework Integration</h1>
+              <p className="text-lg text-muted-foreground">
+                First-class support for the modern web ecosystem.
               </p>
 
-              <h2 className="text-2xl font-bold mt-8">The AuthProvider Pattern</h2>
-              <p className="text-muted-foreground">Wrap your app in the provider to access authentication state anywhere.</p>
+              <div className="space-y-8">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Code2 className="h-5 w-5 text-primary" />
+                    <h2 className="text-2xl font-bold">React / Next.js</h2>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Wrap your application root with our <code>AuthSphereProvider</code> to enable hooks.
+                  </p>
+                  <CodeBlock
+                    id="react-provider"
+                    code={`// App.jsx or app/layout.tsx\nimport { AuthSphereProvider } from '@authspherejs/react';\n\nexport default function Root() {\n  return (\n    <AuthSphereProvider \n      publicKey="${publicKey}" \n      redirectUri="http://localhost:3000/callback"\n    >\n      <YourApp />\n    </AuthSphereProvider>\n  );\n}`}
+                    language="tsx"
+                  />
+                </div>
 
-              <CodeBlock
-                id="react-provider"
-                code={`import { AuthSphereProvider } from '@authspherejs/react';\n\nfunction Root() {\n  return (\n    <AuthSphereProvider publicKey="${publicKey}" redirectUri={window.location.origin}>\n      <App />\n    </AuthSphereProvider>\n  );\n}`}
-                language="tsx"
-              />
-
-              <h2 className="text-2xl font-bold mt-10">Using the Hook</h2>
-              <p className="text-muted-foreground">Access state and methods with a single line of code.</p>
-
-              <CodeBlock
-                id="react-hook"
-                code={`import { useAuthSphere } from '@authspherejs/react';\n\nfunction Profile() {\n  const { user, isAuthenticated, isLoading, logout } = useAuthSphere();\n\n  if (isLoading) return <Loader />;\n  if (!isAuthenticated) return <LoginButton />;\n\n  return (\n    <div>\n      <img src={user.picture} />\n      <h1>{user.name}</h1>\n      <button onClick={() => logout()}>Logout</button>\n    </div>\n  );\n}`}
-                language="tsx"
-              />
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Using Hooks</h3>
+                  <p className="text-muted-foreground mb-4">Access user state anywhere in your component tree.</p>
+                  <CodeBlock
+                    id="react-hook"
+                    code={`import { useAuthSphere } from '@authspherejs/react';\n\nfunction UserProfile() {\n  const { user, loginWith, logout, isLoading } = useAuthSphere();\n\n  if (isLoading) return <Skeleton />;\n\n  if (!user) {\n    return <button onClick={() => loginWith('google')}>Login with Google</button>;\n  }\n\n  return (\n    <div>\n      <p>Welcome, {user.name}!</p>\n      <button onClick={logout}>Sign Out</button>\n    </div>\n  );\n}`}
+                    language="tsx"
+                  />
+                </div>
+              </div>
             </article>
           )}
 
           {/* AUTHENTICATION */}
           {activeSection === "authentication" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Executing Authentication</h1>
-              <p className="text-lg text-muted-foreground">
-                AuthSphere manages the complex dance of OAuth 2.0 and PKCE redirects for you.
-              </p>
-
-              <h2 className="text-xl font-semibold mt-10">Triggering Login</h2>
-              <p className="text-muted-foreground">Simply specify the provider and optional scopes.</p>
-              <CodeBlock
-                id="auth-flow"
-                code={`// Social Login\nawait AuthSphere.loginWith('google', {\n  scopes: ['email', 'profile'],\n  prompt: 'select_account'\n});\n\n// Passwordless Magic Link\nawait AuthSphere.loginWithMagicLink({\n  email: 'user@example.com',\n  callbackUrl: 'https://app.com/verify'\n});`}
-                language="javascript"
-              />
-
-              <div className="p-6 rounded-xl border bg-primary/5 space-y-3">
-                <div className="flex items-center gap-2 font-bold text-primary">
-                  <ShieldCheck className="h-5 w-5" />
-                  What happens under the hood?
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed italic border-l-2 pl-4">
-                  When <code>loginWith</code> is called, the SDK generates a cryptographically secure <b>Code Verifier</b> and a <b>State</b> parameter.
-                  These are stored in temporary secure storage. After the provider redirects back, the SDK automatically
-                  completes the exchange, verifies the payload, and clears the temporary state.
-                </p>
-              </div>
-            </article>
-          )}
-
-          {/* API REFERENCE */}
-          {activeSection === "api-reference" && (
             <article className="space-y-8 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">API Reference</h1>
-
-              <div className="space-y-12">
-                <section>
-                  <h3 className="text-xl font-bold font-mono text-primary">.init(config)</h3>
-                  <p className="text-sm text-muted-foreground my-2">Initializes the SDK instance globally.</p>
-                  <div className="bg-muted p-4 rounded-lg text-xs font-mono">
-                    publicKey: string // Required. Your app public key.<br />
-                    redirectUri: string // Optional. Defaults to window.location.origin.<br />
-                    storage: 'local' | 'session' // Optional. Defaults to 'local'.
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-xl font-bold font-mono text-primary">.getUser()</h3>
-                  <p className="text-sm text-muted-foreground my-2">Returns the currently authenticated user object or null.</p>
-                  <CodeBlock id="ref-getuser" code={`const user = await AuthSphere.getUser();\n// { sub, name, email, picture, ... }`} language="javascript" />
-                </section>
-
-                <section>
-                  <h3 className="text-xl font-bold font-mono text-primary">.isAuthenticated()</h3>
-                  <p className="text-sm text-muted-foreground my-2">Synchronous check for a valid session. Uses sub-millisecond local check.</p>
-                </section>
-
-                <section>
-                  <h3 className="text-xl font-bold font-mono text-primary">.logout(options)</h3>
-                  <p className="text-sm text-muted-foreground my-2">Clears local sessions and optionally signals the remote server.</p>
-                </section>
-              </div>
-            </article>
-          )}
-
-          {/* CLI */}
-          {activeSection === "cli" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">CLI Tooling</h1>
+              <h1 className="text-4xl font-bold tracking-tight">Authentication Flows</h1>
               <p className="text-lg text-muted-foreground">
-                Manage your AuthSphere infrastructure directly from the terminal.
+                AuthSphere manages the complexity of OAuth 2.0 and OIDC protocols.
               </p>
 
-              <CodeBlock id="cli-install" code="npm install -g @authsphere/cli" language="terminal" />
-
-              <h3 className="text-xl font-bold mt-10">Common Commands</h3>
-              <div className="space-y-4">
-                <div className="p-4 rounded-lg border bg-muted/20">
-                  <code className="text-sm font-bold text-primary">authsphere login</code>
-                  <p className="text-xs text-muted-foreground mt-1 text-balance">Authenticates your CLI with your developer account.</p>
-                </div>
-                <div className="p-4 rounded-lg border bg-muted/20">
-                  <code className="text-sm font-bold text-primary">authsphere projects use "{projectId}"</code>
-                  <p className="text-xs text-muted-foreground mt-1 text-balance">Sets the active context for subsequent commands.</p>
-                </div>
-                <div className="p-4 rounded-lg border bg-muted/20">
-                  <code className="text-sm font-bold text-primary">authsphere logs --tail</code>
-                  <p className="text-xs text-muted-foreground mt-1 text-balance">Stream real-time authentication events to your terminal.</p>
-                </div>
-              </div>
-            </article>
-          )}
-
-          {/* SESSIONS */}
-          {activeSection === "session" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Session Persistence</h1>
-              <p className="text-lg text-muted-foreground">
-                AuthSphere automatically handles JWT rotation and secure cookie management.
-              </p>
-
-              <div className="p-4 border-l-4 border-amber-500 bg-amber-500/5 text-sm text-balance">
-                <p className="font-bold text-amber-700 dark:text-amber-400">Security Warning:</p>
-                <p className="text-muted-foreground mt-1 line-height-relaxed">
-                  Avoid storing sensitive business logic in the JWT. While JWTs are signed, their payload is easily readable by anyone.
-                  Always use the <b>sub</b> ID to perform database queries on your backend.
+              <section className="space-y-4">
+                <h2 className="text-2xl font-bold">Social Login</h2>
+                <p className="text-muted-foreground">
+                  Triggering a login redirects the user to the provider's consent screen. After approval,
+                  they are returned to your <code>redirectUri</code> with a session established.
                 </p>
-              </div>
-
-              <h2 className="text-2xl font-bold mt-10">Token Refreshing</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                By default, access tokens expire every 15 minutes. The SDK will automatically use the
-                Refresh Token to get a new Access Token in the background, ensuring zero friction for the user.
-              </p>
-
-              <CodeBlock
-                id="session-check"
-                code={`// Manually trigger a token silent refresh\nawait AuthSphere.refreshToken();`}
-                language="javascript"
-              />
+                <CodeBlock
+                  id="auth-flow"
+                  code={`// Basic Login\nawait AuthSphere.loginWith('google');\n\n// Login with specific scopes\nawait AuthSphere.loginWith('github', {\n  scopes: ['repo', 'user:email']\n});`}
+                  language="javascript"
+                />
+                <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                  <strong>Note:</strong> Make sure "Google" or "GitHub" is enabled in your <Link to={`/projects/${projectId}/settings`} className="underline hover:text-foreground">Project Providers</Link> settings.
+                </div>
+              </section>
             </article>
           )}
 
-          {/* ERRORS */}
-          {activeSection === "errors" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Standard Error Codes</h1>
+          {/* CONFIGURATION */}
+          {activeSection === "configuration" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <h1 className="text-4xl font-bold tracking-tight">Configuration & Sessions</h1>
               <p className="text-lg text-muted-foreground">
-                Predictable error handling for a smoother developer experience.
+                Control how sessions behave and persist across your user's journey.
               </p>
 
-              <div className="rounded-xl border divide-y overflow-hidden mt-8">
+              <section className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Token Lifecycle</h2>
+                  <p className="text-muted-foreground mb-4">
+                    AuthSphere uses a dual-token architecture (Access + Refresh) for maximum security and user experience.
+                    You can configure these lifetimes in your dashboard.
+                  </p>
+                  <ul className="grid gap-4 md:grid-cols-2">
+                    <li className="p-4 border rounded-xl bg-card">
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <Zap className="h-4 w-4 text-amber-500" /> Access Token
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Short-lived (Default: 15 min). Used to authorize API requests. Rotated frequently to limit exposure.</p>
+                    </li>
+                    <li className="p-4 border rounded-xl bg-card">
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <RefreshCcw className="h-4 w-4 text-blue-500" /> Refresh Token
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Long-lived (Default: 7 days). Securely stored and used to silently obtain new access tokens.</p>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Manual Refresh</h2>
+                  <p className="text-muted-foreground mb-4">
+                    The SDK typically handles refreshing automatically, but you can force a refresh if needed (e.g., after changing user permissions).
+                  </p>
+                  <CodeBlock
+                    id="refresh"
+                    code={`const { accessToken } = await AuthSphere.refreshToken();`}
+                    language="javascript"
+                  />
+                </div>
+              </section>
+            </article>
+          )}
+
+
+          {/* ERROR HANDLING */}
+          {activeSection === "errors" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <h1 className="text-4xl font-bold tracking-tight">Error Handling</h1>
+              <p className="text-lg text-muted-foreground">
+                Robust error codes to help you build resilient UI experiences.
+              </p>
+
+              <div className="border rounded-xl divide-y overflow-hidden shadow-sm bg-card">
+                <div className="grid grid-cols-3 p-4 bg-muted/50 font-medium text-sm">
+                  <div className="col-span-1">Error Code</div>
+                  <div className="col-span-2">Description & Resolution</div>
+                </div>
                 {[
-                  { code: "AUTH_DOMAIN_NOT_ALLOWED", desc: "The current domain is not in the whitelist for this project." },
-                  { code: "OAUTH_CALLBACK_ERROR", desc: "Provider failed to authenticate user (e.g. user cancelled)." },
-                  { code: "TOKEN_EXPIRED", desc: "The refresh token is no longer valid. Re-authentication required." },
-                  { code: "PKCE_MISMATCH", desc: "Internal security error. Potential CSRF attempt detected." }
+                  { code: "AUTH_CANCELLED", desc: "User closed the popup or cancelled the provider consent." },
+                  { code: "PROVIDER_DISABLED", desc: `The requested provider is not enabled in Project ID: ${projectId}. Enable it in the dashboard.` },
+                  { code: "DOMAIN_NOT_ALLOWED", desc: "Request origin does not match the 'Allowed Origins' list in settings." },
+                  { code: "INVALID_GRANT", desc: "Refresh token is invalid or expired. Prompt user to login again." },
+                  { code: "RATE_LIMITED", desc: "Too many authentication attempts. Default limit is 60 req/min." }
                 ].map((err, i) => (
-                  <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 bg-muted/10 group hover:bg-muted/20 transition-colors">
-                    <code className="text-sm font-bold text-destructive shrink-0">{err.code}</code>
-                    <p className="text-sm text-muted-foreground">{err.desc}</p>
+                  <div key={i} className="grid grid-cols-3 p-4 text-sm group hover:bg-muted/30 transition-colors">
+                    <div className="col-span-1 font-mono text-destructive font-semibold">{err.code}</div>
+                    <div className="col-span-2 text-muted-foreground">{err.desc}</div>
                   </div>
                 ))}
               </div>
@@ -477,45 +424,34 @@ const Docs = () => {
 
           {/* SECURITY */}
           {activeSection === "security" && (
-            <article className="space-y-6 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Enterprise-Grade Security</h1>
-              <p className="text-lg text-muted-foreground">
-                We take security seriously so you don't have to build it from scratch.
-              </p>
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <h1 className="text-4xl font-bold tracking-tight">Security Posture</h1>
 
-              <div className="space-y-4 mt-8">
-                {[
-                  {
-                    title: "Automated Token Rotation",
-                    desc: "Every time a refresh token is used, a new one is issued and the old one is invalidated.",
-                    tag: "Standard",
-                    variant: "default"
-                  },
-                  {
-                    title: "Brute Force Protection",
-                    desc: "Intelligent rate-limiting and temporary account lockouts after 5 failed attempts.",
-                    tag: "Integrated",
-                    variant: "secondary"
-                  },
-                  {
-                    title: "Device Fingerprinting",
-                    desc: "Notify users when logins occur from unrecognized devices or suspicious IP addresses.",
-                    tag: "Advanced",
-                    variant: "outline"
-                  }
-                ].map((item, i) => (
-                  <Card key={i}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg">{item.title}</CardTitle>
-                          <CardDescription>{item.desc}</CardDescription>
-                        </div>
-                        <Badge variant={item.variant} className="shrink-0">{item.tag}</Badge>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                ))}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20">
+                <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-400 mb-2 flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  Production Ready
+                </h3>
+                <p className="text-emerald-700/80 dark:text-emerald-300/80">
+                  AuthSphere is built on industry-standard protocols including OAuth 2.0 and OIDC. We enforce
+                  strict security headers, utilize httpOnly cookies where possible, and encrypt sensitive data at rest.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2 mt-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold">MFA Support (Beta)</h4>
+                  <p className="text-sm text-muted-foreground">
+                    You can enable Multi-Factor Authentication in the "Security Policies" section. This enforces
+                    an additional verification step for all users.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Email Verification</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Toggle "Require Email Verification" in settings to prevent unverified users from accessing your application.
+                  </p>
+                </div>
               </div>
             </article>
           )}
@@ -525,24 +461,24 @@ const Docs = () => {
             {prevSection ? (
               <button
                 onClick={() => navigateTo(prevSection.id)}
-                className="flex flex-col items-start p-5 rounded-xl border hover:bg-muted/50 transition-all text-left group"
+                className="flex flex-col items-start p-6 rounded-2xl border bg-card hover:border-primary/50 hover:shadow-md transition-all text-left group"
               >
-                <span className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                  <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" /> Previous
+                <span className="text-xs font-bold text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
+                  <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform" /> Previous
                 </span>
-                <span className="font-semibold">{prevSection.title}</span>
+                <span className="font-bold text-lg">{prevSection.title}</span>
               </button>
             ) : <div />}
 
             {nextSection && (
               <button
                 onClick={() => navigateTo(nextSection.id)}
-                className="flex flex-col items-end p-5 rounded-xl border hover:bg-muted/50 transition-all text-right group"
+                className="flex flex-col items-end p-6 rounded-2xl border bg-card hover:border-primary/50 hover:shadow-md transition-all text-right group"
               >
-                <span className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                  Next <ArrowLeft className="h-3 w-3 rotate-180 group-hover:translate-x-1 transition-transform" />
+                <span className="text-xs font-bold text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
+                  Next <ArrowLeft className="h-3.5 w-3.5 rotate-180 group-hover:translate-x-1 transition-transform" />
                 </span>
-                <span className="font-semibold">{nextSection.title}</span>
+                <span className="font-bold text-lg">{nextSection.title}</span>
               </button>
             )}
           </div>
