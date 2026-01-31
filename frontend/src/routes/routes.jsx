@@ -16,12 +16,22 @@ import Settings from "@/pages/Settings";
 import AuditLogs from "@/pages/AuditLogs";
 import ProvidersPage from "@/pages/ProvidersPage";
 
+import TemplatesPage from "@/pages/TemplatesPage";
+
 export const routes = [
   {
     path: "/",
     element: (
       <MainLayout>
         <Home />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/templates",
+    element: (
+      <MainLayout>
+        <TemplatesPage />
       </MainLayout>
     ),
   },
