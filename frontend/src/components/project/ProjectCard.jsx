@@ -40,16 +40,6 @@ const ProjectCard = ({ project }) => {
       </CardHeader>
 
       <CardContent className="space-y-3">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <KeyRound className="h-3 w-3" />
-            <span>Public Key</span>
-          </div>
-          <div className="p-2 rounded-lg bg-muted border font-mono text-xs text-primary truncate">
-            {project.publicKey}
-          </div>
-        </div>
-
         <div className="flex items-center gap-4 pt-2 border-t text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Shield className="h-3 w-3 text-emerald-500" />
