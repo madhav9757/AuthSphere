@@ -20,6 +20,12 @@ const projectSchema = new mongoose.Schema(
         refreshToken: { type: Number, default: 604800 }, // 7 days in seconds
       },
     },
+    emailTemplate: {
+      logoUrl: { type: String },
+      primaryColor: { type: String, default: "#4f46e5" },
+      subjectLine: { type: String, default: "Your Verification Code" },
+      footerText: { type: String, default: "Secure Identity for Developers" },
+    },
     metadata: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true }

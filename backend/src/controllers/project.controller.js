@@ -123,7 +123,7 @@ export const updateProject = async (req, res) => {
     const developerId = req.developer._id;
     const { projectId } = req.params;
 
-    const allowedUpdates = ["name", "settings", "redirectUris", "providers", "allowedOrigins", "logoUrl"]; // prevent modifying keys manually
+    const allowedUpdates = ["name", "settings", "redirectUris", "providers", "allowedOrigins", "logoUrl", "emailTemplate"]; // prevent modifying keys manually
     const updates = {};
 
     for (const key of allowedUpdates) {

@@ -18,6 +18,7 @@ import ProvidersPage from "@/pages/ProvidersPage";
 import ProjectUsers from "@/pages/ProjectUsers";
 
 import TemplatesPage from "@/pages/TemplatesPage";
+import EmailCustomizationPage from "@/pages/EmailCustomizationPage";
 
 export const routes = [
   {
@@ -114,6 +115,16 @@ export const routes = [
       <ProtectedRoute>
         <MainLayout>
           <ProvidersPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/projects/:projectId/email-customization",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <EmailCustomizationPage />
         </MainLayout>
       </ProtectedRoute>
     ),

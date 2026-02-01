@@ -172,7 +172,7 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
         await endUser.save();
 
         // Send verification email
-        await sendVerificationOTP(endUser.email, otp, project.name);
+        await sendVerificationOTP(endUser.email, otp, project.name, project.emailTemplate);
 
         // If not verified, return redirect info or redirect directly
         const redirectUrl = new URL(authRequest.redirectUri);
@@ -485,7 +485,7 @@ export const registerLocal = async (req, res) => {
     });
 
     // Send verification email
-    await sendVerificationOTP(email, otp, project.name);
+    await sendVerificationOTP(email, otp, project.name, project.emailTemplate);
 
     await logEvent({
       developerId: project.developer,
@@ -547,7 +547,7 @@ export const loginLocal = async (req, res) => {
       await user.save();
 
       // Send verification email
-      await sendVerificationOTP(user.email, otp, project.name);
+      await sendVerificationOTP(user.email, otp, project.name, project.emailTemplate);
 
       return res.status(403).json({
         success: false,
@@ -660,7 +660,7 @@ export const resendVerification = async (req, res) => {
     user.verificationOTPExpiry = otpExpiry;
     await user.save();
 
-    await sendVerificationOTP(email, otp, project.name);
+    await sendVerificationOTP(email, otp, project.name, project.emailTemplate);
 
     return res.status(200).json({
       success: true,
