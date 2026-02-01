@@ -306,7 +306,7 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Health Monitor */}
-                <Card className="border-muted bg-primary/[0.02] relative overflow-hidden">
+                <Card className="border-muted bg-primary/2 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-10">
                     <Activity size={80} />
                   </div>
@@ -405,7 +405,7 @@ const Dashboard = () => {
           <TabsContent value="activity">
             <div className="grid gap-6">
               <Card className="border-muted shadow-xl shadow-primary/5 bg-card/50 overflow-hidden relative">
-                <div className="absolute inset-0 bg-linear-to-b from-primary/[0.03] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-primary/3 to-transparent pointer-events-none" />
                 <CardHeader className="flex flex-col md:flex-row md:items-center justify-between pb-8 pt-6 relative z-10">
                   <div className="space-y-1">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -510,7 +510,7 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Additional Widget for balance */}
-                <Card className="hidden lg:flex border-primary/10 bg-linear-to-br from-primary/[0.01] to-primary/5 flex-col justify-center items-center text-center p-6 border-dashed border-2">
+                <Card className="hidden lg:flex border-primary/10 bg-linear-to-br from-primary/1 to-primary/5 flex-col justify-center items-center text-center p-6 border-dashed border-2">
                     <ShieldCheck className="h-10 w-10 text-primary opacity-20 mb-3" />
                     <p className="text-[11px] font-bold uppercase tracking-widest text-primary/40">Encryption Guard ACTIVE</p>
                     <p className="text-[10px] text-muted-foreground mt-2 max-w-[140px] italic">RSA-2048 signing keys are rotated every 90 days.</p>
