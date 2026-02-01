@@ -4,7 +4,7 @@ import { AuthError } from "../utils/errors";
 /**
  * Register a user locally using email and password.
  */
-export async function register(params: { email: string; password: string; username: string }) {
+export async function register(params: { email: string; password: string; username: string; sdk_request?: string }) {
     const options = getConfig();
 
     const response = await fetch(`${options.baseUrl}/sdk/register`, {

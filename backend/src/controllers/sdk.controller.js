@@ -163,6 +163,17 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
     // 1. Email Verification Enforcement
     if (project?.settings?.requireEmailVerification) {
       if (!endUser.isVerified) {
+        // Generate new OTP if missing or expired, or just refresh it
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+        endUser.verificationOTP = otp;
+        endUser.verificationOTPExpiry = otpExpiry;
+        await endUser.save();
+
+        // Send verification email
+        await sendVerificationOTP(endUser.email, otp, project.name);
+
         // If not verified, redirect to OTP entry page in the test app/frontend
         const redirectUrl = new URL(authRequest.redirectUri);
         redirectUrl.searchParams.set("error", "email_not_verified");
@@ -504,9 +515,20 @@ export const loginLocal = async (req, res) => {
 
     // Check email verification if required
     if (project.settings?.requireEmailVerification && !user.isVerified) {
+      // Generate new OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+      user.verificationOTP = otp;
+      user.verificationOTPExpiry = otpExpiry;
+      await user.save();
+
+      // Send verification email
+      await sendVerificationOTP(user.email, otp, project.name);
+
       return res.status(403).json({
         success: false,
-        message: "Email not verified",
+        message: "Email not verified. A new verification code has been sent to your email.",
         error_code: "EMAIL_NOT_VERIFIED",
         sdk_request: sdk_request // Frontend needs this to verify OTP later
       });
