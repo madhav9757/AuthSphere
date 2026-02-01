@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Save, Settings, Plus, Trash2, Globe, ShieldCheck, Lock, AlertTriangle, Clock } from "lucide-react";
+import { Save, Settings, Plus, Trash2, Globe, ShieldCheck, Lock, AlertTriangle, Clock, Mail } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -316,6 +316,26 @@ const ProjectSettings = ({ project, onUpdated }) => {
             </div>
           </div>
 
+          {requireEmail && (
+            <div className="flex items-center justify-between p-4 border border-primary/20 bg-primary/5 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Mail className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm">Email Verification is Active</h4>
+                  <p className="text-xs text-muted-foreground">Customize branding, logo, and colors for emails.</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link to={`/projects/${project._id}/email-customization`}>
+                  <Settings className="h-4 w-4" />
+                  Customize Email
+                </Link>
+              </Button>
+            </div>
+          )}
+
           <Separator />
 
           <div className="space-y-4">
@@ -479,7 +499,7 @@ const ProjectSettings = ({ project, onUpdated }) => {
 
       {/* Action Bar */}
       <div className="sticky bottom-4 z-10 flex justify-end">
-        <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
           <CardContent className="p-3 flex items-center gap-4">
             <div className="text-sm text-muted-foreground">
               {hasChanges ? "You have unsaved changes" : "All systems normal"}

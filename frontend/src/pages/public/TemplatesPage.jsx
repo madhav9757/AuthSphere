@@ -18,13 +18,31 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Template Imports
+// Template Imports - Login
 import { MinimalistLogin } from "@/components/templates/MinimalistLogin";
 import { SplitScreenLogin } from "@/components/templates/SplitScreenLogin";
 import { GlassmorphismCard } from "@/components/templates/GlassmorphismCard";
 import { DeveloperLogin } from "@/components/templates/DeveloperLogin";
 
-// --- TEMPLATE DATA with Full Source Code ---
+// Template Imports - Signup
+import { ModernSignup } from "@/components/templates/ModernSignup";
+import { StepperSignup } from "@/components/templates/StepperSignup";
+import { NeubrutalismSignup } from "@/components/templates/NeubrutalismSignup";
+import { AnimatedSignup } from "@/components/templates/AnimatedSignup";
+import { MinimalDarkSignup } from "@/components/templates/MinimalDarkSignup";
+
+// Raw Source Code Imports (for code view)
+import MinimalistLoginRaw from "@/components/templates/MinimalistLogin.jsx?raw";
+import SplitScreenLoginRaw from "@/components/templates/SplitScreenLogin.jsx?raw";
+import GlassmorphismCardRaw from "@/components/templates/GlassmorphismCard.jsx?raw";
+import DeveloperLoginRaw from "@/components/templates/DeveloperLogin.jsx?raw";
+import ModernSignupRaw from "@/components/templates/ModernSignup.jsx?raw";
+import StepperSignupRaw from "@/components/templates/StepperSignup.jsx?raw";
+import NeubrutalismSignupRaw from "@/components/templates/NeubrutalismSignup.jsx?raw";
+import AnimatedSignupRaw from "@/components/templates/AnimatedSignup.jsx?raw";
+import MinimalDarkSignupRaw from "@/components/templates/MinimalDarkSignup.jsx?raw";
+
+
 const templates = [
     {
         id: "minimal",
@@ -33,27 +51,7 @@ const templates = [
         tags: ["Clean", "Centered", "Social Auth"],
         icon: LayoutTemplate,
         component: MinimalistLogin,
-        code: `import React from "react";
-import { Mail, Lock, Github, Chrome, ArrowRight } from "lucide-react";
-
-export const MinimalistLogin = () => {
-    return (
-        <div className="min-h-[600px] w-full flex items-center justify-center bg-gray-50 p-4 font-sans text-gray-900">
-            <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <div className="text-center space-y-2">
-                    <div className="h-10 w-10 bg-black rounded-lg mx-auto flex items-center justify-center text-white font-bold text-xl">
-                        A
-                    </div>
-                    <h2 className="text-2xl font-bold tracking-tight">Welcome back</h2>
-                    <p className="text-sm text-gray-500">
-                        Enter your email to sign in to your account
-                    </p>
-                </div>
-                {/* Form fields... see full source */}
-            </div>
-        </div>
-    );
-};`
+        code: MinimalistLoginRaw
     },
     {
         id: "split",
@@ -62,21 +60,7 @@ export const MinimalistLogin = () => {
         tags: ["Enterprise", "Split View", "Testimonial"],
         icon: Smartphone,
         component: SplitScreenLogin,
-        code: `import React from "react";
-import { Command, Shield } from "lucide-react";
-
-export const SplitScreenLogin = () => {
-  return (
-    <div className="w-full h-[600px] lg:grid lg:grid-cols-2 rounded-xl overflow-hidden shadow-2xl bg-white text-zinc-950 font-sans">
-      <div className="hidden lg:flex flex-col justify-between bg-zinc-900 p-10 text-white relative overflow-hidden">
-         {/* Branding Content */}
-      </div>
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
-          {/* Login Form */}
-      </div>
-    </div>
-  );
-};`
+        code: SplitScreenLoginRaw
     },
     {
         id: "card",
@@ -85,19 +69,7 @@ export const SplitScreenLogin = () => {
         tags: ["Web3", "Glassmorphism", "Creative"],
         icon: ShieldCheck,
         component: GlassmorphismCard,
-        code: `import React from "react";
-import { User, Key } from "lucide-react";
-
-export const GlassmorphismCard = () => {
-  return (
-    <div className="min-h-[600px] w-full flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 overflow-hidden relative font-sans">
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-      <div className="relative w-full max-w-sm p-8 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl">
-         {/* Form Content */}
-      </div>
-    </div>
-  );
-};`
+        code: GlassmorphismCardRaw
     },
     {
         id: "github",
@@ -106,19 +78,53 @@ export const GlassmorphismCard = () => {
         tags: ["Dark Mode", "Monospace", "Developer"],
         icon: Github,
         component: DeveloperLogin,
-        code: `import React, { useState, useEffect } from "react";
-import { Terminal, ChevronRight } from "lucide-react";
-
-export const DeveloperLogin = () => {
-  return (
-    <div className="min-h-[600px] w-full flex items-center justify-center bg-zinc-950 p-4 font-mono text-green-500">
-      <div className="w-full max-w-lg border border-green-500/30 rounded bg-black shadow-[0_0_20px_rgba(0,255,0,0.1)] p-6">
-        {/* Terminal Interface */}
-      </div>
-    </div>
-  );
-};`
+        code: DeveloperLoginRaw
     },
+    {
+        id: "modern-signup",
+        title: "Modern Gradient Signup",
+        description: "Beautiful gradient-based signup form with password strength indicator, social authentication, and smooth animations. Perfect for modern SaaS applications.",
+        tags: ["Gradient", "Password Strength", "Social Auth"],
+        icon: Sparkles,
+        component: ModernSignup,
+        code: ModernSignupRaw
+    },
+    {
+        id: "stepper-signup",
+        title: "Multi-Step Signup",
+        description: "Progressive signup flow with visual stepper, organized into Personal Info, Company Details, and Security steps. Ideal for collecting detailed user information.",
+        tags: ["Multi-Step", "Progressive", "Enterprise"],
+        icon: LayoutTemplate,
+        component: StepperSignup,
+        code: StepperSignupRaw
+    },
+    {
+        id: "neubrutalism-signup",
+        title: "Neubrutalism Signup",
+        description: "Bold, eye-catching design with thick borders, vibrant colors, and strong shadows. Perfect for creative agencies and design-forward startups.",
+        tags: ["Bold", "Creative", "Unique"],
+        icon: Sparkles,
+        component: NeubrutalismSignup,
+        code: NeubrutalismSignupRaw
+    },
+    {
+        id: "animated-signup",
+        title: "Animated Split Signup",
+        description: "Highly animated signup with floating background elements, split-screen layout showcasing features, and interactive field states. Premium feel for high-end products.",
+        tags: ["Animated", "Premium", "Split Screen"],
+        icon: Sparkles,
+        component: AnimatedSignup,
+        code: AnimatedSignupRaw
+    },
+    {
+        id: "minimal-dark-signup",
+        title: "Minimal Dark Signup",
+        description: "Ultra-minimal dark mode signup with clean typography, subtle borders, and elegant spacing. Perfect for developer tools and sophisticated applications.",
+        tags: ["Dark Mode", "Minimal", "Elegant"],
+        icon: Github,
+        component: MinimalDarkSignup,
+        code: MinimalDarkSignupRaw
+    }
 ];
 
 const TemplatesPage = () => {
@@ -160,14 +166,9 @@ const TemplatesPage = () => {
                     {/* --- SIDEBAR NAV --- */}
                     <aside className="w-full lg:w-64 shrink-0">
                         <div className="sticky top-24 space-y-8">
-                            <div>
-                                <div className="flex items-center justify-between mb-4 px-2">
-                                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Authentication</h3>
-                                    <Badge variant="secondary" className="text-[10px] h-5 px-1.5">New</Badge>
-                                </div>
-
+                            <div className="space-y-6">
                                 {/* Search for mobile sidebar */}
-                                <div className="relative mb-4 lg:hidden">
+                                <div className="relative lg:hidden">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         value={searchTerm}
@@ -177,23 +178,55 @@ const TemplatesPage = () => {
                                     />
                                 </div>
 
-                                <nav className="space-y-1">
-                                    {filteredTemplates.map((template) => (
-                                        <button
-                                            key={template.id}
-                                            onClick={() => setActiveTab(template.id)}
-                                            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group text-sm ${activeTab === template.id
-                                                ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-medium"
-                                                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5"
-                                                }`}
-                                        >
-                                            <span>{template.title}</span>
-                                            {activeTab === template.id && (
-                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgb(99,102,241)]" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </nav>
+                                {/* Login Templates */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-3 px-2">
+                                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Login Pages</h3>
+                                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5">4</Badge>
+                                    </div>
+                                    <nav className="space-y-1">
+                                        {filteredTemplates.filter(t => !t.id.includes('signup')).map((template) => (
+                                            <button
+                                                key={template.id}
+                                                onClick={() => setActiveTab(template.id)}
+                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group text-sm ${activeTab === template.id
+                                                    ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-medium"
+                                                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5"
+                                                    }`}
+                                            >
+                                                <span>{template.title}</span>
+                                                {activeTab === template.id && (
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgb(99,102,241)]" />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </nav>
+                                </div>
+
+                                {/* Signup Templates */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-3 px-2">
+                                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Signup Pages</h3>
+                                        <Badge variant="default" className="text-[10px] h-5 px-1.5 bg-indigo-500">New</Badge>
+                                    </div>
+                                    <nav className="space-y-1">
+                                        {filteredTemplates.filter(t => t.id.includes('signup')).map((template) => (
+                                            <button
+                                                key={template.id}
+                                                onClick={() => setActiveTab(template.id)}
+                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group text-sm ${activeTab === template.id
+                                                    ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-medium"
+                                                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5"
+                                                    }`}
+                                            >
+                                                <span>{template.title}</span>
+                                                {activeTab === template.id && (
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgb(99,102,241)]" />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </nav>
+                                </div>
                             </div>
 
                             <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-500/20 bg-linear-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-zinc-900/0">
@@ -279,7 +312,7 @@ const TemplatesPage = () => {
                             {/* Viewport Body */}
                             <div className="flex-1 relative bg-slate-100/50 dark:bg-zinc-950/50">
                                 {/* Grid background pattern */}
-                                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]"></div>
 
                                 {viewMode === "preview" ? (
                                     <div className="h-full w-full overflow-y-auto p-4 md:p-8 flex items-center justify-center relative z-10 animate-in fade-in duration-300">
@@ -309,4 +342,4 @@ const TemplatesPage = () => {
     );
 };
 
-export default TemplatesPage;
+export default TemplatesPage;   

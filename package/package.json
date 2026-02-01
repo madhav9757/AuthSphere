@@ -1,6 +1,6 @@
 {
   "name": "@authspherejs/sdk",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Secure OAuth2 SDK with PKCE for AuthSphere authentication",
   "type": "module",
   "main": "dist/index.js",

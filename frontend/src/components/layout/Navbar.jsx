@@ -47,7 +47,7 @@ const Navbar = () => {
       ? "border-b bg-background/95 backdrop-blur"
       : "bg-transparent"
       }`}>
-      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="w-[90vw] mx-auto px-6 h-16 flex items-center justify-between">
 
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="h-8 w-8 rounded-lg border flex items-center justify-center">

@@ -24,28 +24,35 @@ transporter.verify((err) => {
   }
 });
 
-export const sendVerificationOTP = async (email, otp, projectName) => {
+export const sendVerificationOTP = async (email, otp, projectName, customization = {}) => {
+  const {
+    logoUrl = "",
+    primaryColor = "#4f46e5",
+    subjectLine = `Your Verification Code for ${projectName}`,
+    footerText = "Secure Identity for Developers",
+  } = customization;
+
   const mailOptions = {
-    from: `"${projectName}" <${conf.smtpUser}>`, // ✅ FIXED
+    from: `"${projectName}" <${conf.smtpUser}>`,
     to: email,
-    subject: `Your Verification Code for ${projectName}`,
+    subject: subjectLine,
     html: `
       <div style="font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 20px; background: #ffffff; border: 1px solid #e5e7eb;">
-        <h1 style="text-align:center; color:#4f46e5; margin-bottom:24px;">AuthSphere</h1>
+        ${logoUrl ? `<div style="text-align: center; margin-bottom: 24px;"><img src="${logoUrl}" alt="${projectName}" style="max-height: 48px;"></div>` : `<h1 style="text-align:center; color:${primaryColor}; margin-bottom:24px;">${projectName}</h1>`}
         <h2 style="text-align:center; color:#111827;">Verify your account</h2>
         <p style="text-align:center; color:#6b7280;">
           Use the code below to verify your <strong>${projectName}</strong> account.
           This code expires in <strong>10 minutes</strong>.
         </p>
         <div style="margin:32px auto; padding:20px; text-align:center; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb;">
-          <span style="font-size:32px; letter-spacing:6px; font-weight:700;">${otp}</span>
+          <span style="font-size:32px; letter-spacing:6px; font-weight:700; color:${primaryColor};">${otp}</span>
         </div>
         <p style="text-align:center; font-size:14px; color:#9ca3af;">
           If you didn’t request this, you can safely ignore this email.
         </p>
-        <hr style="margin-top:32px;" />
-        <p style="text-align:center; font-size:12px; color:#d1d5db;">
-          © 2026 AuthSphere · Secure Identity for Developers
+        <hr style="margin-top:32px; border: 0; border-top: 1px solid #e5e7eb;" />
+        <p style="text-align:center; font-size:12px; color:#9ca3af; margin-top: 20px;">
+          © 2026 ${projectName} · ${footerText}
         </p>
       </div>
     `,

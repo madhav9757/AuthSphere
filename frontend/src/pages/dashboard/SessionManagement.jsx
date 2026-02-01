@@ -4,7 +4,7 @@ import {
     revokeSession,
     revokeAllOtherSessions,
     revokeAllSessions
-} from "../api/SessionAPI";
+} from "@/api/SessionAPI";
 import {
     Card,
     CardContent,
