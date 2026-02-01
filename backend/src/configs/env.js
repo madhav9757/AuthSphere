@@ -62,10 +62,15 @@ const _conf = {
   BITBUCKET_CLIENT_SECRET: process.env.BITBUCKET_CLIENT_SECRET,
   BITBUCKET_REDIRECT_URI: process.env.BITBUCKET_REDIRECT_URI,
 
-  // Microsoft
   MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
   MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
   MICROSOFT_REDIRECT_URI: process.env.MICROSOFT_REDIRECT_URI,
+
+  // SMTP Settings
+  smtpHost: process.env.SMTP_HOST || "smtp.ethereal.email",
+  smtpPort: process.env.SMTP_PORT || 587,
+  smtpUser: process.env.SMTP_USER,
+  smtpPass: process.env.SMTP_PASS,
 };
 
 export const conf = Object.freeze(_conf);

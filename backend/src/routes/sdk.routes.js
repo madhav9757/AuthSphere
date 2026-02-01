@@ -3,6 +3,10 @@ import {
   authorize,
   token,
   refresh,
+  registerLocal,
+  loginLocal,
+  verifyOTP,
+  resendVerification,
 } from "../controllers/sdk.controller.js";
 
 const router = express.Router();
@@ -31,5 +35,9 @@ router.post("/token", token);
  * POST /sdk/refresh
  */
 router.post("/refresh", refresh);
+router.post("/register", registerLocal);
+router.post("/login-local", loginLocal);
+router.post("/verify-otp", verifyOTP);
+router.post("/resend-verification", resendVerification);
 
 export default router;

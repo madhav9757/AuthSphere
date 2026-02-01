@@ -26,6 +26,8 @@ const endUserSchema = new mongoose.Schema(
       default: "user",
     },
     isVerified: { type: Boolean, default: false },
+    verificationOTP: { type: String },
+    verificationOTPExpiry: { type: Date },
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",

@@ -36,8 +36,12 @@
     <p>Automated JWT handling, secure token persistence (localStorage/SessionStorage), and ready-to-use logout flows.</p>
   </div>
   <div style="background: rgba(0, 255, 128, 0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 128, 0.2);">
+    <h3>🔐 Local Auth</h3>
+    <p>Complete <strong>Email/Password</strong> system with built-in <strong>OTP verification</strong> and email lifecycle management.</p>
+  </div>
+  <div style="background: rgba(255, 255, 0, 0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 255, 0, 0.2);">
     <h3>🏗️ Type Safe</h3>
-    <p>Written in <strong>TypeScript</strong> from the ground up. Full IDE support, IntelliSense, and comprehensive type definitions.</p>
+    <p>Written in <strong>TypeScript</strong>. Full IDE support, IntelliSense, and comprehensive type definitions for every flow.</p>
   </div>
 </div>
 
@@ -109,6 +113,35 @@ async function handleCallback() {
 }
 ```
 
+### 4️⃣ Local Authentication (New)
+For apps requiring custom signup flows with email verification.
+
+```typescript
+// Register User
+await AuthSphere.register({
+  email: 'dev@example.com',
+  password: 'Password123!',
+  username: 'Madhav'
+});
+
+// Login and check verification
+try {
+  await AuthSphere.loginLocal({ email, password });
+} catch (err) {
+  if (err.error_code === 'EMAIL_NOT_VERIFIED') {
+    // Redirect to your OTP verification page
+    console.log('SDK Request ID:', err.sdk_request);
+  }
+}
+
+// Verify OTP
+await AuthSphere.verifyOTP({
+  email: 'dev@example.com',
+  otp: '123456',
+  sdk_request: '...' // Optional for auto-login
+});
+```
+
 ---
 
 ## 📖 API Reference
@@ -121,6 +154,18 @@ Initiates the OAuth2 PKCE flow for the specified provider.
 
 ### `handleAuthCallback()`
 Exchanges the authorization code for a session token. Returns a `Promise<Session>`.
+
+### `register(data: RegisterData)`
+Registers a new user and triggers the verification email.
+
+### `loginLocal(data: LoginData)`
+Authenticates with email/password. Throws `AuthError` if verification is required.
+
+### `verifyOTP(data: OTPData)`
+Verifies a 6-digit code. Can perform an automatic login if `sdk_request` is provided.
+
+### `resendVerification(email: string)`
+Requests a new 6-digit verification code for the specified email.
 
 ### `isAuthenticated()`
 Checks if a valid session exists in storage.

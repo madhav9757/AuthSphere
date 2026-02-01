@@ -14,7 +14,9 @@ The AuthSphere ecosystem consists of four main components:
 ## ✨ Key Features
 
 - **🛡️ Secure by Design**: Built-in support for OAuth2 with PKCE (Proof Key for Code Exchange).
+- **📧 Email Verification**: Automated OTP-based verification flow for local and social signups.
 - **🔌 Multi-Provider Support**: Easily enable Google, GitHub, and Discord authentication.
+- **👤 User Management**: Full developer control to delete users or toggle verification status.
 - **📊 Developer Dashboard**: Manage multiple projects, rotate API keys, and monitor user logins.
 - **📦 Lightweight SDK**: A type-safe TypeScript SDK for effortless integration.
 - **🎨 Premium UI/UX**: Dark-mode first design with smooth animations and responsive layouts.

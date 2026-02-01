@@ -8,6 +8,8 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 - **OAuth2 Engine**: Implements the Authorization Code Flow with PKCE for secure client-side authentication.
 - **Social Providers**: Integrated with Google, GitHub, and Discord for one-click logins.
 - **Session Management**: Securely handles user sessions using JWTs and secure cookies.
+- **Email Verification**: Built-in OTP generation, email delivery via SMTP, and verification enforcement.
+- **User Management**: Administrative APIs to delete project users or manually toggle verification status.
 - **Database**: Uses MongoDB (via Mongoose) for persistent storage of projects, users, and sessions.
 - **Security**: Implements CORS, bcrypt for password hashing, and token rotation.
 
@@ -81,10 +83,14 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 - `POST /api/v1/projects`: Create a new project.
 - `GET /api/v1/projects/:projectId`: Get project details.
 - `PATCH /api/v1/projects/:projectId`: Update project settings.
+- `GET /api/v1/projects/:projectId/users`: List all end-users for a project.
+- `DELETE /api/v1/projects/:projectId/users/:userId`: Permanent user deletion.
+- `PATCH /api/v1/projects/:projectId/users/:userId/verify`: Toggle user verification.
 
 ### Auth Hub APIs
 - `POST /api/v1/auth/exchange`: Exchange PKCE code for a session token.
 - `GET /api/v1/auth/session`: Validate and retrieve session data.
+- `POST /api/v1/auth/verify-otp`: Verify 6-digit OTP for email verification.
 - `GET /auth/:provider`: Initiate social provider redirect.
 - `GET /auth/:provider/callback`: Handle social provider callback.
 

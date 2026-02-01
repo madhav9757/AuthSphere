@@ -4,6 +4,9 @@ import Session from "../models/session.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { conf } from "../configs/env.js";
+import bcrypt from "bcryptjs";
+import { sendVerificationOTP } from "../services/email.service.js";
+import { logEvent } from "../utils/auditLogger.js";
 
 export const authRequests = new Map(); // sdk_request_id
 export const authCodes = new Map();    // authorization_code
@@ -115,6 +118,15 @@ export const authorize = async (req, res) => {
 
     console.log(`✓ SDK Auth request created: ${requestId}`);
 
+    // ✅ Handle response
+    if (req.headers.accept === "application/json" || req.query.json === "true") {
+      return res.json({ requestId });
+    }
+
+    if (provider.toLowerCase() === "local") {
+      return res.redirect(`${conf.frontendUrl}/login?sdk_request=${requestId}`);
+    }
+
     // ✅ Redirect user to provider login with sdk_request
     return res.redirect(`/auth/${provider.toLowerCase()}?sdk=true&sdk_request=${requestId}`);
   } catch (err) {
@@ -150,11 +162,32 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
 
     // 1. Email Verification Enforcement
     if (project?.settings?.requireEmailVerification) {
-      // Social providers usually verify emails, but let's check our DB flag
-      if (!endUser.emailVerified && !endUser.providerCallsVerified) {
-        // Allow if provider verified it (often implied, but depending on schema)
-        // For now, strict check on the user object
-        return res.redirect(`${authRequest.redirectUri}?error=access_denied&error_description=Email+verification+required`);
+      if (!endUser.isVerified) {
+        // Generate new OTP if missing or expired, or just refresh it
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+        endUser.verificationOTP = otp;
+        endUser.verificationOTPExpiry = otpExpiry;
+        await endUser.save();
+
+        // Send verification email
+        await sendVerificationOTP(endUser.email, otp, project.name);
+
+        // If not verified, return redirect info or redirect directly
+        const redirectUrl = new URL(authRequest.redirectUri);
+        redirectUrl.searchParams.set("error", "email_not_verified");
+        redirectUrl.searchParams.set("email", endUser.email);
+        redirectUrl.searchParams.set("sdk_request", sdk_request); // Pass sdk_request to frontend to verify later
+
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.json({
+            success: false,
+            message: "Email not verified",
+            redirect: redirectUrl.toString()
+          });
+        }
+        return res.redirect(redirectUrl.toString());
       }
     }
 
@@ -175,7 +208,16 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
     redirectUrl.searchParams.set("code", code);
     redirectUrl.searchParams.set("state", authRequest.state);
 
-    console.log("➡️ Redirecting to client:", redirectUrl.toString());
+    console.log("➡️ Returning redirect URL to client:", redirectUrl.toString());
+
+    // Check if this is an AJAX/Fetch request (typical for verifyOTP)
+    if (req.xhr || req.headers.accept?.includes('application/json') || req.body?.sdk_request) {
+      return res.json({
+        success: true,
+        redirect: redirectUrl.toString()
+      });
+    }
+
     return res.redirect(redirectUrl.toString());
   } catch (err) {
     console.error("SDK callback error:", err);
@@ -397,5 +439,235 @@ export const refresh = async (req, res) => {
   } catch (err) {
     console.error("Token Refresh Error:", err);
     return res.status(500).json({ error: "server_error" });
+  }
+};
+
+/* ============================================================
+   LOCAL AUTH (Email/Password)
+ ============================================================ */
+
+/**
+ * Register a new end-user locally.
+ */
+export const registerLocal = async (req, res) => {
+  try {
+    const { email, password, username, public_key, publicKey, sdk_request } = req.body;
+    const actualPublicKey = public_key || publicKey;
+
+    if (!email || !password || !username || !actualPublicKey) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    const existingUser = await EndUser.findOne({ email: normalizedEmail, projectId: project._id });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "User already exists" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    const user = await EndUser.create({
+      email: normalizedEmail,
+      password, // Hashed via pre-save hook
+      username,
+      projectId: project._id,
+      provider: "local",
+      isVerified: false,
+      verificationOTP: otp,
+      verificationOTPExpiry: otpExpiry,
+    });
+
+    // Send verification email
+    await sendVerificationOTP(email, otp, project.name);
+
+    await logEvent({
+      developerId: project.developer,
+      projectId: project._id,
+      action: "USER_REGISTERED",
+      description: `New local user (${email}) registered. OTP sent.`,
+      category: "user",
+      metadata: { ip: req.ip, userAgent: req.headers["user-agent"], resourceId: user._id },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful. Please enter the OTP sent to your email.",
+      requireEmailVerification: true,
+    });
+  } catch (err) {
+    console.error("Local Registration Error:", err);
+    return res.status(500).json({ success: false, message: "Registration failed" });
+  }
+};
+
+/**
+ * Login an end-user locally.
+ */
+export const loginLocal = async (req, res) => {
+  try {
+    const { email, password, public_key, publicKey, sdk_request } = req.body;
+    const actualPublicKey = public_key || publicKey;
+
+    if (!email || !password || !actualPublicKey || !sdk_request) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    const user = await EndUser.findOne({ email: normalizedEmail, projectId: project._id }).select("+password");
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    // Check email verification if required
+    if (project.settings?.requireEmailVerification && !user.isVerified) {
+      // Generate new OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+      user.verificationOTP = otp;
+      user.verificationOTPExpiry = otpExpiry;
+      await user.save();
+
+      // Send verification email
+      await sendVerificationOTP(user.email, otp, project.name);
+
+      return res.status(403).json({
+        success: false,
+        message: "Email not verified. A new verification code has been sent to your email.",
+        error_code: "EMAIL_NOT_VERIFIED",
+        sdk_request: sdk_request // Frontend needs this to verify OTP later
+      });
+    }
+
+    // Success - Initiate SDK Callback
+    return await handleSDKCallback(req, res, user, "local", sdk_request);
+  } catch (err) {
+    console.error("Local Login Error:", err);
+    return res.status(500).json({ success: false, message: "Login failed" });
+  }
+};
+
+/**
+ * Verify end-user email via OTP.
+ */
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp, public_key, publicKey, sdk_request } = req.body;
+    const actualPublicKey = public_key || publicKey;
+
+    if (!email || !otp || !actualPublicKey) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedOTP = otp.toString().trim();
+
+    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+    const user = await EndUser.findOne({
+      email: normalizedEmail,
+      projectId: project._id,
+      verificationOTP: normalizedOTP,
+      verificationOTPExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    user.isVerified = true;
+    user.verificationOTP = undefined;
+    user.verificationOTPExpiry = undefined;
+    await user.save();
+
+    await logEvent({
+      projectId: user.projectId,
+      action: "USER_VERIFIED",
+      description: `User (${user.email}) successfully verified their email via OTP.`,
+      category: "user",
+      metadata: { ip: req.ip, userAgent: req.headers["user-agent"], resourceId: user._id },
+    });
+
+    // If sdk_request is present, we should automatically log them in
+    if (sdk_request) {
+      console.log("✓ OTP Verified, proceeding to SDK Callback for automatic login.");
+      // Note: handleSDKCallback will now return a JSON with { redirect: '...' } 
+      // which the frontend fetch will receive and should navigate to.
+      return await handleSDKCallback(req, res, user, "local", sdk_request);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully.",
+    });
+  } catch (err) {
+    console.error("OTP Verification Error:", err);
+    return res.status(500).json({ success: false, message: "Verification failed" });
+  }
+};
+
+/**
+ * Resend verification OTP.
+ */
+export const resendVerification = async (req, res) => {
+  try {
+    const { email, public_key, publicKey } = req.body;
+    const actualPublicKey = public_key || publicKey;
+
+    if (!email || !actualPublicKey) {
+      return res.status(400).json({ success: false, message: "Missing email or public key" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    const user = await EndUser.findOne({ email: normalizedEmail, projectId: project._id });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email is already verified" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.verificationOTP = otp;
+    user.verificationOTPExpiry = otpExpiry;
+    await user.save();
+
+    await sendVerificationOTP(email, otp, project.name);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification OTP resent. Please check your inbox.",
+    });
+  } catch (err) {
+    console.error("Resend Verification Error:", err);
+    return res.status(500).json({ success: false, message: "Failed to resend verification email" });
   }
 };

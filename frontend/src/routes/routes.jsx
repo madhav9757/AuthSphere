@@ -15,6 +15,7 @@ import Pricing from "@/pages/Pricing";
 import Settings from "@/pages/Settings";
 import AuditLogs from "@/pages/AuditLogs";
 import ProvidersPage from "@/pages/ProvidersPage";
+import ProjectUsers from "@/pages/ProjectUsers";
 
 import TemplatesPage from "@/pages/TemplatesPage";
 
@@ -93,6 +94,16 @@ export const routes = [
       <ProtectedRoute>
         <MainLayout>
           <ProjectAnalytics />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/projects/:projectId/users",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <ProjectUsers />
         </MainLayout>
       </ProtectedRoute>
     ),

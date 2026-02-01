@@ -8,7 +8,7 @@ const projectSchema = new mongoose.Schema(
     developer: { type: mongoose.Schema.Types.ObjectId, ref: "Developer", required: true },
     redirectUris: [{ type: String, required: true }],
     allowedOrigins: [{ type: String }], // Security: Prevent cross-site request forgery
-    providers: [{ type: String, enum: ["google", "github", "discord", "linkedin", "gitlab", "twitch", "bitbucket", "microsoft"], required: true }],
+    providers: [{ type: String, enum: ["local", "google", "github", "discord", "linkedin", "gitlab", "twitch", "bitbucket", "microsoft"], required: true }],
     logoUrl: { type: String },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     settings: {

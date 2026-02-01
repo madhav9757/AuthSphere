@@ -10,7 +10,8 @@ import {
   Menu, X, Terminal, Github, RefreshCcw, ExternalLink,
   ArrowLeft, Layers, AlertCircle, Code2, Cpu, Globe, Lock,
   FileJson, TerminalSquare, Info,
-  ChevronDown, Settings2, BarChart3
+  ChevronDown, Settings2, BarChart3, User, KeyRound,
+  Users, Trash2, Mail
 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import { getProjects } from "@/api/ProjectAPI";
@@ -63,9 +64,12 @@ const Docs = () => {
   const sections = [
     { id: "introduction", title: "Introduction", icon: BookOpen },
     { id: "quick-start", title: "Quick Start", icon: Zap },
-    { id: "frameworks", title: "Frameworks", icon: Layers },
-    { id: "authentication", title: "Authentication", icon: ShieldCheck },
+    { id: "local-auth", title: "Local Authentication", icon: User },
+    { id: "authentication", title: "Social Login", icon: Globe },
+    { id: "frameworks", title: "Framework Integration", icon: Layers },
+    { id: "session-management", title: "Session Management", icon: KeyRound },
     { id: "configuration", title: "Configuration", icon: Settings2 },
+    { id: "user-management", title: "User Management", icon: Users },
     { id: "api-reference", title: "API Reference", icon: FileJson },
     { id: "security", title: "Security", icon: Lock },
     { id: "errors", title: "Error Handling", icon: AlertCircle },
@@ -104,7 +108,7 @@ const Docs = () => {
     <div className="min-h-screen">
 
       {/* TOP NAVIGATION */}
-      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="h-8 w-8 rounded-lg border flex items-center justify-center bg-primary/5">
@@ -167,7 +171,7 @@ const Docs = () => {
 
           {/* PROJECT SELECTOR FOR LOGGED IN USERS */}
           {user && (
-            <div className="mb-10 p-6 rounded-2xl border bg-gradient-to-br from-background to-muted/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-500 shadow-sm">
+            <div className="mb-10 p-6 rounded-2xl border bg-linear-to-br from-background to-muted/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-500 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
                   <Code2 className="h-6 w-6" />
@@ -218,9 +222,10 @@ const Docs = () => {
               <div className="grid md:grid-cols-2 gap-4 mt-10">
                 {[
                   { icon: ShieldCheck, title: "Universal Auth", desc: "Connect Google, GitHub, Microsoft, and 20+ other providers with a single API." },
+                  { icon: Mail, title: "Email Verification", desc: "Enforce email checks before allowing login. Automatic OTP delivery and lifecycle." },
                   { icon: Lock, title: "Zero-Trust Security", desc: "Automated token rotation, PKCE flows, and brute-force protection out of the box." },
-                  { icon: BarChart3, title: "Real-time Analytics", desc: "Track active users, login trends, and provider adoption in your dashboard." }, // Updated content
-                  { icon: Settings2, title: "Fine-Grained Control", desc: "Customize token lifetimes, MFA policies, and allowed domains per project." } // Updated content
+                  { icon: BarChart3, title: "Real-time Analytics", desc: "Track active users, login trends, and provider adoption in your dashboard." },
+                  { icon: Settings2, title: "Developer Management", desc: "Manage end-users, toggle verification, and monitor sessions per project." }
                 ].map((item, i) => (
                   <Card key={i} className="bg-card hover:bg-muted/50 transition-colors cursor-default">
                     <CardHeader className="p-6">
@@ -275,7 +280,7 @@ const Docs = () => {
                   <p className="text-muted-foreground mb-4">Initialize the client with your Public Key (Client ID).</p>
                   <CodeBlock
                     id="init"
-                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\n// Initialize inside your app entry point\nAuthSphere.init({\n  publicKey: '${publicKey}',\n})`}
+                    code={`import { AuthSphere } from '@authspherejs/sdk'\n\n// Initialize inside your app entry point\nAuthSphere.initAuth({\n  publicKey: '${publicKey}',\n})`}
                     language="javascript"
                   />
                 </div>
@@ -320,27 +325,119 @@ const Docs = () => {
             </article>
           )}
 
-          {/* AUTHENTICATION */}
+          {/* SESSION MANAGEMENT */}
+          {activeSection === "session-management" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">Session Management</h1>
+                <p className="text-lg text-muted-foreground">
+                  Manage user sessions, tokens, and profiles locally within your app.
+                </p>
+              </div>
+
+              <div className="space-y-12">
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Check Authentication</h3>
+                  <p className="text-muted-foreground mb-4">Check if a valid session exists on the client.</p>
+                  <CodeBlock
+                    id="is-authenticated"
+                    code={`const isLoggedIn = AuthSphere.isAuthenticated();\n\nif (!isLoggedIn) {\n  navigate('/login');\n}`}
+                    language="javascript"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Get User Profile</h3>
+                  <p className="text-muted-foreground mb-4">Retrieve the currently logged-in user's details.</p>
+                  <CodeBlock
+                    id="get-user"
+                    code={`const user = AuthSphere.getUser();\n\nconsole.log(user.email);\nconsole.log(user.username);\nconsole.log(user.picture);`}
+                    language="javascript"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Logout</h3>
+                  <p className="text-muted-foreground mb-4">Clear all local session data and tokens.</p>
+                  <CodeBlock
+                    id="logout"
+                    code={`AuthSphere.logout();\nwindow.location.href = '/login';`}
+                    language="javascript"
+                  />
+                </div>
+              </div>
+            </article>
+          )}
+
+          {/* LOCAL AUTHENTICATION */}
+          {activeSection === "local-auth" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">Local Authentication</h1>
+                <p className="text-lg text-muted-foreground">
+                  Secure email/password authentication with built-in OTP verification.
+                </p>
+              </div>
+
+              <div className="space-y-12">
+                <div>
+                  <h3 className="text-xl font-bold mb-3">User Registration</h3>
+                  <p className="text-muted-foreground mb-4">Register new users with their email, password, and optional profile data.</p>
+                  <CodeBlock
+                    id="register"
+                    code={`await AuthSphere.register({\n  email: 'user@example.com',\n  password: 'securePassword123',\n  username: 'John Doe'\n});`}
+                    language="javascript"
+                  />
+                  <div className="text-sm text-muted-foreground bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg flex gap-3">
+                    <Info className="h-5 w-5 text-blue-500 shrink-0" />
+                    <p>After registration, an OTP is automatically sent to the user's email for verification.</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Login Flow</h3>
+                  <p className="text-muted-foreground mb-4">Authenticate users locally. If their email isn't verified, the SDK will return a specific error allowing you to redirect them to the verification page.</p>
+                  <CodeBlock
+                    id="login-local"
+                    code={`try {\n  await AuthSphere.loginLocal({\n    email: 'user@example.com',\n    password: 'securePassword123'\n  });\n} catch (err) {\n  if (err.error_code === 'EMAIL_NOT_VERIFIED') {\n    // Redirect to OTP entry page with the sdk_request ID\n    const sdkRequest = err.sdk_request;\n    navigate(\`/verify-otp?email=\${email}&sdk_request=\${sdkRequest}\`);\n  }\n}`}
+                    language="javascript"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold mb-3">OTP Verification</h3>
+                  <p className="text-muted-foreground mb-4">Verify the user's email address using the 6-digit code sent to them.</p>
+                  <CodeBlock
+                    id="verify-otp"
+                    code={`await AuthSphere.verifyOTP({\n  email: 'user@example.com',\n  otp: '123456',\n  sdk_request: 'REQ_ID' // Optional: for auto-login after verification\n});`}
+                    language="javascript"
+                  />
+                </div>
+              </div>
+            </article>
+          )}
+
+          {/* SOCIAL LOGIN */}
           {activeSection === "authentication" && (
             <article className="space-y-8 animate-in fade-in duration-500">
-              <h1 className="text-4xl font-bold tracking-tight">Authentication Flows</h1>
+              <h1 className="text-4xl font-bold tracking-tight">Social Login</h1>
               <p className="text-lg text-muted-foreground">
-                AuthSphere manages the complexity of OAuth 2.0 and OIDC protocols.
+                AuthSphere manages the complexity of OAuth 2.0 and OIDC protocols for third-party providers.
               </p>
 
               <section className="space-y-4">
-                <h2 className="text-2xl font-bold">Social Login</h2>
+                <h2 className="text-2xl font-bold">One-Click Authentication</h2>
                 <p className="text-muted-foreground">
                   Triggering a login redirects the user to the provider's consent screen. After approval,
                   they are returned to your <code>redirectUri</code> with a session established.
                 </p>
                 <CodeBlock
                   id="auth-flow"
-                  code={`// Basic Login\nawait AuthSphere.loginWith('google');\n\n// Login with specific scopes\nawait AuthSphere.loginWith('github', {\n  scopes: ['repo', 'user:email']\n});`}
+                  code={`// Basic Social Login (google, github, discord, microsoft)\nAuthSphere.redirectToLogin('google');`}
                   language="javascript"
                 />
                 <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
-                  <strong>Note:</strong> Make sure "Google" or "GitHub" is enabled in your <Link to={`/projects/${projectId}/settings`} className="underline hover:text-foreground">Project Providers</Link> settings.
+                  <strong>Note:</strong> Social logins automatically verify the user's email if the provider confirms it.
                 </div>
               </section>
             </article>
@@ -393,6 +490,104 @@ const Docs = () => {
           )}
 
 
+          {/* USER MANAGEMENT */}
+          {activeSection === "user-management" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">User Management</h1>
+                <p className="text-lg text-muted-foreground">
+                  Administrative control over your project's user base.
+                </p>
+              </div>
+
+              <section className="space-y-6">
+                <div className="p-6 rounded-2xl border bg-card shadow-sm">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Settings2 className="h-5 w-5 text-primary" />
+                    Dashboard Controls
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Navigate to your project in the AuthSphere dashboard and click <strong>"Manage All Users"</strong>.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3 text-sm">
+                      <div className="h-5 w-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                      </div>
+                      <span><strong>Verification Override:</strong> Manually verify or unverify users regardless of their OTP status.</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-sm">
+                      <div className="h-5 w-5 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                        <Trash2 className="h-3 w-3 text-red-500" />
+                      </div>
+                      <span><strong>Permanent Deletion:</strong> Hard delete users from your project database to comply with GDPR/deletion requests.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Management API</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Programmatically manage users using your <strong>Private Key</strong>.
+                    <Badge variant="secondary" className="ml-2">Experimental</Badge>
+                  </p>
+                  <CodeBlock
+                    id="mgmt-api"
+                    code={`// Delete User\nfetch('http://localhost:8000/api/v1/projects/${projectId}/users/USER_ID', {\n  method: 'DELETE',\n  headers: { 'Authorization': 'Bearer YOUR_DEV_TOKEN' }\n});\n\n// Toggle Verification\nfetch('http://localhost:8000/api/v1/projects/${projectId}/users/USER_ID/verify', {\n  method: 'PATCH',\n  headers: { 'Authorization': 'Bearer YOUR_DEV_TOKEN' }\n});`}
+                    language="javascript"
+                  />
+                </div>
+              </section>
+            </article>
+          )}
+
+          {/* API REFERENCE */}
+          {activeSection === "api-reference" && (
+            <article className="space-y-8 animate-in fade-in duration-500">
+              <h1 className="text-4xl font-bold tracking-tight">API Reference</h1>
+              <p className="text-lg text-muted-foreground">
+                Everything you need to build custom authentication experiences.
+              </p>
+
+              <div className="space-y-10">
+                <section>
+                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Core initialization
+                  </h2>
+                  <p className="text-muted-foreground mb-4">Initialize the SDK once at the root of your application.</p>
+                  <CodeBlock
+                    id="ref-init"
+                    code={`AuthSphere.initAuth({\n  publicKey: string,\n  redirectUri?: string,\n  baseUrl?: string,\n})`}
+                    language="typescript"
+                  />
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Methods
+                  </h2>
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="font-mono text-primary font-bold">redirectToLogin(provider: string)</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Redirects the user to a social provider's login page.</p>
+                    </div>
+                    <div>
+                      <h4 className="font-mono text-primary font-bold">loginLocal(credentials)</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Authenticates with email/password. Returns access token or verification requirement.</p>
+                    </div>
+                    <div>
+                      <h4 className="font-mono text-primary font-bold">handleAuthCallback()</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Processes the authorization code from the URL and establishes a session.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </article>
+          )}
+
+
           {/* ERROR HANDLING */}
           {activeSection === "errors" && (
             <article className="space-y-8 animate-in fade-in duration-500">
@@ -408,6 +603,7 @@ const Docs = () => {
                 </div>
                 {[
                   { code: "AUTH_CANCELLED", desc: "User closed the popup or cancelled the provider consent." },
+                  { code: "EMAIL_NOT_VERIFIED", desc: "User is not verified. Redirect to /verify-otp with the provided sdk_request identifier." },
                   { code: "PROVIDER_DISABLED", desc: `The requested provider is not enabled in Project ID: ${projectId}. Enable it in the dashboard.` },
                   { code: "DOMAIN_NOT_ALLOWED", desc: "Request origin does not match the 'Allowed Origins' list in settings." },
                   { code: "INVALID_GRANT", desc: "Refresh token is invalid or expired. Prompt user to login again." },
@@ -427,7 +623,7 @@ const Docs = () => {
             <article className="space-y-8 animate-in fade-in duration-500">
               <h1 className="text-4xl font-bold tracking-tight">Security Posture</h1>
 
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20">
+              <div className="p-6 rounded-2xl bg-linear-to-br from-emerald-500/10 to-transparent border border-emerald-500/20">
                 <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-400 mb-2 flex items-center gap-2">
                   <ShieldCheck className="h-5 w-5" />
                   Production Ready

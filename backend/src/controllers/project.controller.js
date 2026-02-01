@@ -286,6 +286,79 @@ export const getProjectUsers = async (req, res) => {
 };
 
 /* ============================================================
+   DELETE PROJECT USER
+============================================================ */
+export const deleteProjectUser = async (req, res) => {
+  try {
+    const developerId = req.developer._id;
+    const { projectId, userId } = req.params;
+
+    // 1. Verify project belongs to developer
+    const project = await Project.findOne({
+      _id: projectId,
+      developer: developerId,
+    });
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    // 2. Delete user
+    const user = await EndUser.findOneAndDelete({ _id: userId, projectId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    console.error("Delete Project User Error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/* ============================================================
+   TOGGLE USER VERIFICATION
+============================================================ */
+export const toggleUserVerification = async (req, res) => {
+  try {
+    const developerId = req.developer._id;
+    const { projectId, userId } = req.params;
+
+    // 1. Verify project belongs to developer
+    const project = await Project.findOne({
+      _id: projectId,
+      developer: developerId,
+    });
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    // 2. Find and update user
+    const user = await EndUser.findOne({ _id: userId, projectId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.isVerified = !user.isVerified;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${user.isVerified ? 'verified' : 'unverified'} successfully`,
+      data: user
+    });
+  } catch (err) {
+    console.error("Toggle User Verification Error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/* ============================================================
    GET CONFIGURED PROVIDERS (INTERNAL CONFIG CHECK)
    Checks which .env variables are set for OAuth providers.
    Returns detailed status for each provider.

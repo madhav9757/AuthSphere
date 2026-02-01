@@ -8,6 +8,7 @@ The AuthSphere Frontend is a premium, high-performance developer dashboard built
 - **🛡️ API Key Hub**: Generate and rotate Public and Private keys securely.
 - **📊 User Analytics**: Monitor user sign-ups, active sessions, and provider distribution.
 - **⚙️ Provider Configuration**: One-click enablement for Google, GitHub, and Discord.
+- **👥 End-User Management**: Admin tools to manage verified status and delete end-users.
 - **📖 Documentation**: Built-in interactive documentation for SDK integration.
 - **🎨 Premium UI**: Dark-mode primary design with Radix UI and Tailwind CSS 4.
 

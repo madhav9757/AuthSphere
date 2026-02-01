@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProjectUsers } from "@/api/ProjectAPI";
 import {
     Card,
@@ -9,12 +10,22 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Loader2, Mail, ShieldCheck, Search, Filter } from "lucide-react";
+import {
+    Users,
+    Loader2,
+    Mail,
+    ShieldCheck,
+    Search,
+    Filter,
+    ArrowRight,
+    ExternalLink
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const ProjectUsersCard = ({ projectId }) => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
@@ -57,18 +68,25 @@ const ProjectUsersCard = ({ projectId }) => {
                     </div>
 
                     <div className="flex items-center gap-2 w-full md:w-auto">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-background gap-2"
+                            onClick={() => navigate(`/projects/${projectId}/users`)}
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            Manage All Users
+                            <ArrowRight className="h-3 w-3" />
+                        </Button>
                         <div className="relative flex-1 md:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search by email or name..."
-                                className="pl-9 bg-background"
+                                placeholder="Search users..."
+                                className="pl-9 bg-background h-9"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <Button variant="outline" size="icon" className="shrink-0 text-muted-foreground">
-                            <Filter className="h-4 w-4" />
-                        </Button>
                     </div>
                 </div>
             </CardHeader>

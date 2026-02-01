@@ -84,6 +84,30 @@ export const getConfiguredProviders = async (projectId) => {
   }
 };
 
+/* ------------------- DELETE PROJECT USER ------------------- */
+export const deleteProjectUser = async (projectId, userId) => {
+  try {
+    const { data } = await api.delete(
+      `${PROJECTS_URL}/${projectId}/users/${userId}`
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
+/* ------------------- TOGGLE USER VERIFICATION ------------------- */
+export const toggleUserVerification = async (projectId, userId) => {
+  try {
+    const { data } = await api.patch(
+      `${PROJECTS_URL}/${projectId}/users/${userId}/verify`
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
 /* ------------------- DELETE PROJECT ------------------- */
 export const deleteProject = async (projectId) => {
   try {

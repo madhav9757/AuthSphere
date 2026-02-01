@@ -168,8 +168,9 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
 
     // ---------- FIND OR CREATE END USER ----------
     console.log("🔍 Looking for EndUser...");
+    const normalizedEmail = userData.email.toLowerCase().trim();
     let endUser = await EndUser.findOne({
-      email: userData.email,
+      email: normalizedEmail,
       projectId: authRequest.projectId,
     });
 
@@ -186,6 +187,9 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
         username = baseUsername + Math.floor(Math.random() * 10000);
       }
 
+      const project = await Project.findById(authRequest.projectId);
+      const isVerifiedDefault = project?.settings?.requireEmailVerification ? false : true;
+
       endUser = await EndUser.create({
         email: userData.email,
         username,
@@ -194,11 +198,11 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
         picture: userData.picture || "",
         provider: userData.provider || "local",
         providerId: userData.providerId || "",
+        isVerified: isVerifiedDefault,
       });
       console.log("✨ EndUser created:", endUser._id);
 
       // Log the event
-      const project = await Project.findById(authRequest.projectId);
       if (project) {
         await logEvent({
           developerId: project.developer,

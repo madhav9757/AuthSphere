@@ -6,6 +6,8 @@ This is a demonstration project built with React and Vite to showcase the seamle
 
 - **SDK Initialization**: How to properly configure the SDK with a Public Key.
 - **Provider Login**: Implementing redirects for Google, GitHub, and Discord.
+- **Local Authentication**: Example implementation of Email/Password login and signup.
+- **Email Verification**: Integration of the 6-digit OTP verification page.
 - **Callback Handling**: Processing the OAuth2 response to establish a secure session.
 - **Protected Routes**: Restricting access to dashboard views based on auth status.
 - **User Hook**: Accessing user profile data and session state throughout the app.
@@ -56,6 +58,14 @@ Once authenticated, the user profile is accessible via the SDK's `getUser()` met
 3. User authenticates.
 4. AuthSphere redirects back to `http://localhost:5174/callback?code=...`.
 5. SDK exchanges code for tokens.
+6. User is redirected to `/dashboard`.
+
+### Local Auth Flow
+1. User enters Email/Password and clicks **"Sign Up"**.
+2. SDK sends registration data to backend.
+3. User is redirected to `/verify-otp`.
+4. User enters 6-digit code sent to their email.
+5. SDK verifies OTP and automatically logs the user in.
 6. User is redirected to `/dashboard`.
 
 ---

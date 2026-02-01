@@ -1,203 +1,235 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import AuthSphere from '@authspherejs/sdk';
-import { LogOut, Sparkles, ArrowRight, Github, Chrome, MessageSquare, Shield } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import AuthSphere, { AuthError } from '@authspherejs/sdk';
+import { LogOut, Github, Shield, CheckCircle2, AlertCircle, KeyRound, ArrowRight, BookOpen } from 'lucide-react';
+import { Button, Input, Card, AuthLayout } from './components/UI';
 
-// --- Initialize SDK ---
+// --- Init ---
 AuthSphere.initAuth({
-  publicKey: '1b2eb92b0fff434e40146da67219a346',
+  publicKey: "1b2eb92b0fff434e40146da67219a346",
   redirectUri: window.location.origin + '/callback',
   baseUrl: 'http://localhost:8000'
 });
 
-// --- Shared Components ---
-const Button = ({ children, onClick, variant = 'primary', icon: Icon }) => {
-  const base = "flex items-center justify-center gap-3 px-6 py-3 rounded-full font-medium transition-all duration-200 active:scale-[0.98]";
-  const styles = {
-    primary: "bg-slate-900 text-white hover:bg-slate-800 shadow-sm",
-    secondary: "bg-white text-slate-900 border border-slate-200 hover:border-slate-400 hover:shadow-sm",
-    ghost: "text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-4 py-2"
-  };
-  return (
-    <button onClick={onClick} className={`${base} ${styles[variant]}`}>
-      {Icon && <Icon size={18} />}
-      {children}
-    </button>
-  );
-};
-
-// --- Callback Page ---
+// --- Pages ---
 const Callback = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
+  const [params] = useSearchParams();
   const processed = useRef(false);
 
   useEffect(() => {
     if (processed.current) return;
     processed.current = true;
-    const handle = async () => {
-      try {
-        await AuthSphere.handleAuthCallback();
-        navigate('/dashboard');
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-    handle();
-  }, [navigate]);
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6">
-      {!error ? (
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="h-12 w-12 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-400 font-light tracking-wide italic">Authenticating...</p>
-        </div>
-      ) : (
-        <div className="max-w-sm text-center">
-          <h2 className="text-xl font-semibold mb-4 text-slate-900">Oops!</h2>
-          <p className="text-slate-500 mb-6">{error}</p>
-          <Button onClick={() => navigate('/login')}>Try Again</Button>
-        </div>
-      )}
-    </div>
-  );
+    if (params.get('error') === 'email_not_verified') {
+      navigate(`/verify-otp?email=${params.get('email')}${params.get('sdk_request') ? `&sdk_request=${params.get('sdk_request')}` : ''}`);
+      return;
+    }
+
+    AuthSphere.handleAuthCallback().then(() => navigate('/dashboard')).catch(e => console.error(e));
+  }, []);
+
+  return <AuthLayout title="Authenticating..." />;
 };
 
-// --- Login Page ---
 const Login = () => {
-  const handleLogin = (provider) => AuthSphere.redirectToLogin(provider);
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const sdkReq = params.get('sdk_request');
+  const [data, setData] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await AuthSphere.loginLocal(data);
+    } catch (err) {
+      if (err instanceof AuthError && err.message.includes('not verified')) {
+        navigate(`/verify-otp?email=${data.email}&sdk_request=${err.sdk_request || sdkReq}`);
+      } else setError(err.message);
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] text-slate-900 font-sans">
-      <div className="w-full max-w-[400px] p-8">
-        <div className="flex flex-col items-center mb-12 text-center">
-          <div className="mb-6 p-3 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <Sparkles className="text-indigo-600" size={28} />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-          <p className="text-slate-500 mt-2 text-sm">Choose a provider to continue</p>
+    <AuthLayout title="Sign In" subtitle="Enter your credentials to continue">
+      <Card>
+        <form onSubmit={submit} className="space-y-1">
+          {error && <div className="p-3 mb-4 text-xs font-medium text-red-600 bg-red-50 rounded-lg flex items-center gap-2"><AlertCircle size={14} />{error}</div>}
+          <Input label="Email" type="email" placeholder="m@example.com" onChange={e => setData({ ...data, email: e.target.value })} required />
+          <Input label="Password" type="password" placeholder="••••••••" onChange={e => setData({ ...data, password: e.target.value })} required />
+          <Button type="submit" className="w-full mt-2" loading={loading}>Continue</Button>
+        </form>
+
+        <div className="relative my-6 text-center">
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-zinc-100" />
+          <span className="relative px-3 bg-white text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Or</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {[
-            { id: 'google', logo: 'https://authjs.dev/img/providers/google.svg', label: 'Google' },
-            { id: 'github', logo: 'https://authjs.dev/img/providers/github.svg', label: 'GitHub' },
-            { id: 'discord', logo: 'https://authjs.dev/img/providers/discord.svg', label: 'Discord' },
-            { id: 'linkedin', logo: 'https://authjs.dev/img/providers/linkedin.svg', label: 'LinkedIn' },
-            { id: 'gitlab', logo: 'https://authjs.dev/img/providers/gitlab.svg', label: 'GitLab' },
-            { id: 'twitch', logo: 'https://authjs.dev/img/providers/twitch.svg', label: 'Twitch' },
-            { id: 'bitbucket', logo: 'https://authjs.dev/img/providers/bitbucket.svg', label: 'Bitbucket' },
-            { id: 'microsoft', logo: 'https://authjs.dev/img/providers/microsoft.svg', label: 'Microsoft' },
-          ].map((p) => (
-            <button
-              key={p.id}
-              onClick={() => handleLogin(p.id)}
-              className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-400 hover:shadow-lg transition-all group gap-3 text-center"
-            >
-              <div className="h-10 w-10 p-1">
-                <img
-                  src={p.logo}
-                  alt={p.label}
-                  className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all opacity-70 group-hover:opacity-100"
-                />
-              </div>
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-indigo-600 truncate w-full">
-                {p.label}
-              </span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" onClick={() => AuthSphere.redirectToLogin('google')} className="w-full h-11">
+            <img src="https://authjs.dev/img/providers/google.svg" className="w-4 h-4" alt="G" />
+          </Button>
+          <Button variant="outline" onClick={() => AuthSphere.redirectToLogin('github')} className="w-full h-11" icon={Github} />
         </div>
 
-        <p className="text-center text-[11px] text-slate-400 mt-12 tracking-widest uppercase font-medium">
-          Powered by AuthSphere
+        <p className="mt-8 text-center text-sm text-zinc-400">
+          New here? <button onClick={() => navigate(`/signup${sdkReq ? `?sdk_request=${sdkReq}` : ''}`)} className="text-zinc-900 font-semibold hover:underline">Create account</button>
         </p>
-      </div>
-    </div>
+      </Card>
+    </AuthLayout>
   );
 };
 
-// --- Dashboard (Protected) ---
+const SignUp = () => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const sdkReq = params.get('sdk_request');
+  const [data, setData] = useState({ email: '', password: '', username: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await AuthSphere.register({ ...data, sdk_request: sdkReq });
+      navigate(`/verify-otp?email=${data.email}${sdkReq ? `&sdk_request=${sdkReq}` : ''}`);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthLayout title="Create Account" subtitle="Join AuthSphere today">
+      <Card>
+        <form onSubmit={submit}>
+          {error && <div className="p-3 mb-4 text-xs font-medium text-red-600 bg-red-50 rounded-lg"><AlertCircle size={14} className="inline mr-2" />{error}</div>}
+          <Input label="Username" onChange={e => setData({ ...data, username: e.target.value })} required />
+          <Input label="Email" type="email" onChange={e => setData({ ...data, email: e.target.value })} required />
+          <Input label="Password" type="password" onChange={e => setData({ ...data, password: e.target.value })} required />
+          <Button type="submit" className="w-full mt-2" loading={loading}>Register</Button>
+        </form>
+        <p className="mt-6 text-center text-sm text-zinc-400">
+          Already have an account? <button onClick={() => navigate('/login')} className="text-zinc-900 font-semibold hover:underline">Sign in</button>
+        </p>
+      </Card>
+    </AuthLayout>
+  );
+};
+
+const VerifyOTP = () => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const email = params.get('email');
+  const sdkReq = params.get('sdk_request');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const refs = useRef([]);
+
+  const handleInput = (idx, val) => {
+    if (val.length > 1) val = val[val.length - 1];
+    const n = [...otp]; n[idx] = val; setOtp(n);
+    if (val && idx < 5) refs.current[idx + 1].focus();
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await AuthSphere.verifyOTP({ email, otp: otp.join(''), sdk_request: sdkReq });
+
+      // If the backend returned a redirect URL (typical for cross-origin OAuth flows)
+      if (res && res.redirect) {
+        window.location.href = res.redirect;
+        return;
+      }
+
+      if (!sdkReq) navigate('/login'); else navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthLayout title="Verify Email" subtitle={`Enter code sent to ${email}`}>
+      <Card className="text-center">
+        <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <KeyRound size={20} className="text-zinc-400" />
+        </div>
+        <form onSubmit={submit} className="space-y-6">
+          <div className="flex justify-center gap-2">
+            {otp.map((d, i) => (
+              <input key={i} ref={el => refs.current[i] = el} value={d} onChange={e => handleInput(i, e.target.value)}
+                className="w-12 h-14 text-center text-xl font-bold border border-zinc-200 rounded-lg focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 outline-none transition-all" />
+            ))}
+          </div>
+          {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+          <Button type="submit" className="w-full" loading={loading} disabled={otp.includes('')}>Verify</Button>
+        </form>
+      </Card>
+    </AuthLayout>
+  );
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user] = useState(AuthSphere.getUser());
+  const user = AuthSphere.getUser();
 
-  useEffect(() => {
-    if (!AuthSphere.isAuthenticated()) navigate('/login');
-  }, [navigate]);
-
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" />;
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-indigo-100">
-      <nav className="max-w-5xl mx-auto h-24 flex items-center justify-between px-8">
-        <div className="flex items-center gap-2 font-bold tracking-tight text-lg">
-          <Shield className="text-indigo-600" /> AuthSphere
+    <div className="min-h-screen bg-white">
+      <nav className="border-b border-zinc-100">
+        <div className="max-w-4xl mx-auto h-16 flex items-center justify-between px-6">
+          <div className="flex items-center gap-2 font-bold"><Shield size={18} /> AuthSphere</div>
+          <Button variant="ghost" size="sm" onClick={() => { AuthSphere.logout(); navigate('/login'); }} icon={LogOut}>Logout</Button>
         </div>
-        <Button variant="ghost" onClick={() => { AuthSphere.logout(); navigate('/login'); }} icon={LogOut}>
-          Logout
-        </Button>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-8 py-12">
-        <header className="mb-16">
-          <h2 className="text-4xl font-semibold text-slate-900 tracking-tight">
-            Hi, {user.username.split(' ')[0]}
-          </h2>
-          <p className="text-slate-500 mt-2">Your session is secure and active.</p>
-        </header>
+      <main className="max-w-4xl mx-auto px-6 py-20">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6 overflow-hidden border-4 border-zinc-100 italic">
+            {user.picture ? <img src={user.picture} alt="" /> : user.username[0]}
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight mb-2">Hey, {user.username.split(' ')[0]}!</h2>
+          <p className="text-zinc-500 text-sm mb-8">You're securely logged in via {user.provider}</p>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <section className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
-            <div className="flex items-center gap-4 mb-6">
-              {user.picture ? (
-                <img src={user.picture} alt="" className="w-12 h-12 rounded-full ring-2 ring-indigo-500/20" />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                  {user.username[0].toUpperCase()}
-                </div>
-              )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg mt-8">
+            <Card className="p-6 text-left flex items-start gap-4">
+              <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
               <div>
-                <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-600 uppercase">Profile Details</span>
-                <p className="text-sm font-semibold text-slate-900">{user.username}</p>
+                <h4 className="font-semibold text-sm">Verified Account</h4>
+                <p className="text-xs text-zinc-400 mt-0.5">{user.email}</p>
               </div>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">Email Address</label>
-                <p className="font-medium text-slate-800">{user.email}</p>
+            </Card>
+            <Card className="p-6 text-left group cursor-pointer hover:border-zinc-900 transition-all">
+              <div className="flex justify-between items-start">
+                <BookOpen className="text-zinc-400 group-hover:text-zinc-900" size={20} />
+                <ArrowRight className="text-zinc-300 group-hover:text-zinc-900" size={16} />
               </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">User ID</label>
-                <p className="font-mono text-xs text-slate-500 truncate">{user.id || user._id}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="p-8 rounded-3xl border border-slate-200 flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">System Status</span>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-                <p className="text-sm font-medium">PKCE Handshake Verified</p>
-              </div>
-            </div>
-            <button className="text-sm text-indigo-600 font-semibold hover:underline mt-8 text-left">
-              Explore Documentation →
-            </button>
-          </section>
+              <h4 className="font-semibold text-sm mt-3">Documentation</h4>
+              <p className="text-xs text-zinc-400 mt-0.5">Learn how to integrate</p>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
   );
-};
+}
 
-// --- App Root ---
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/callback" element={<Callback />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
