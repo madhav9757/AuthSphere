@@ -99,12 +99,20 @@ export async function verifyOTP(params: { email: string; otp: string; sdk_reques
 
     // If successful and sdk_request was provided, backend redirects in handleSDKCallback.
     // We need to handle that redirect if the fetch follows it, or check the final URL.
+    // If it's a browser redirect
     if (response.redirected) {
         window.location.href = response.url;
         return;
     }
 
     const data = await response.json();
+
+    // If it's a JSON redirect (standard in AuthSphere new API)
+    if (data.redirect) {
+        window.location.href = data.redirect;
+        return data;
+    }
+
     if (!response.ok) {
         throw new AuthError(data.message || "Verification failed");
     }
