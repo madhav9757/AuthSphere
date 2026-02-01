@@ -1,57 +1,49 @@
 import React from "react";
-import { Users, ShieldCheck, Trash2 } from "lucide-react";
-import DocsCodeBlock from "../DocsCodeBlock";
+import { Users } from "lucide-react";
 
 const UserManagement = () => {
     return (
-        <article className="space-y-8 animate-in fade-in duration-500">
-            <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tight">User Management</h1>
-                <p className="text-lg text-muted-foreground">
-                    Administrative controls for your project's identity cluster.
+        <article className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-1.5">
+                <h1 className="text-2xl font-bold tracking-tight">Identity Administration</h1>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                    Manage the lifecycle of identities within your project namespace through the dashboard and administrative interfaces.
                 </p>
             </div>
 
-            <div className="space-y-12">
-                {/* Dashboard Actions */}
-                <section>
-                    <div className="flex items-center gap-2 mb-4">
-                        <Users className="h-5 w-5 text-primary" />
-                        <h2 className="text-2xl font-bold">Dashboard Controls</h2>
-                    </div>
-                    <p className="text-muted-foreground mb-4">
-                        The AuthSphere Dashboard provides a complete UI for managing your users without writing code.
+            <div className="space-y-8">
+                {/* State Management */}
+                <section className="space-y-3">
+                    <h3 className="text-sm font-bold flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        Identity State Orchestration
+                    </h3>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        Every user entity exists in a specific state machine: <code>active</code>, <code>banned</code>, or <code>unverified</code>.
+                        Dashboard administrators can manually override these states to resolve verification issues or mitigate malicious actor access. State transitions are propagated across the cluster in real-time, affecting the validity of existing refresh tokens.
                     </p>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-xl flex gap-3">
-                            <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
-                            <div>
-                                <h5 className="font-bold text-sm">Force Verify</h5>
-                                <p className="text-xs text-muted-foreground">Manually mark a user as verified to bypass OTP requirements.</p>
-                            </div>
-                        </div>
-                        <div className="p-4 border rounded-xl flex gap-3">
-                            <Trash2 className="h-5 w-5 text-red-500 shrink-0" />
-                            <div>
-                                <h5 className="font-bold text-sm">Delete Account</h5>
-                                <p className="text-xs text-muted-foreground">Permanently remove a user and all their associated session data.</p>
-                            </div>
-                        </div>
-                    </div>
                 </section>
 
-                {/* Management API */}
-                <section>
-                    <h2 className="text-2xl font-bold mb-4">Programmatic Management</h2>
-                    <p className="text-muted-foreground mb-4">
-                        Manage users from your backend using your project's <strong>Secret Key</strong>. This API is restricted and should never be called from a frontend.
+                {/* Audit Trails */}
+                <section className="space-y-3">
+                    <h3 className="text-sm font-bold flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        Immutable Audit Logging
+                    </h3>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        All administrative actions—including state changes, password resets, and metadata updates—are persisted in an immutable audit log. These logs contain the originating administrator ID, timestamp, and a delta of the modified fields, providing a clear trail for security compliance (SOC2/GDPR).
                     </p>
-                    <DocsCodeBlock
-                        id="mgmt-api-ref"
-                        code={`// Backend Example (Node.js)\nconst res = await fetch('http://localhost:8000/api/v1/projects/:projectId/users/:userId', {\n  method: 'DELETE',\n  headers: {\n    'X-Project-Secret': process.env.AUTH_SECRET_KEY\n  }\n});`}
-                        language="javascript"
-                    />
                 </section>
+
+                <div className="p-3 bg-muted/30 border border-muted rounded-xl flex gap-3 items-start">
+                    <Users size={16} className="text-primary mt-0.5" />
+                    <div className="space-y-1">
+                        <h5 className="text-[11px] font-bold">Scaling identity Management</h5>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                            For large-scale user migrations or bulk administrative operations, utilize the <code>/admin</code> REST API subset. Note: This requires high-entropy Secret Key authentication and should never be exposed to front-facing client environments.
+                        </p>
+                    </div>
+                </div>
             </div>
         </article>
     );

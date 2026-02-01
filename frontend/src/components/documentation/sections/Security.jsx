@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck, Lock, Database, RefreshCw } from "lucide-react";
+import { ShieldCheck, Lock, Database, RefreshCw, Activity } from "lucide-react";
 
 const Security = () => {
     const specs = [
@@ -26,34 +26,53 @@ const Security = () => {
     ];
 
     return (
-        <article className="space-y-8 animate-in fade-in duration-500">
-            <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tight">Security Posture</h1>
-                <p className="text-lg text-muted-foreground">
-                    Architecture designed for zero-trust environments.
+        <article className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-1.5">
+                <h1 className="text-2xl font-bold tracking-tight">Security & Cryptographic controls</h1>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                    AuthSphere core utilizes industry-standard cryptographic primitives to ensure the confidentiality, integrity, and availability of identity data.
                 </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-                {specs.map((item, i) => (
-                    <div key={i} className="p-6 rounded-2xl border bg-card/50">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                            <item.icon size={20} />
+            <div className="space-y-8">
+                {/* Primitives */}
+                <section className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ShieldCheck className="h-4 w-4 text-primary" />
+                        <h2 className="text-sm font-bold uppercase tracking-wider">Cryptographic Primitives</h2>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl border bg-card/50">
+                            <h4 className="text-[11px] font-bold mb-1">Hashing: Argon2id</h4>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">Passwords are hashed using Argon2id with a parallelization factor of 1, 64MB memory cost, and 3 iterations, ensuring resilience against GPU-based cracking.</p>
                         </div>
-                        <h4 className="font-bold text-lg mb-2">{item.title}</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item.desc}
+                        <div className="p-3 rounded-xl border bg-card/50">
+                            <h4 className="text-[11px] font-bold mb-1">Signing: RS256</h4>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">JWTs are signed using 2048-bit RSA keys. Public keys are exposed via JWKS endpoints for stateless, cross-domain verification.</p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Secret Management */}
+                <section className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Lock className="h-4 w-4 text-primary" />
+                        <h2 className="text-sm font-bold uppercase tracking-wider">Secret & Key Orchestration</h2>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        All project-specific secrets and private keys are encrypted at rest using AES-256-GCM. We utilize a tiered key management strategy where master keys are rotated quarterly and isolated within secure environment segments.
+                    </p>
+                </section>
+
+                <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex gap-3 items-start">
+                    <Activity size={16} className="text-red-500 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                        <h5 className="text-[11px] font-bold text-red-900 dark:text-red-100">Brute-Force Protection</h5>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                            Our edge layer implements adaptive rate limiting and account lockout policies. IPs exhibiting anomalous authentication patterns (e.g., credential stuffing) are automatically blacklisted across our global nodes.
                         </p>
                     </div>
-                ))}
-            </div>
-
-            <div className="p-8 rounded-2xl bg-primary text-primary-foreground text-center">
-                <h3 className="text-xl font-bold mb-2">Compliance Ready</h3>
-                <p className="opacity-80 text-sm max-w-lg mx-auto leading-relaxed">
-                    The AuthSphere infrastructure follows SOC2 and GDPR guidelines for data isolation,
-                    ensuring that user identity clusters are strictly siloed by Project ID.
-                </p>
+                </div>
             </div>
         </article>
     );
