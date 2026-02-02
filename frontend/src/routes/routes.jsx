@@ -56,7 +56,7 @@ export const routes = [
   {
     path: "/login",
     element: (
-      <MainLayout>
+      <MainLayout showNavAndFooter={false}>
         <Login />
       </MainLayout>
     ),
@@ -64,7 +64,7 @@ export const routes = [
   {
     path: "/register", // ADD THIS ROUTE
     element: (
-      <MainLayout>
+      <MainLayout showNavAndFooter={false}>
         <Register />
       </MainLayout>
     ),
