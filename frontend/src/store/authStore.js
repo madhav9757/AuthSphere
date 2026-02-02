@@ -1,0 +1,76 @@
+import { create } from 'zustand';
+import api from '../api/axios';
+
+const useAuthStore = create((set, get) => ({
+  user: null,
+  loading: true,
+  loggingOut: false,
+
+  setUser: (user) => set({ user }),
+  setLoading: (loading) => set({ loading }),
+  
+  checkAuth: async () => {
+    set({ loading: true });
+    try {
+      const res = await api.get('/developers/me');
+      if (res.data.success) {
+        set({ user: res.data.data });
+      } else {
+        set({ user: null });
+      }
+    } catch (err) {
+      set({ user: null });
+      // Only log non-401 errors
+      if (err.response?.status !== 401) {
+        console.error("Auth check failed:", err.message);
+      }
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  logout: async () => {
+    set({ loggingOut: true });
+    try {
+      await api.post('/developers/logout');
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      set({ user: null, loggingOut: false });
+      window.location.href = '/login';
+    }
+  },
+}));
+
+// Setup listeners for axios interceptor events
+// This should be called once in the app (e.g., in App.jsx or a focused component)
+export const setupAuthListeners = () => {
+  const { setUser } = useAuthStore.getState();
+
+  const handleTokenRefreshed = async () => {
+    try {
+      const res = await api.get('/developers/me');
+      if (res.data.success) {
+        setUser(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user after token refresh:", err);
+      setUser(null);
+    }
+  };
+
+  const handleAuthFailed = () => {
+    setUser(null);
+  };
+
+  window.addEventListener("token-refreshed", handleTokenRefreshed);
+  window.addEventListener("auth-failed", handleAuthFailed);
+
+  // Return generic cleanup function, though likely used at app root level
+  return () => {
+    window.removeEventListener("token-refreshed", handleTokenRefreshed);
+    window.removeEventListener("auth-failed", handleAuthFailed);
+  };
+};
+
+export default useAuthStore;

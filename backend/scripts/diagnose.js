@@ -165,7 +165,7 @@ async function diagnose() {
     'express',
     'mongoose',
     'jsonwebtoken',
-    'bcrypt',
+    'bcryptjs',
     'cors',
     'cookie-parser',
     'dotenv'

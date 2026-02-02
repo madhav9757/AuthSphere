@@ -9,6 +9,16 @@ import {
   resendVerification,
 } from "../controllers/sdk.controller.js";
 
+import { authLimiter } from "../middlewares/rateLimiter.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  sdkAuthorizeSchema,
+  sdkTokenSchema,
+  sdkRefreshSchema,
+  sdkRegisterLocalSchema,
+  sdkLoginLocalSchema,
+} from "../validators/sdk.validators.js";
+
 const router = express.Router();
 
 /**
@@ -22,21 +32,21 @@ const router = express.Router();
  * Initiate OAuth flow (browser redirect)
  * GET /sdk/authorize
  */
-router.get("/authorize", authorize);
+router.get("/authorize", validate(sdkAuthorizeSchema), authorize);
 
 /**
  * Exchange authorization code for tokens
  * POST /sdk/token
  */
-router.post("/token", token);
+router.post("/token", validate(sdkTokenSchema), token);
 
 /**
  * Refresh access token using refresh token
  * POST /sdk/refresh
  */
-router.post("/refresh", refresh);
-router.post("/register", registerLocal);
-router.post("/login-local", loginLocal);
+router.post("/refresh", validate(sdkRefreshSchema), refresh);
+router.post("/register", authLimiter, validate(sdkRegisterLocalSchema), registerLocal);
+router.post("/login-local", authLimiter, validate(sdkLoginLocalSchema), loginLocal);
 router.post("/verify-otp", verifyOTP);
 router.post("/resend-verification", resendVerification);
 

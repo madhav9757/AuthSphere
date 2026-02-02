@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "@/context/AuthContext";
+import useAuthStore from "@/store/authStore";
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuthStore();
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

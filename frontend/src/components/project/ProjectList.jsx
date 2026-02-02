@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useProjects } from "@/hooks/useProjects";
 
 import ProjectCard from "./ProjectCard";
 import CreateProjectModal from "./CreateProjectModal";
 import ProjectSkeleton from "./ProjectSkeleton";
 import EmptyState from "./EmptyState";
 
-import { getProjects } from "@/api/ProjectAPI";
+
 
 import { Button } from "@/components/ui/button";
 
@@ -14,22 +15,10 @@ import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 
 const ProjectList = () => {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: projects = [], isLoading: loading, refetch } = useProjects();
   const [createOpen, setCreateOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [newProject, setNewProject] = useState(null);
-
-  const loadProjects = async () => {
-    setLoading(true);
-    const res = await getProjects();
-    setProjects(res?.data || []);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
 
   if (loading) {
     return (
@@ -103,7 +92,7 @@ const ProjectList = () => {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={(project) => {
-          loadProjects();
+          refetch();
           setNewProject(project);
           setTimeout(() => setWizardOpen(true), 300);
         }}

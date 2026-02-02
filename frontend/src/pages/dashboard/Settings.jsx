@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
-import { AuthContext } from "@/context/AuthContext";
+import React, { useState, useEffect } from "react";
+import useAuthStore from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const Settings = () => {
-    const { user, setUser, logout } = useContext(AuthContext);
+    const { user, setUser, logout } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [settingsLoading, setSettingsLoading] = useState(true);
     const navigate = useNavigate();

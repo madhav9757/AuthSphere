@@ -1,7 +1,7 @@
 import Developer from "../models/developer.model.js";
 import Project from "../models/project.model.js";
 import EndUser from "../models/endUsers.models.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { conf } from "../configs/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";

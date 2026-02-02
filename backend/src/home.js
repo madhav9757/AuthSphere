@@ -68,7 +68,7 @@ const generateTerminalUI = (d) => `
     <header class="border-b-4 border-black p-6 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50">
         <div class="flex items-center gap-6">
             <div class="w-16 h-16 border-2 border-black rounded-2xl flex items-center justify-center bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden p-2 transition-transform hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                <img src="${d.resources.frontend}/assets/logo.png" alt="AuthSphere Logo" class="w-full h-full object-contain mix-blend-multiply" style="filter: contrast(1.1) brightness(1.1);" onerror="this.src='https://authsphere.vercel.app/assets/logo.png'">
+                <img src="/assets/AuthSphere(main).png" alt="AuthSphere Logo" class="w-full h-full object-contain mix-blend-multiply" style="filter: contrast(1.1) brightness(1.1);">
             </div>
             <div>
                 <h1 class="font-900 text-3xl tracking-tighter leading-none flex items-center gap-3">

@@ -1,10 +1,9 @@
-import { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import useAuthStore from "../store/authStore";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuthStore();
   const location = useLocation();
 
   /* ---------------- LOADING STATE ---------------- */

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen, Zap, User, Globe, Layers, KeyRound,
@@ -6,7 +6,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 
-import { AuthContext } from "@/context/AuthContext";
+import useAuthStore from "@/store/authStore";
 import { getProjects } from "@/api/ProjectAPI";
 
 // Documentation Components
@@ -28,7 +28,7 @@ import Security from "@/components/documentation/sections/Security";
 import ErrorHandling from "@/components/documentation/sections/ErrorHandling";
 
 const Documentation = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuthStore();
   const [activeSection, setActiveSection] = useState("introduction");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);

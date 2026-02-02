@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/AuthContext";
+import useAuthStore from "@/store/authStore";
 
 import ProjectList from "@/components/project/ProjectList";
 
@@ -46,7 +46,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ShineBorder } from "@/components/ui/shine-border";
 
 const Dashboard = () => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuthStore();
   const navigate = useNavigate();
 
   const [stats, setStats] = useState({

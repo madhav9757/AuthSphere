@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 
 import { httpLogger } from "./utils/logger.js";
 import { conf } from "./configs/env.js";
+import { swaggerDocs } from "./configs/swagger.js";
 import routes from "./routes/index.js"; // centralized routes
 import homeHandler from "./home.js";
 
@@ -13,6 +15,24 @@ const app = express();
 if (process.env.NODE_ENV !== "production") {
   app.use(httpLogger);
 }
+
+swaggerDocs(app);
+
+// --- Security Middleware ---
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https:"],
+      },
+    },
+  })
+);
 
 // --- Standard Middleware ---
 app.use(
