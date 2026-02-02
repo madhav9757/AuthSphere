@@ -9,6 +9,8 @@ import {
   resendVerification,
 } from "../controllers/sdk.controller.js";
 
+import { authLimiter } from "../middlewares/rateLimiter.js";
+
 const router = express.Router();
 
 /**
@@ -35,8 +37,8 @@ router.post("/token", token);
  * POST /sdk/refresh
  */
 router.post("/refresh", refresh);
-router.post("/register", registerLocal);
-router.post("/login-local", loginLocal);
+router.post("/register", authLimiter, registerLocal);
+router.post("/login-local", authLimiter, loginLocal);
 router.post("/verify-otp", verifyOTP);
 router.post("/resend-verification", resendVerification);
 

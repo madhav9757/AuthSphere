@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
 
 import { httpLogger } from "./utils/logger.js";
 import { conf } from "./configs/env.js";
@@ -13,6 +15,10 @@ const app = express();
 if (process.env.NODE_ENV !== "production") {
   app.use(httpLogger);
 }
+
+// --- Security Middleware ---
+app.use(helmet());
+app.use(mongoSanitize());
 
 // --- Standard Middleware ---
 app.use(

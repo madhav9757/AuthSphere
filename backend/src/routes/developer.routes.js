@@ -12,12 +12,13 @@ import {
   updateDeveloperOrganization,
   getDeveloperSettings,
 } from "../controllers/developer.controller.js";
+import { authLimiter } from "../middlewares/rateLimiter.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/register").post(registerDeveloper);
-router.route("/login").post(loginDeveloper);
+router.route("/register").post(authLimiter, registerDeveloper);
+router.route("/login").post(authLimiter, loginDeveloper);
 router.route("/refresh-token").post(refreshAccessToken);
 
 router.route("/logout").post(verifyJWT, logoutDeveloper);
