@@ -20,6 +20,7 @@ import {
   developerLoginSchema,
   updateProfileSchema,
   updateOrganizationSchema,
+  updatePreferencesSchema,
 } from "../validators/developer.validators.js";
 
 const router = Router();
@@ -37,7 +38,7 @@ router.route("/account").delete(verifyJWT, deleteDeveloperAccount);
 
 // New Settings Routes
 router.route("/settings").get(verifyJWT, getDeveloperSettings);
-router.route("/preferences").put(verifyJWT, updateDeveloperPreferences);
+router.route("/preferences").put(verifyJWT, validate(updatePreferencesSchema), updateDeveloperPreferences);
 router.route("/organization").put(verifyJWT, validate(updateOrganizationSchema), updateDeveloperOrganization);
 
 export default router;
