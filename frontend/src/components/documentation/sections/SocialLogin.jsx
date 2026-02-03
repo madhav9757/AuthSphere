@@ -33,7 +33,7 @@ const SocialLogin = () => {
                                 We generate a cryptographically random <code>state</code> and <code>nonce</code> to prevent Replay and CSRF attacks.
                             </p>
                             <div className="p-4 rounded-xl border bg-card/50">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 text-primary">Default Scopes</h4>
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Default Scopes</h4>
                                 <div className="flex flex-wrap gap-1.5">
                                     {['openid', 'profile', 'email'].map(s => (
                                         <code key={s} className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-primary">{s}</code>

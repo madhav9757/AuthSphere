@@ -1,214 +1,255 @@
-import React, { useState } from "react";
-import { User, Mail, Lock, Building, Check, ArrowRight, ArrowLeft } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Sparkles,
+} from "lucide-react";
 
 export const StepperSignup = () => {
-    const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        company: "",
-        role: "",
-        password: "",
-        confirmPassword: "",
-    });
+  const [mode, setMode] = useState("signup"); // signup | login
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-    const steps = [
-        { id: 0, title: "Personal Info", icon: User },
-        { id: 1, title: "Company Details", icon: Building },
-        { id: 2, title: "Security", icon: Lock },
-    ];
+  const [form, setForm] = useState({
+    email: "",
+    name: "",
+    password: "",
+  });
 
-    const nextStep = () => {
-        if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
-        }
-    };
+  const totalSteps = mode === "signup" ? 3 : 2;
 
-    const prevStep = () => {
-        if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
-        }
-    };
+  const isEmailValid = useMemo(
+    () => /\S+@\S+\.\S+/.test(form.email),
+    [form.email]
+  );
 
-    return (
-        <div className="min-h-[700px] w-full flex items-center justify-center bg-gray-50 p-4 font-sans">
-            <div className="w-full max-w-2xl">
+  const isPasswordStrong = useMemo(
+    () => form.password.length >= 10,
+    [form.password]
+  );
+
+  const canContinue = () => {
+    if (step === 1) return isEmailValid;
+    if (step === 2 && mode === "signup") return form.name.length >= 2;
+    if (step === totalSteps) return isPasswordStrong;
+    return false;
+  };
+
+  const nextStep = (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+      if (step < totalSteps) setStep(step + 1);
+      else setSuccess(true);
+    }, 700);
+  };
+
+  const steps = {
+    1: {
+      title: "Your email address",
+      subtitle: "We’ll use this to identify and protect your account.",
+      field: "email",
+      type: "email",
+      placeholder: "you@example.com",
+      icon: <Mail size={18} />,
+      hint: !form.email
+        ? "Enter a valid email address"
+        : isEmailValid
+        ? "Looks good"
+        : "That email doesn’t look right",
+    },
+    2: {
+      title:
+        mode === "signup"
+          ? "Choose your display name"
+          : "Enter your password",
+      subtitle:
+        mode === "signup"
+          ? "This will appear on your profile and workspace."
+          : "Make sure no one is watching 👀",
+      field: mode === "signup" ? "name" : "password",
+      type: mode === "signup" ? "text" : "password",
+      placeholder:
+        mode === "signup" ? "John Doe" : "Your secure password",
+      icon: mode === "signup" ? <User size={18} /> : <Lock size={18} />,
+    },
+    3: {
+      title: "Secure your account",
+      subtitle: "Use at least 10 characters for strong protection.",
+      field: "password",
+      type: "password",
+      placeholder: "Create a strong password",
+      icon: <Lock size={18} />,
+      hint: isPasswordStrong
+        ? "Strong password"
+        : "At least 10 characters required",
+    },
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f9fafb] relative overflow-hidden">
+      {/* Ambient background */}
+      <div className="absolute inset-0">
+        <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-200/40 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-blue-200/40 rounded-full blur-[120px]" />
+      </div>
+
+      <motion.div layout className="relative z-10 w-full max-w-[420px] px-6">
+        <div className="bg-white/70 backdrop-blur-xl border border-white rounded-[2.2rem] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.06)]">
+          <AnimatePresence mode="wait">
+            {!success ? (
+              <motion.div
+                key={step + mode}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
+              >
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Get Started</h1>
-                    <p className="text-gray-600">Complete the steps below to create your account</p>
+                <header className="mb-10">
+                  <span className="text-xs uppercase tracking-widest text-indigo-500 font-semibold">
+                    {mode === "signup" ? "Create account" : "Welcome back"}
+                  </span>
+                  <h1 className="text-2xl font-semibold text-slate-900 mt-2">
+                    {steps[step].title}
+                  </h1>
+                  <p className="text-sm text-slate-500 mt-2">
+                    {steps[step].subtitle}
+                  </p>
+                </header>
+
+                {/* Progress */}
+                <div className="flex items-center gap-2 mb-8">
+                  {Array.from({ length: totalSteps }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1 rounded-full transition-all ${
+                        i + 1 <= step
+                          ? "bg-indigo-600 w-8"
+                          : "bg-slate-200 w-2"
+                      }`}
+                    />
+                  ))}
                 </div>
 
-                {/* Stepper */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between relative">
-                        {/* Progress Line */}
-                        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
-                            <div
-                                className="h-full bg-indigo-600 transition-all duration-500"
-                                style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-                            />
-                        </div>
-
-                        {steps.map((step, index) => {
-                            const Icon = step.icon;
-                            const isCompleted = index < currentStep;
-                            const isCurrent = index === currentStep;
-
-                            return (
-                                <div key={step.id} className="flex flex-col items-center relative">
-                                    <div
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                            isCompleted
-                                                ? "bg-indigo-600 text-white"
-                                                : isCurrent
-                                                ? "bg-indigo-600 text-white ring-4 ring-indigo-100"
-                                                : "bg-white border-2 border-gray-200 text-gray-400"
-                                        }`}
-                                    >
-                                        {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                                    </div>
-                                    <span
-                                        className={`mt-2 text-xs font-medium ${
-                                            isCompleted || isCurrent ? "text-gray-900" : "text-gray-400"
-                                        }`}
-                                    >
-                                        {step.title}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                <form onSubmit={nextStep} className="space-y-6">
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      {steps[step].icon}
                     </div>
+
+                    <input
+                      autoFocus
+                      required
+                      type={
+                        steps[step].type === "password" && showPassword
+                          ? "text"
+                          : steps[step].type
+                      }
+                      placeholder={steps[step].placeholder}
+                      value={form[steps[step].field]}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          [steps[step].field]: e.target.value,
+                        })
+                      }
+                      className="w-full py-4 pl-12 pr-12 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition"
+                    />
+
+                    {steps[step].type === "password" && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    )}
+                  </div>
+
+                  {steps[step].hint && (
+                    <p className="text-xs text-slate-400">
+                      {steps[step].hint}
+                    </p>
+                  )}
+
+                  <button
+                    disabled={!canContinue() || loading}
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-40 transition"
+                  >
+                    {loading ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                      />
+                    ) : (
+                      <>
+                        {step === totalSteps
+                          ? mode === "signup"
+                            ? "Create account"
+                            : "Sign in"
+                          : "Continue"}
+                        <ArrowRight size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Footer */}
+                <div className="mt-10 text-center text-xs text-slate-400">
+                  {mode === "signup" ? "Already have an account?" : "New here?"}
+                  <button
+                    onClick={() => {
+                      setMode(mode === "signup" ? "login" : "signup");
+                      setStep(1);
+                    }}
+                    className="ml-1 font-semibold text-indigo-600"
+                  >
+                    {mode === "signup" ? "Sign in" : "Create account"}
+                  </button>
                 </div>
-
-                {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-8">
-                    {/* Step 0: Personal Info */}
-                    {currentStep === 0 && (
-                        <div className="space-y-5 animate-in fade-in duration-300">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="John Doe"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder="you@example.com"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 1: Company Details */}
-                    {currentStep === 1 && (
-                        <div className="space-y-5 animate-in fade-in duration-300">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.company}
-                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                                    placeholder="Acme Inc."
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Your Role</label>
-                                <select
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-                                >
-                                    <option value="">Select your role</option>
-                                    <option value="developer">Developer</option>
-                                    <option value="designer">Designer</option>
-                                    <option value="manager">Product Manager</option>
-                                    <option value="founder">Founder/CEO</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 2: Security */}
-                    {currentStep === 2 && (
-                        <div className="space-y-5 animate-in fade-in duration-300">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                                <input
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    placeholder="Create a strong password"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                    placeholder="Re-enter your password"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-                                <p className="text-sm text-indigo-900 font-medium mb-2">Password Requirements:</p>
-                                <ul className="text-xs text-indigo-700 space-y-1">
-                                    <li className="flex items-center gap-2">
-                                        <Check className="h-3 w-3" /> At least 8 characters
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Check className="h-3 w-3" /> One uppercase letter
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Check className="h-3 w-3" /> One number or special character
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Navigation Buttons */}
-                    <div className="flex gap-3 mt-8">
-                        {currentStep > 0 && (
-                            <button
-                                onClick={prevStep}
-                                className="flex-1 px-6 py-3 border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <ArrowLeft className="h-5 w-5" />
-                                Back
-                            </button>
-                        )}
-                        <button
-                            onClick={currentStep === steps.length - 1 ? () => alert("Form submitted!") : nextStep}
-                            className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 group"
-                        >
-                            {currentStep === steps.length - 1 ? "Create Account" : "Continue"}
-                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-center py-8"
+              >
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 className="w-10 h-10 text-green-600" />
                 </div>
-
-                {/* Sign In Link */}
-                <p className="text-center text-sm text-gray-600 mt-6">
-                    Already have an account?{" "}
-                    <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                        Sign in
-                    </a>
+                <h2 className="text-2xl font-bold">
+                  Welcome{form.name && `, ${form.name.split(" ")[0]}`}!
+                </h2>
+                <p className="text-slate-500 mt-2">
+                  Your secure workspace is ready.
                 </p>
-            </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-    );
+
+        <div className="mt-6 flex items-center justify-center gap-2 text-slate-400 text-xs tracking-widest uppercase">
+          <Sparkles size={14} />
+          Intelligent Authentication
+        </div>
+      </motion.div>
+    </div>
+  );
 };
