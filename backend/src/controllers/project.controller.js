@@ -323,6 +323,20 @@ export const deleteProjectUser = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId,
+      action: "USER_DELETED",
+      description: `User "${user.email}" was deleted from project "${project.name}".`,
+      category: "user",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
+    });
+
     return res
       .status(200)
       .json({ success: true, message: "User deleted successfully" });
@@ -362,6 +376,20 @@ export const toggleUserVerification = async (req, res) => {
 
     user.isVerified = !user.isVerified;
     await user.save();
+
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId,
+      action: "USER_VERIFICATION_TOGGLED",
+      description: `Verification for user "${user.email}" was toggled to ${user.isVerified ? "verified" : "unverified"}.`,
+      category: "user",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
+    });
 
     return res.status(200).json({
       success: true,
@@ -524,11 +552,9 @@ export const sendTestEmail = async (req, res) => {
     });
   } catch (err) {
     console.error("Send Test Email Error:", err);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: err.message || "Failed to send test email",
-      });
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to send test email",
+    });
   }
 };
