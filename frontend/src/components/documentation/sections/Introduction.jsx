@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, ShieldCheck, Mail, Lock, BarChart3, Settings2, Fingerprint, Database, Cpu } from "lucide-react";
+import { BookOpen, ShieldCheck, Mail, Lock, BarChart3, Settings2, Fingerprint, Database, Cpu, Palette, Layout, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -157,6 +157,49 @@ const Introduction = () => {
                             <p className="text-emerald-400"># Resulting Hash Format</p>
                             <p className="text-blue-400">$argon2id$v=19$m=65536,t=3,p=4$...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Branding Engine Section */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <Palette className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold">Brand Orchestration</h3>
+                        <p className="text-sm text-muted-foreground">Deliver a seamless, branded authentication experience across every automated touchpoint.</p>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-3 p-6 rounded-2xl border bg-card/30">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Layout className="h-4 w-4" />
+                        </div>
+                        <h4 className="text-sm font-bold">Visual Continuity</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Inject your logo, primary brand colors, and custom footer text into every system email. No more generic, third-party styled notifications.
+                        </p>
+                    </div>
+                    <div className="space-y-3 p-6 rounded-2xl border bg-card/30">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                            <ShieldCheck className="h-4 w-4" />
+                        </div>
+                        <h4 className="text-sm font-bold">Security Metadata</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Give users confidence with technical context. Optionally include IP addresses, device types, and geographical locations in verification emails.
+                        </p>
+                    </div>
+                    <div className="space-y-3 p-6 rounded-2xl border bg-card/30">
+                        <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <RefreshCw className="h-4 w-4" />
+                        </div>
+                        <h4 className="text-sm font-bold">Real-time Testing</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Use the integrated **Deliverability Tester** to send live rendering previews to your inbox before deploying changes to production.
+                        </p>
                     </div>
                 </div>
             </div>

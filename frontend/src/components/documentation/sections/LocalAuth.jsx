@@ -11,7 +11,7 @@ const LocalAuth = () => {
                 <h1 className="text-3xl font-bold tracking-tight">Local Authentication</h1>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                     The local authentication module provides a cryptographically secure implementation for traditional credential-based access. 
-                    It handles salted hashing via Argon2id, automated OTP delivery, and multi-stage session establishment.
+                    It handles salted hashing via Argon2id, automated challenge delivery (OTP), and atomic OIDC-compliant token exchange upon verification.
                 </p>
             </div>
 

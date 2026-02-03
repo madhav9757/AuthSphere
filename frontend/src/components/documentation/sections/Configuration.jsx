@@ -76,26 +76,40 @@ const Configuration = () => {
                     </div>
                 </section>
 
-                {/* Email Service */}
+                {/* Brand Configuration */}
                 <section className="space-y-6">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
-                            <Mail className="h-5 w-5" />
+                        <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                            <Settings2 className="h-5 w-5" />
                         </div>
-                        <h3 className="text-lg font-bold">Email Infrastructure (SMTP)</h3>
+                        <h3 className="text-lg font-bold">Brand Syncing & Template Orchestration</h3>
                     </div>
 
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        Transactional emails are the backbone of identity verification. You can configure your own 
-                        <strong>SMTP Relay</strong> or use our <strong>Managed Service</strong>.
-                    </p>
-
-                    <div className="grid md:grid-cols-3 gap-4">
-                        {['AWS SES', 'SendGrid', 'Postmark'].map(provider => (
-                            <div key={provider} className="p-4 rounded-xl border bg-muted/30 text-center">
-                                <span className="text-xs font-bold text-foreground/80">{provider} Compatible</span>
-                            </div>
-                        ))}
+                    <div className="grid md:grid-cols-2 gap-8 items-start">
+                        <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                            <p>
+                                Every project includes a dedicated **Email Customization Engine**. You can override the default system appearance to match your application's design system.
+                            </p>
+                            <ul className="space-y-2">
+                                {[
+                                    "Primary brand color for buttons and links",
+                                    "Custom logo URL for email headers",
+                                    "Configurable Support, Privacy, and Security URLs",
+                                    "Technical metadata visibility toggles"
+                                ].map((li, i) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                        <div className="h-1 w-1 rounded-full bg-indigo-500" />
+                                        {li}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="p-5 rounded-2xl border bg-card/30 space-y-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider">Test Delivery</h4>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Before going live, use the integrated **Deliverability Tester**. It sends a real-world render of your template to your specific inbox, allowing you to catch layout issues across different email clients (Gmail, Outlook, Apple Mail).
+                            </p>
+                        </div>
                     </div>
                 </section>
                 
