@@ -129,6 +129,7 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
                     {"\n\n"}
                     <span className="text-purple-400">const</span> <span className="text-blue-400">auth</span> = <span className="text-yellow-400">initAuth</span>({`{`}
                     {"\n  "}publicKey: <span className="text-green-400">"{project.publicKey}"</span>,
+                    {"\n  "}projectId: <span className="text-green-400">"{project._id}"</span>,
                     {"\n  "}redirectUri: <span className="text-green-400">"{project.redirectUris?.[0] || 'YOUR_CALLBACK_URL'}"</span>
                     {`\n}`});
                   </pre>
@@ -138,7 +139,7 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
                   size="sm"
                   className="absolute top-12 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white border-zinc-700"
                   onClick={() => {
-                    navigator.clipboard.writeText(`import { initAuth } from "@authspherejs/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  redirectUri: "${project.redirectUris?.[0] || 'YOUR_CALLBACK_URL'}"\n});`);
+                    navigator.clipboard.writeText(`import { initAuth } from "@authspherejs/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  projectId: "${project._id}",\n  redirectUri: "${project.redirectUris?.[0] || 'YOUR_CALLBACK_URL'}"\n});`);
                     toast.success("Code snippet copied");
                   }}
                 >

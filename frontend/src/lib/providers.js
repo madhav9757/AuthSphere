@@ -1,6 +1,21 @@
 import { ProviderLogos } from "@/components/project/details/assets";
 
 export const allProvidersList = [
+    // --- CORE ---
+    {
+        id: "local",
+        name: "Email / Password",
+        logo: "https://cdn-icons-png.flaticon.com/512/3178/3178158.png", // Generic Mail Icon
+        status: "available",
+        type: "Credentials",
+        flows: ["Password"],
+        platforms: ["Web", "Mobile", "API"],
+        capabilities: ["User Accounts", "Password Reset", "Email Verification"],
+        limitations: "Self-managed user database.",
+        future: ["Passwordless Magic Links", "OTP Login"],
+        env_vars: [],
+        description: "Standard email and password authentication."
+    },
     // --- CORE SOCIAL ---
     {
         id: "google",

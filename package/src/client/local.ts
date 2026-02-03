@@ -1,5 +1,7 @@
 import { getConfig } from "../config/options";
 import { AuthError } from "../utils/errors";
+import { generateCodeVerifier, generateCodeChallenge, generateState } from "../utils/pkce";
+import { setCodeVerifier, setState } from "../utils/storage";
 
 /**
  * Register a user locally using email and password.
@@ -13,6 +15,7 @@ export async function register(params: { email: string; password: string; userna
         body: JSON.stringify({
             ...params,
             public_key: options.publicKey,
+            projectId: options.projectId,
         }),
     });
 
@@ -30,13 +33,17 @@ export async function register(params: { email: string; password: string; userna
 export async function loginLocal(params: { email: string; password: string }) {
     const options = getConfig();
 
-    // 1. Get a requestId first by hitting /sdk/authorize with json=true
-    const state = Math.random().toString(36).substring(7);
-    // Simplified PKCE for this helper
-    const codeChallenge = "S256_CHALLENGE_PLACEHOLDER";
+    // 1. Generate real PKCE state/verifier and STORE them
+    const state = generateState();
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+    setState(state);
+    setCodeVerifier(codeVerifier);
 
     const authUrl = new URL(`${options.baseUrl}/sdk/authorize`);
     authUrl.searchParams.set("public_key", options.publicKey);
+    authUrl.searchParams.set("project_id", options.projectId);
     authUrl.searchParams.set("redirect_uri", options.redirectUri);
     authUrl.searchParams.set("provider", "local");
     authUrl.searchParams.set("response_type", "code");
@@ -63,6 +70,7 @@ export async function loginLocal(params: { email: string; password: string }) {
         body: JSON.stringify({
             ...params,
             public_key: options.publicKey,
+            projectId: options.projectId,
             sdk_request: requestId,
         }),
     });
@@ -108,8 +116,8 @@ export async function verifyOTP(params: { email: string; otp: string; sdk_reques
     const data = await response.json();
 
     // If it's a JSON redirect (standard in AuthSphere new API)
+    // If it's a JSON redirect (standard in AuthSphere new API)
     if (data.redirect) {
-        window.location.href = data.redirect;
         return data;
     }
 

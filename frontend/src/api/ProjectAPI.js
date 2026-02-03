@@ -38,10 +38,7 @@ export const createProject = async (payload) => {
 /* ------------------- UPDATE PROJECT ------------------- */
 export const updateProject = async (projectId, payload) => {
   try {
-    const { data } = await api.patch(
-      `${PROJECTS_URL}/${projectId}`,
-      payload
-    );
+    const { data } = await api.patch(`${PROJECTS_URL}/${projectId}`, payload);
     return data;
   } catch (error) {
     throw normalizeError(error);
@@ -51,9 +48,7 @@ export const updateProject = async (projectId, payload) => {
 /* ------------------- ROTATE PROJECT KEYS ------------------- */
 export const rotateProjectKeys = async (projectId) => {
   try {
-    const { data } = await api.post(
-      `${PROJECTS_URL}/${projectId}/rotate-keys`
-    );
+    const { data } = await api.post(`${PROJECTS_URL}/${projectId}/rotate-keys`);
     return data;
   } catch (error) {
     throw normalizeError(error);
@@ -63,9 +58,7 @@ export const rotateProjectKeys = async (projectId) => {
 /* ------------------- GET PROJECT USERS ------------------- */
 export const getProjectUsers = async (projectId) => {
   try {
-    const { data } = await api.get(
-      `${PROJECTS_URL}/${projectId}/users`
-    );
+    const { data } = await api.get(`${PROJECTS_URL}/${projectId}/users`);
     return data;
   } catch (error) {
     throw normalizeError(error);
@@ -76,7 +69,7 @@ export const getProjectUsers = async (projectId) => {
 export const getConfiguredProviders = async (projectId) => {
   try {
     const { data } = await api.get(
-      `${PROJECTS_URL}/${projectId}/providers-config`
+      `${PROJECTS_URL}/${projectId}/providers-config`,
     );
     return data;
   } catch (error) {
@@ -88,7 +81,7 @@ export const getConfiguredProviders = async (projectId) => {
 export const deleteProjectUser = async (projectId, userId) => {
   try {
     const { data } = await api.delete(
-      `${PROJECTS_URL}/${projectId}/users/${userId}`
+      `${PROJECTS_URL}/${projectId}/users/${userId}`,
     );
     return data;
   } catch (error) {
@@ -100,7 +93,7 @@ export const deleteProjectUser = async (projectId, userId) => {
 export const toggleUserVerification = async (projectId, userId) => {
   try {
     const { data } = await api.patch(
-      `${PROJECTS_URL}/${projectId}/users/${userId}/verify`
+      `${PROJECTS_URL}/${projectId}/users/${userId}/verify`,
     );
     return data;
   } catch (error) {
@@ -111,8 +104,19 @@ export const toggleUserVerification = async (projectId, userId) => {
 /* ------------------- DELETE PROJECT ------------------- */
 export const deleteProject = async (projectId) => {
   try {
-    const { data } = await api.delete(
-      `${PROJECTS_URL}/${projectId}`
+    const { data } = await api.delete(`${PROJECTS_URL}/${projectId}`);
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
+/* ------------------- SEND TEST EMAIL ------------------- */
+export const sendTestEmail = async (projectId, email) => {
+  try {
+    const { data } = await api.post(
+      `${PROJECTS_URL}/${projectId}/send-test-email`,
+      { email },
     );
     return data;
   } catch (error) {
@@ -125,9 +129,7 @@ export const deleteProject = async (projectId) => {
 ======================================================== */
 const normalizeError = (error) => {
   if (error?.response?.data) {
-    return new Error(
-      error.response.data.message || "Request failed"
-    );
+    return new Error(error.response.data.message || "Request failed");
   }
 
   if (error?.message) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import useAuthStore from '@/store/authStore';
 import { toast } from 'sonner';
 import { useLogin } from '@/hooks/useAuthQuery';
@@ -20,21 +20,26 @@ import VantaBackground from "@/components/ui/VantaBackground";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
   const { mutate, isPending } = useLogin();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Redirect if already logged in
+  const sdk_request = searchParams.get('sdk_request');
+
+  // Redirect if already logged in (Only for dashboard login)
   React.useEffect(() => {
-    if (user) {
+    if (user && !sdk_request) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, navigate, sdk_request]);
 
   const handleSocialLogin = (provider) => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/${provider}`;
+    // If sdk_request exists, we should probably pass it to the social login too
+    const baseUrl = `${import.meta.env.VITE_BACKEND_URL}/auth/${provider}`;
+    window.location.href = sdk_request ? `${baseUrl}?sdk_request=${sdk_request}` : baseUrl;
   };
 
   const handleLocalLogin = (e) => {
@@ -46,16 +51,29 @@ const Login = () => {
     }
 
     mutate(
-      { email, password },
+      { email, password, sdk_request },
       {
         onSuccess: (data) => {
           if (data.success) {
             toast.success('Login successful!');
-            window.location.href = '/dashboard';
+            if (data.redirect_uri) {
+              window.location.href = data.redirect_uri;
+            } else {
+              window.location.href = '/dashboard';
+            }
           }
         },
         onError: (error) => {
-          const message = error.response?.data?.message || 'Login failed';
+          const data = error.response?.data;
+          
+          if (data?.error_code === 'EMAIL_NOT_VERIFIED') {
+            toast.info(data.message || 'Email verification required');
+            const verifyPath = `/verify?email=${encodeURIComponent(email)}${sdk_request ? `&sdk_request=${sdk_request}` : ''}`;
+            navigate(verifyPath);
+            return;
+          }
+
+          const message = data?.message || 'Login failed';
           toast.error(message);
         },
       }

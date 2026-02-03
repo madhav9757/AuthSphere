@@ -11,7 +11,7 @@ export const MinimalistLogin = () => {
       <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row m-4 shadow-2xl rounded-3xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-xl">
         
         {/* Left Side: Brand/Visuals */}
-        <div className="hidden md:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-white/5 to-transparent">
+        <div className="hidden md:flex flex-col justify-between w-1/2 p-12 bg-linear-to-br from-white/5 to-transparent">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center">
               <ShieldCheck className="text-black h-5 w-5" />
@@ -80,7 +80,7 @@ export const MinimalistLogin = () => {
               <span className="relative z-10 flex items-center gap-2 group-hover:mr-2 transition-all">
                 Continue to Portal <ArrowRight className="h-4 w-4" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           </form>
 

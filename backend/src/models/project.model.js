@@ -5,10 +5,30 @@ const projectSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     publicKey: { type: String, required: true, unique: true, trim: true },
     privateKey: { type: String, required: true, unique: true, trim: true },
-    developer: { type: mongoose.Schema.Types.ObjectId, ref: "Developer", required: true },
+    developer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Developer",
+      required: true,
+    },
     redirectUris: [{ type: String, required: true }],
     allowedOrigins: [{ type: String }], // Security: Prevent cross-site request forgery
-    providers: [{ type: String, enum: ["local", "google", "github", "discord", "linkedin", "gitlab", "twitch", "bitbucket", "microsoft"], required: true }],
+    providers: [
+      {
+        type: String,
+        enum: [
+          "local",
+          "google",
+          "github",
+          "discord",
+          "linkedin",
+          "gitlab",
+          "twitch",
+          "bitbucket",
+          "microsoft",
+        ],
+        required: true,
+      },
+    ],
     logoUrl: { type: String },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     settings: {
@@ -25,10 +45,19 @@ const projectSchema = new mongoose.Schema(
       primaryColor: { type: String, default: "#4f46e5" },
       subjectLine: { type: String, default: "Your Verification Code" },
       footerText: { type: String, default: "Secure Identity for Developers" },
+      companyAddress: { type: String, default: "" },
+      supportUrl: { type: String, default: "" },
+      privacyUrl: { type: String, default: "" },
+      securityUrl: { type: String, default: "" },
+      showMetadata: { type: Boolean, default: true }, // Show IP, Location, Device
+      customBody: {
+        type: String,
+        default: "Use the code below to verify your account.",
+      },
     },
     metadata: { type: mongoose.Schema.Types.Mixed },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 projectSchema.methods.toJSON = function () {

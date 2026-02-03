@@ -7,6 +7,7 @@ import { Button, Input, Card, AuthLayout } from './components/UI';
 // --- Init ---
 AuthSphere.initAuth({
   publicKey: "1b2eb92b0fff434e40146da67219a346",
+  projectId: "6974743656f9c58eb6ae4203",
   redirectUri: window.location.origin + '/callback',
   baseUrl: 'http://localhost:8000'
 });
@@ -44,7 +45,10 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await AuthSphere.loginLocal(data);
+      const res = await AuthSphere.loginLocal(data);
+      if (res && res.redirect) {
+        window.location.href = res.redirect;
+      }
     } catch (err) {
       if (err instanceof AuthError && err.message.includes('not verified')) {
         navigate(`/verify-otp?email=${data.email}&sdk_request=${err.sdk_request || sdkReq}`);
@@ -144,9 +148,21 @@ const VerifyOTP = () => {
       const res = await AuthSphere.verifyOTP({ email, otp: otp.join(''), sdk_request: sdkReq });
 
       // If the backend returned a redirect URL (typical for cross-origin OAuth flows)
+      // If the backend returned a redirect URL (typical for cross-origin OAuth flows)
       if (res && res.redirect) {
-        window.location.href = res.redirect;
-        return;
+        // SPA Optimization: If same origin, use router
+        try {
+          const url = new URL(res.redirect);
+          if (url.origin === window.location.origin) {
+            navigate(url.pathname + url.search);
+            return;
+          }
+          window.location.href = res.redirect;
+          return;
+        } catch (e) {
+          window.location.href = res.redirect;
+          return;
+        }
       }
 
       if (!sdkReq) navigate('/login'); else navigate('/dashboard');
