@@ -1,58 +1,104 @@
 import React from "react";
-import { Globe, Info } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Globe, UserPlus, ShieldPlus, Layers, ArrowRightLeft, Info } from "lucide-react";
 import DocsCodeBlock from "../DocsCodeBlock";
+import { Badge } from "@/components/ui/badge";
 
 const SocialLogin = () => {
     return (
-        <article className="space-y-6 animate-in fade-in duration-500">
-            <div className="space-y-1.5">
-                <h1 className="text-2xl font-bold tracking-tight">Social Identity Integration</h1>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                    AuthSphere acts as a high-level abstraction layer over OAuth 2.0 and OpenID Connect providers, standardizing heterogeneous identity payloads into a consistent internal schema.
+        <article className="space-y-12 animate-in fade-in duration-500">
+            <div className="space-y-3">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Protocol: OIDC / OAuth 2.0</Badge>
+                <h1 className="text-3xl font-bold tracking-tight">Social Identity Integration</h1>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                    AuthSphere normalizes identity data from disparate third-party providers into a strictly typed identity object. 
+                    Our abstraction layer handles the OIDC handshake, PKCE challenges, and state verification automatically.
                 </p>
             </div>
 
-            <div className="space-y-8">
-                {/* Redirection Bridge */}
-                <section className="space-y-3">
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        The Redirection Bridge
-                    </h3>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        The <code>authorize</code> call initiates a secure handshake with the upstream provider. AuthSphere manages the generation of the <code>state</code> and <code>nonce</code> parameters to mitigate CSRF and Replay attacks. The redirection bridge ensures that the client-side environment remains decoupled from provider-specific URI requirements.
+            <div className="space-y-16">
+                {/* Handshake Flow */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <ArrowRightLeft className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-bold">The OIDC Handshake</h3>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                When <code>loginWithProvider</code> is called, the SDK initiates a PKCE-hardened redirect to the provider's authorization endpoint. 
+                                We generate a cryptographically random <code>state</code> and <code>nonce</code> to prevent Replay and CSRF attacks.
+                            </p>
+                            <div className="p-4 rounded-xl border bg-card/50">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Default Scopes</h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {['openid', 'profile', 'email'].map(s => (
+                                        <code key={s} className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-primary">{s}</code>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <DocsCodeBlock
+                            id="social-init"
+                            code={`// Trigger the redirect flow\nAuthSphere.loginWithProvider('google', {\n  scopes: ['email', 'profile'],\n  prompt: 'select_account' \n});\n\n// Supported: 'google', 'github', 'discord'`}
+                            language="javascript"
+                        />
+                    </div>
+                </section>
+
+                {/* Identity Normalization */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Layers className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-bold">Identity Normalization</h3>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        AuthSphere automatically maps provider-specific claims to a standardized <code>User</code> object. 
+                        This allows you to write one set of logic for all identity sources.
                     </p>
+
                     <DocsCodeBlock
-                        id="social-auth"
-                        code={`// Initiates redirection to the provider's authorization endpoint\nAuthSphere.authorize('google', {\n  redirectUri: 'https://app.authsphere.io/callback',\n  scopes: ['openid', 'profile', 'email']\n});`}
+                        id="user-object"
+                        code={`// Standardized user object structure\n{\n  id: "as_7721...",\n  email: "dev@example.com",\n  name: "Alex Dev",\n  picture: "https://...",\n  provider: "google",\n  providerId: "1029384756...",\n  emailVerified: true\n}`}
                         language="javascript"
                     />
                 </section>
 
-                {/* Callback Negotiation */}
-                <section className="space-y-3">
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        Callback & Token Negotiation
-                    </h3>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Upon successful user consent, the provider redirects back to your specified URI with an authorization code. The SDK's <code>tokenExchange</code> method then negotiates the code for a production-grade token set, performing server-side validation of the provider's signature.
-                    </p>
-                    <DocsCodeBlock
-                        id="callback-code"
-                        code={`// In your /callback route\nconst urlParams = new URLSearchParams(window.location.search);\nconst code = urlParams.get('code');\n\nif (code) {\n  const session = await AuthSphere.tokenExchange(code);\n  // Returns standardized user profile and JWT pair\n}`}
-                        language="javascript"
-                    />
-                </section>
+                {/* Conflict Resolution */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                            <ShieldPlus className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-bold">Automatic Identity Merging</h3>
+                    </div>
 
-                <div className="p-3 rounded-xl border bg-muted/30 flex gap-3 items-start">
-                    <Globe size={16} className="text-primary mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                        <h5 className="text-[11px] font-bold">Standardized Claims Rendering</h5>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed italic">
-                            All providers (GitHub, Google, Discord) are mapped to a unified <code>User</code> interface, ensuring your application logic remains agnostic of the underlying identity source.
+                    <div className="p-8 rounded-3xl border bg-emerald-500/5 space-y-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed italic">
+                            "What happens if a user signs up with Email/Password and later tries to 'Sign in with Google' using the same email?"
+                        </p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            If the emails match and the incoming OIDC provider has verified the email, AuthSphere automatically 
+                            links the social identity to the existing local account, preventing fragmented identity silos.
                         </p>
                     </div>
+                </section>
+            </div>
+            
+            <div className="p-6 rounded-2xl border bg-amber-500/5 border-amber-500/10 flex gap-4 items-start">
+                <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">Prerequisite Configuration</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Before integrating social login, ensure you have configured the <strong>Client ID</strong> and 
+                        <strong>Client Secret</strong> in the <Link to="/dashboard" className="font-bold underline">Providers Settings</Link>.
+                    </p>
                 </div>
             </div>
         </article>
@@ -60,3 +106,4 @@ const SocialLogin = () => {
 };
 
 export default SocialLogin;
+

@@ -4,14 +4,16 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 
 ## 🚀 Key Features
 
-- **Project Management**: API for creating and managing developer projects.
+- **Project Management**: API for creating and managing developer projects with unique 2048-bit RSA keys.
+- **Branding Engine**: High-fidelity email orchestration allowing per-project customization of logos, colors, and legal links.
 - **OAuth2 Engine**: Implements the Authorization Code Flow with PKCE for secure client-side authentication.
 - **Social Providers**: Integrated with Google, GitHub, and Discord for one-click logins.
-- **Session Management**: Securely handles user sessions using JWTs and secure cookies.
-- **Email Verification**: Built-in OTP generation, email delivery via SMTP, and verification enforcement.
+- **Session Management**: Securely handles user sessions using stateless JWS (JSON Web Signatures) and secure cookies.
+- **Email Verification**: Atomic OTP generation, template-driven delivery via SMTP, and metadata visibility controls.
 - **User Management**: Administrative APIs to delete project users or manually toggle verification status.
 - **Database**: Uses MongoDB (via Mongoose) for persistent storage of projects, users, and sessions.
-- **Security**: Implements CORS, bcrypt for password hashing, and token rotation.
+- **Audit Logging**: Immutable technical logs for every authentication and configuration event.
+- **Security**: State-aware CORS, layered password hashing, and automated token rotation.
 
 ## 🛠️ Tech Stack
 
@@ -31,17 +33,20 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 ### Installation
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Configure Environment Variables:
    Create a `.env` file in the `backend` root and populate it with the following:
+
    ```env
    PORT=8000
    MONGODB_URI=your_mongodb_connection_string
@@ -50,16 +55,16 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
    ACCESS_TOKEN_EXPIRY=1d
    REFRESH_TOKEN_SECRET=another_long_random_string
    REFRESH_TOKEN_EXPIRY=10d
-   
+
    # Social Providers (Optional)
    GOOGLE_CLIENT_ID=your_id
    GOOGLE_CLIENT_SECRET=your_secret
    GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
-   
+
    GITHUB_CLIENT_ID=your_id
    GITHUB_CLIENT_SECRET=your_secret
    GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback
-   
+
    DISCORD_CLIENT_ID=your_id
    DISCORD_CLIENT_SECRET=your_secret
    DISCORD_REDIRECT_URI=http://localhost:8000/auth/discord/callback
@@ -79,6 +84,7 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 ## 🛤️ API Endpoints
 
 ### Project APIs
+
 - `GET /api/v1/projects`: List all developer projects.
 - `POST /api/v1/projects`: Create a new project.
 - `GET /api/v1/projects/:projectId`: Get project details.
@@ -88,6 +94,7 @@ The AuthSphere Backend is a robust Node.js and Express server that powers the Au
 - `PATCH /api/v1/projects/:projectId/users/:userId/verify`: Toggle user verification.
 
 ### Auth Hub APIs
+
 - `POST /api/v1/auth/exchange`: Exchange PKCE code for a session token.
 - `GET /api/v1/auth/session`: Validate and retrieve session data.
 - `POST /api/v1/auth/verify-otp`: Verify 6-digit OTP for email verification.

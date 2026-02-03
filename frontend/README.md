@@ -4,13 +4,14 @@ The AuthSphere Frontend is a premium, high-performance developer dashboard built
 
 ## ✨ Key Features
 
-- **🚀 Project Management**: Create and configure multiple authentication environments.
-- **🛡️ API Key Hub**: Generate and rotate Public and Private keys securely.
-- **📊 User Analytics**: Monitor user sign-ups, active sessions, and provider distribution.
-- **⚙️ Provider Configuration**: One-click enablement for Google, GitHub, and Discord.
-- **👥 End-User Management**: Admin tools to manage verified status and delete end-users.
-- **📖 Documentation**: Built-in interactive documentation for SDK integration.
-- **🎨 Premium UI**: Dark-mode primary design with Radix UI and Tailwind CSS 4.
+- **🚀 Project Management**: Create and configure multiple authentication environments with ease.
+- **🎨 Branding Orchestration**: A real-time email template editor with live desktop/mobile preview and deliverability testing.
+- **🛡️ API Key Hub**: Generate and rotate 2048-bit RSA Public and Private keys securely.
+- **🛡️ Session Audit**: Detailed management of developer sessions with device/location fingerprinting.
+- **📊 User Analytics**: High-density monitoring of sign-ups, active sessions, and provider distribution.
+- **⚙️ Provider Configuration**: Standardized configuration suite for Google, GitHub, and Discord.
+- **📖 Documentation Engine**: Built-in interactive documentation with copy-paste code samples for all flows.
+- **✨ Premium UI**: Breathtaking dark-mode experience with glassmorphism, framer-motion, and atomic UI components.
 
 ## 🛠️ Tech Stack
 
@@ -31,11 +32,13 @@ The AuthSphere Frontend is a premium, high-performance developer dashboard built
 ### Installation
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```

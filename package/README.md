@@ -76,69 +76,77 @@ yarn add @authspherejs/sdk
 ## 🛠️ Quick Start
 
 ### 1️⃣ Initialize the SDK
+
 Initialize the client at the root of your application (e.g., in `main.ts` or `App.tsx`).
 
 ```typescript
-import AuthSphere from '@authspherejs/sdk';
+import AuthSphere from "@authspherejs/sdk";
 
 AuthSphere.initAuth({
-  publicKey: 'your_project_public_key',
-  redirectUri: 'http://localhost:3000/callback',
-  baseUrl: 'https://api.authsphere.dev' // Your AuthSphere backend URL
+  publicKey: "your_project_public_key",
+  redirectUri: "http://localhost:3000/callback",
+  baseUrl: "https://api.authsphere.dev", // Your AuthSphere backend URL
 });
 ```
 
 ### 2️⃣ Trigger Login
+
 Redirect users to their preferred OAuth provider with a single function call.
 
 ```typescript
 // Support for 'google', 'github', 'discord'
-const login = (provider: 'google' | 'github' | 'discord') => {
+const login = (provider: "google" | "github" | "discord") => {
   AuthSphere.redirectToLogin(provider);
 };
 ```
 
 ### 3️⃣ Handle Callback
+
 Create a route for your `redirectUri` (e.g., `/callback`) to process the exchange.
 
 ```typescript
 async function handleCallback() {
   try {
     const session = await AuthSphere.handleAuthCallback();
-    console.log('User signed in:', session.user);
-    window.location.href = '/dashboard';
+    console.log("User signed in:", session.user);
+    window.location.href = "/dashboard";
   } catch (error) {
-    console.error('Authentication failed:', error);
+    console.error("Authentication failed:", error);
   }
 }
 ```
 
-### 4️⃣ Local Authentication (New)
-For apps requiring custom signup flows with email verification.
+### 4️⃣ Local Authentication & Identity Challenges
+
+For apps requiring custom signup flows with email verification. The SDK handles the heavy lifting of state preservation across redirects.
 
 ```typescript
-// Register User
+// 1. Register User
 await AuthSphere.register({
-  email: 'dev@example.com',
-  password: 'Password123!',
-  username: 'Madhav'
+  email: "dev@example.com",
+  password: "Password123!",
+  username: "Madhav",
 });
 
-// Login and check verification
+// 2. Login Attempt
 try {
-  await AuthSphere.loginLocal({ email, password });
+  const session = await AuthSphere.loginLocal({ email, password });
+  // If verified, session is established immediately
 } catch (err) {
-  if (err.error_code === 'EMAIL_NOT_VERIFIED') {
-    // Redirect to your OTP verification page
-    console.log('SDK Request ID:', err.sdk_request);
+  if (err.error_code === "EMAIL_NOT_VERIFIED") {
+    // Navigator to your verification UI
+    // The 'sdk_request' preserves the original OIDC context
+    const { sdk_request } = err.metadata;
+    navigate(`/verify?email=${email}&sdk_request=${sdk_request}`);
   }
 }
 
-// Verify OTP
+// 3. Verify Challenge (OTP)
+// On success, the SDK automatically resolves the pending login
 await AuthSphere.verifyOTP({
-  email: 'dev@example.com',
-  otp: '123456',
-  sdk_request: '...' // Optional for auto-login
+  email: "dev@example.com",
+  otp: "123456",
+  sdk_request: "...", // Pass the ID from the login error meta
 });
 ```
 
@@ -147,45 +155,55 @@ await AuthSphere.verifyOTP({
 ## 📖 API Reference
 
 ### `initAuth(config: Config)`
+
 Initializes the SDK with your project settings.
 
 ### `redirectToLogin(provider: Provider)`
+
 Initiates the OAuth2 PKCE flow for the specified provider.
 
 ### `handleAuthCallback()`
+
 Exchanges the authorization code for a session token. Returns a `Promise<Session>`.
 
 ### `register(data: RegisterData)`
+
 Registers a new user and triggers the verification email.
 
 ### `loginLocal(data: LoginData)`
+
 Authenticates with email/password. Throws `AuthError` if verification is required.
 
 ### `verifyOTP(data: OTPData)`
+
 Verifies a 6-digit code. Can perform an automatic login if `sdk_request` is provided.
 
 ### `resendVerification(email: string)`
+
 Requests a new 6-digit verification code for the specified email.
 
 ### `isAuthenticated()`
+
 Checks if a valid session exists in storage.
 
 ### `getUser()`
+
 Returns the profile information of the currently logged-in user.
 
 ### `logout()`
+
 Clears the session data and terminates the user session.
 
 ---
 
 ## 🔧 Configuration Options
 
-| Option | Type | Required | Description |
-| :--- | :--- | :---: | :--- |
-| `publicKey` | `string` | **Yes** | Your project's Identification Key from the dashboard. |
-| `redirectUri` | `string` | **Yes** | The URI your app redirects back to after auth. |
-| `baseUrl` | `string` | No | Your API server URL (Default: `http://localhost:8000`). |
-| `onAuthError` | `Function`| No | Global hook for handling authentication errors. |
+| Option        | Type       | Required | Description                                             |
+| :------------ | :--------- | :------: | :------------------------------------------------------ |
+| `publicKey`   | `string`   | **Yes**  | Your project's Identification Key from the dashboard.   |
+| `redirectUri` | `string`   | **Yes**  | The URI your app redirects back to after auth.          |
+| `baseUrl`     | `string`   |    No    | Your API server URL (Default: `http://localhost:8000`). |
+| `onAuthError` | `Function` |    No    | Global hook for handling authentication errors.         |
 
 ---
 

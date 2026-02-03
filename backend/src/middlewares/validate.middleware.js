@@ -10,10 +10,15 @@ export const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors.map((err) => ({
+      // Debug log
+      console.error("Validation failed for body:", JSON.stringify(req.body, null, 2));
+      console.error("Zod Error:", JSON.stringify(error, null, 2));
+      
+      const errorMessages = error.errors?.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
-      }));
+      })) || [{ message: error.message || "Unknown validation error" }];
+      
       return res.status(400).json({
         success: false,
         message: "Validation Error",

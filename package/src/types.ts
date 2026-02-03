@@ -4,6 +4,7 @@ export type Provider = "google" | "github" | "discord";
 
 export interface AuthConfig {
   publicKey: string;
+  projectId: string;
   redirectUri: string;
   baseUrl?: string;
   onTokenRefresh?: (tokens: AuthTokens) => void;

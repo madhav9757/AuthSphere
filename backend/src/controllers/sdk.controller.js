@@ -9,29 +9,32 @@ import { sendVerificationOTP } from "../services/email.service.js";
 import { logEvent } from "../utils/auditLogger.js";
 
 export const authRequests = new Map(); // sdk_request_id
-export const authCodes = new Map();    // authorization_code
+export const authCodes = new Map(); // authorization_code
 
 const AUTH_REQUEST_TTL = 10 * 60 * 1000; // 10 min
-const AUTH_CODE_TTL = 10 * 60 * 1000;    // 10 min
+const AUTH_CODE_TTL = 10 * 60 * 1000; // 10 min
 
 // ---------------------------
 // CLEANUP JOB
 // ---------------------------
-setInterval(() => {
-  const now = Date.now();
+setInterval(
+  () => {
+    const now = Date.now();
 
-  for (const [key, value] of authRequests.entries()) {
-    if (now - value.createdAt > AUTH_REQUEST_TTL) {
-      authRequests.delete(key);
+    for (const [key, value] of authRequests.entries()) {
+      if (now - value.createdAt > AUTH_REQUEST_TTL) {
+        authRequests.delete(key);
+      }
     }
-  }
 
-  for (const [key, value] of authCodes.entries()) {
-    if (now - value.createdAt > AUTH_CODE_TTL) {
-      authCodes.delete(key);
+    for (const [key, value] of authCodes.entries()) {
+      if (now - value.createdAt > AUTH_CODE_TTL) {
+        authCodes.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000,
+);
 
 // ---------------------------
 // SDK AUTHORIZE ROUTE
@@ -40,6 +43,7 @@ export const authorize = async (req, res) => {
   try {
     const {
       public_key,
+      project_id,
       redirect_uri,
       provider,
       response_type,
@@ -49,8 +53,22 @@ export const authorize = async (req, res) => {
     } = req.query;
 
     // ✅ Validate required params
-    if (!public_key || !redirect_uri || !provider || !code_challenge || !state) {
-      console.error("SDK Authorize: Missing parameters", { public_key, redirect_uri, provider, code_challenge, state });
+    if (
+      !public_key ||
+      !project_id ||
+      !redirect_uri ||
+      !provider ||
+      !code_challenge ||
+      !state
+    ) {
+      console.error("SDK Authorize: Missing parameters", {
+        public_key,
+        project_id,
+        redirect_uri,
+        provider,
+        code_challenge,
+        state,
+      });
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Missing required parameters",
@@ -67,7 +85,10 @@ export const authorize = async (req, res) => {
     }
 
     if (code_challenge_method !== "S256") {
-      console.error("SDK Authorize: Invalid code_challenge_method", code_challenge_method);
+      console.error(
+        "SDK Authorize: Invalid code_challenge_method",
+        code_challenge_method,
+      );
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Only S256 PKCE method is supported",
@@ -75,7 +96,11 @@ export const authorize = async (req, res) => {
     }
 
     // ✅ Find project
-    const project = await Project.findOne({ publicKey: public_key, status: "active" });
+    const project = await Project.findOne({
+      publicKey: public_key,
+      _id: project_id,
+      status: "active",
+    });
     if (!project) {
       console.error("SDK Authorize: Project not found or inactive", public_key);
       return res.status(401).json({
@@ -86,7 +111,12 @@ export const authorize = async (req, res) => {
 
     // ✅ Check redirect_uri
     if (!project.redirectUris.includes(redirect_uri)) {
-      console.error("SDK Authorize: Invalid redirect_uri", redirect_uri, "Expected:", project.redirectUris);
+      console.error(
+        "SDK Authorize: Invalid redirect_uri",
+        redirect_uri,
+        "Expected:",
+        project.redirectUris,
+      );
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Redirect URI not registered",
@@ -95,9 +125,14 @@ export const authorize = async (req, res) => {
 
     // ✅ Provider enabled
     // Note: Project providers might be stored as "Google" while query is "google". Check case sensitivity.
-    const projectProvidersLower = project.providers.map(p => p.toLowerCase());
+    const projectProvidersLower = project.providers.map((p) => p.toLowerCase());
     if (!projectProvidersLower.includes(provider.toLowerCase())) {
-      console.error("SDK Authorize: Provider not enabled", provider, "Enabled:", project.providers);
+      console.error(
+        "SDK Authorize: Provider not enabled",
+        provider,
+        "Enabled:",
+        project.providers,
+      );
       return res.status(400).json({
         error: "invalid_request",
         error_description: `${provider} not enabled`,
@@ -119,7 +154,10 @@ export const authorize = async (req, res) => {
     console.log(`✓ SDK Auth request created: ${requestId}`);
 
     // ✅ Handle response
-    if (req.headers.accept === "application/json" || req.query.json === "true") {
+    if (
+      req.headers.accept === "application/json" ||
+      req.query.json === "true"
+    ) {
       return res.json({ requestId });
     }
 
@@ -128,7 +166,9 @@ export const authorize = async (req, res) => {
     }
 
     // ✅ Redirect user to provider login with sdk_request
-    return res.redirect(`/auth/${provider.toLowerCase()}?sdk=true&sdk_request=${requestId}`);
+    return res.redirect(
+      `/auth/${provider.toLowerCase()}?sdk=true&sdk_request=${requestId}`,
+    );
   } catch (err) {
     console.error("SDK Authorize error:", err);
     return res.status(500).json({
@@ -141,10 +181,19 @@ export const authorize = async (req, res) => {
 // ---------------------------
 // SDK CALLBACK
 // ---------------------------
-export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRequestId) => {
+export const handleSDKCallback = async (
+  req,
+  res,
+  endUser,
+  provider,
+  manualSdkRequestId,
+) => {
   try {
     const sdk_request = manualSdkRequestId || req.query.sdk_request;
-    console.log("🔹 handleSDKCallback invoked with:", { sdk_request, endUserEmail: endUser?.email });
+    console.log("🔹 handleSDKCallback invoked with:", {
+      sdk_request,
+      endUserEmail: endUser?.email,
+    });
 
     if (!sdk_request) {
       console.error("❌ No sdk_request in query or manual argument");
@@ -153,8 +202,13 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
 
     const authRequest = authRequests.get(sdk_request);
     if (!authRequest) {
-      console.error("❌ Auth request not found in memory map for ID:", sdk_request);
-      return res.status(400).send("Invalid or expired request (Server may have restarted)");
+      console.error(
+        "❌ Auth request not found in memory map for ID:",
+        sdk_request,
+      );
+      return res
+        .status(400)
+        .send("Invalid or expired request (Server may have restarted)");
     }
 
     // --- ENHANCEMENT: Security Checks ---
@@ -172,7 +226,18 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
         await endUser.save();
 
         // Send verification email
-        await sendVerificationOTP(endUser.email, otp, project.name, project.emailTemplate);
+        await sendVerificationOTP(
+          endUser.email,
+          otp,
+          project.name,
+          project.emailTemplate,
+          {
+            ip: req.ip,
+            userAgent: req.headers["user-agent"],
+            requestId: sdk_request,
+            projectId: project._id,
+          },
+        );
 
         // If not verified, return redirect info or redirect directly
         const redirectUrl = new URL(authRequest.redirectUri);
@@ -180,11 +245,11 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
         redirectUrl.searchParams.set("email", endUser.email);
         redirectUrl.searchParams.set("sdk_request", sdk_request); // Pass sdk_request to frontend to verify later
 
-        if (req.xhr || req.headers.accept?.includes('application/json')) {
+        if (req.xhr || req.headers.accept?.includes("application/json")) {
           return res.json({
             success: false,
             message: "Email not verified",
-            redirect: redirectUrl.toString()
+            redirect: redirectUrl.toString(),
           });
         }
         return res.redirect(redirectUrl.toString());
@@ -211,10 +276,14 @@ export const handleSDKCallback = async (req, res, endUser, provider, manualSdkRe
     console.log("➡️ Returning redirect URL to client:", redirectUrl.toString());
 
     // Check if this is an AJAX/Fetch request (typical for verifyOTP)
-    if (req.xhr || req.headers.accept?.includes('application/json') || req.body?.sdk_request) {
+    if (
+      req.xhr ||
+      req.headers.accept?.includes("application/json") ||
+      req.body?.sdk_request
+    ) {
       return res.json({
         success: true,
-        redirect: redirectUrl.toString()
+        redirect: redirectUrl.toString(),
       });
     }
 
@@ -250,7 +319,7 @@ export const token = async (req, res) => {
     if (!code) {
       return res.status(400).json({
         error: "invalid_request",
-        error_description: "Missing code"
+        error_description: "Missing code",
       });
     }
 
@@ -271,7 +340,7 @@ export const token = async (req, res) => {
     if (!authData) {
       return res.status(400).json({
         error: "invalid_grant",
-        error_description: "Invalid or expired code"
+        error_description: "Invalid or expired code",
       });
     }
 
@@ -280,7 +349,7 @@ export const token = async (req, res) => {
       if (!code_verifier) {
         return res.status(400).json({
           error: "invalid_request",
-          error_description: "Missing code_verifier"
+          error_description: "Missing code_verifier",
         });
       }
 
@@ -295,7 +364,7 @@ export const token = async (req, res) => {
       if (hash !== authData.codeChallenge) {
         return res.status(400).json({
           error: "invalid_grant",
-          error_description: "Code verifier failed"
+          error_description: "Code verifier failed",
         });
       }
     }
@@ -312,7 +381,12 @@ export const token = async (req, res) => {
     const origin = req.headers.origin;
     if (project.allowedOrigins && project.allowedOrigins.length > 0) {
       if (!origin || !project.allowedOrigins.includes(origin)) {
-        return res.status(403).json({ error: "access_denied", error_description: "CORS: Origin not allowed" });
+        return res
+          .status(403)
+          .json({
+            error: "access_denied",
+            error_description: "CORS: Origin not allowed",
+          });
       }
     }
 
@@ -342,10 +416,10 @@ export const token = async (req, res) => {
         sub: endUser._id,
         projectId: projectId,
         email: endUser.email,
-        username: endUser.username
+        username: endUser.username,
       },
       conf.accessTokenSecret,
-      { expiresIn: accessSeconds } // Use project setting
+      { expiresIn: accessSeconds }, // Use project setting
     );
 
     // Prepare response matching AuthResponse interface in SDK
@@ -358,11 +432,10 @@ export const token = async (req, res) => {
         email: endUser.email,
         username: endUser.username,
         picture: endUser.picture || "",
-        provider: endUser.provider || "local"
+        provider: endUser.provider || "local",
       },
-      expiresAt: Date.now() + (accessSeconds * 1000)
+      expiresAt: Date.now() + accessSeconds * 1000,
     });
-
   } catch (err) {
     console.error("Token Exchange Error:", err);
     return res.status(500).json({ error: "server_error" });
@@ -378,25 +451,30 @@ export const refresh = async (req, res) => {
     const { refreshToken, publicKey } = req.body;
 
     if (!refreshToken) {
-      return res.status(400).json({ error: "invalid_request", error_description: "Missing refresh token" });
+      return res
+        .status(400)
+        .json({
+          error: "invalid_request",
+          error_description: "Missing refresh token",
+        });
     }
 
     const session = await Session.findOne({
       token: refreshToken,
-      isValid: true
+      isValid: true,
     }).populate("endUserId");
 
     if (!session) {
       return res.status(400).json({
         error: "invalid_grant",
-        error_description: "Invalid refresh token"
+        error_description: "Invalid refresh token",
       });
     }
 
     if (new Date() > session.expiresAt) {
       return res.status(400).json({
         error: "invalid_grant",
-        error_description: "Refresh token expired"
+        error_description: "Refresh token expired",
       });
     }
 
@@ -408,7 +486,12 @@ export const refresh = async (req, res) => {
     const origin = req.headers.origin;
     if (project.allowedOrigins && project.allowedOrigins.length > 0) {
       if (!origin || !project.allowedOrigins.includes(origin)) {
-        return res.status(403).json({ error: "access_denied", error_description: "CORS: Origin not allowed" });
+        return res
+          .status(403)
+          .json({
+            error: "access_denied",
+            error_description: "CORS: Origin not allowed",
+          });
       }
     }
 
@@ -422,10 +505,10 @@ export const refresh = async (req, res) => {
         sub: endUser._id,
         projectId: endUser.projectId,
         email: endUser.email,
-        username: endUser.username
+        username: endUser.username,
       },
       conf.accessTokenSecret,
-      { expiresIn: accessSeconds }
+      { expiresIn: accessSeconds },
     );
 
     // Return format matching AuthResponse (partial) or what refreshTokens expects.
@@ -434,7 +517,7 @@ export const refresh = async (req, res) => {
       success: true,
       accessToken,
       refreshToken: refreshToken,
-      expiresAt: Date.now() + (accessSeconds * 1000)
+      expiresAt: Date.now() + accessSeconds * 1000,
     });
   } catch (err) {
     console.error("Token Refresh Error:", err);
@@ -451,23 +534,45 @@ export const refresh = async (req, res) => {
  */
 export const registerLocal = async (req, res) => {
   try {
-    const { email, password, username, public_key, publicKey, sdk_request } = req.body;
+    const {
+      email,
+      password,
+      username,
+      public_key,
+      publicKey,
+      projectId,
+      sdk_request,
+    } = req.body;
+    // sdk_request can be null/undefined. If present, it maps to an authorized session.
     const actualPublicKey = public_key || publicKey;
 
-    if (!email || !password || !username || !actualPublicKey) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    if (!email || !password || !username || !actualPublicKey || !projectId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    const project = await Project.findOne({
+      publicKey: actualPublicKey,
+      _id: projectId,
+      status: "active",
+    });
     if (!project) {
-      return res.status(404).json({ success: false, message: "Project not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
     }
 
-    const existingUser = await EndUser.findOne({ email: normalizedEmail, projectId: project._id });
+    const existingUser = await EndUser.findOne({
+      email: normalizedEmail,
+      projectId: project._id,
+    });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
@@ -485,7 +590,12 @@ export const registerLocal = async (req, res) => {
     });
 
     // Send verification email
-    await sendVerificationOTP(email, otp, project.name, project.emailTemplate);
+    await sendVerificationOTP(email, otp, project.name, project.emailTemplate, {
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+      requestId: sdk_request || "N/A",
+      projectId: project._id,
+    });
 
     await logEvent({
       developerId: project.developer,
@@ -493,17 +603,24 @@ export const registerLocal = async (req, res) => {
       action: "USER_REGISTERED",
       description: `New local user (${email}) registered. OTP sent.`,
       category: "user",
-      metadata: { ip: req.ip, userAgent: req.headers["user-agent"], resourceId: user._id },
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
     });
 
     return res.status(201).json({
       success: true,
-      message: "Registration successful. Please enter the OTP sent to your email.",
+      message:
+        "Registration successful. Please enter the OTP sent to your email.",
       requireEmailVerification: true,
     });
   } catch (err) {
     console.error("Local Registration Error:", err);
-    return res.status(500).json({ success: false, message: "Registration failed" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Registration failed" });
   }
 };
 
@@ -512,28 +629,44 @@ export const registerLocal = async (req, res) => {
  */
 export const loginLocal = async (req, res) => {
   try {
-    const { email, password, public_key, publicKey, sdk_request } = req.body;
+    const { email, password, public_key, publicKey, projectId, sdk_request } =
+      req.body;
     const actualPublicKey = public_key || publicKey;
 
-    if (!email || !password || !actualPublicKey || !sdk_request) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    if (!email || !password || !actualPublicKey || !projectId || !sdk_request) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    const project = await Project.findOne({
+      publicKey: actualPublicKey,
+      _id: projectId,
+      status: "active",
+    });
     if (!project) {
-      return res.status(404).json({ success: false, message: "Project not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
     }
 
-    const user = await EndUser.findOne({ email: normalizedEmail, projectId: project._id }).select("+password");
+    const user = await EndUser.findOne({
+      email: normalizedEmail,
+      projectId: project._id,
+    }).select("+password");
     if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
     // Check email verification if required
@@ -547,13 +680,25 @@ export const loginLocal = async (req, res) => {
       await user.save();
 
       // Send verification email
-      await sendVerificationOTP(user.email, otp, project.name, project.emailTemplate);
+      await sendVerificationOTP(
+        user.email,
+        otp,
+        project.name,
+        project.emailTemplate,
+        {
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+          requestId: sdk_request,
+          projectId: project._id,
+        },
+      );
 
       return res.status(403).json({
         success: false,
-        message: "Email not verified. A new verification code has been sent to your email.",
+        message:
+          "Email not verified. A new verification code has been sent to your email.",
         error_code: "EMAIL_NOT_VERIFIED",
-        sdk_request: sdk_request // Frontend needs this to verify OTP later
+        sdk_request: sdk_request, // Frontend needs this to verify OTP later
       });
     }
 
@@ -574,14 +719,22 @@ export const verifyOTP = async (req, res) => {
     const actualPublicKey = public_key || publicKey;
 
     if (!email || !otp || !actualPublicKey) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
     const normalizedOTP = otp.toString().trim();
 
-    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
-    if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+    const project = await Project.findOne({
+      publicKey: actualPublicKey,
+      status: "active",
+    });
+    if (!project)
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
 
     const user = await EndUser.findOne({
       email: normalizedEmail,
@@ -591,7 +744,9 @@ export const verifyOTP = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     user.isVerified = true;
@@ -604,13 +759,19 @@ export const verifyOTP = async (req, res) => {
       action: "USER_VERIFIED",
       description: `User (${user.email}) successfully verified their email via OTP.`,
       category: "user",
-      metadata: { ip: req.ip, userAgent: req.headers["user-agent"], resourceId: user._id },
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
     });
 
     // If sdk_request is present, we should automatically log them in
     if (sdk_request) {
-      console.log("✓ OTP Verified, proceeding to SDK Callback for automatic login.");
-      // Note: handleSDKCallback will now return a JSON with { redirect: '...' } 
+      console.log(
+        "✓ OTP Verified, proceeding to SDK Callback for automatic login.",
+      );
+      // Note: handleSDKCallback will now return a JSON with { redirect: '...' }
       // which the frontend fetch will receive and should navigate to.
       return await handleSDKCallback(req, res, user, "local", sdk_request);
     }
@@ -621,7 +782,9 @@ export const verifyOTP = async (req, res) => {
     });
   } catch (err) {
     console.error("OTP Verification Error:", err);
-    return res.status(500).json({ success: false, message: "Verification failed" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Verification failed" });
   }
 };
 
@@ -634,23 +797,37 @@ export const resendVerification = async (req, res) => {
     const actualPublicKey = public_key || publicKey;
 
     if (!email || !actualPublicKey) {
-      return res.status(400).json({ success: false, message: "Missing email or public key" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing email or public key" });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const project = await Project.findOne({ publicKey: actualPublicKey, status: "active" });
+    const project = await Project.findOne({
+      publicKey: actualPublicKey,
+      status: "active",
+    });
     if (!project) {
-      return res.status(404).json({ success: false, message: "Project not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
     }
 
-    const user = await EndUser.findOne({ email: normalizedEmail, projectId: project._id });
+    const user = await EndUser.findOne({
+      email: normalizedEmail,
+      projectId: project._id,
+    });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (user.isVerified) {
-      return res.status(400).json({ success: false, message: "Email is already verified" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is already verified" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -660,7 +837,12 @@ export const resendVerification = async (req, res) => {
     user.verificationOTPExpiry = otpExpiry;
     await user.save();
 
-    await sendVerificationOTP(email, otp, project.name, project.emailTemplate);
+    await sendVerificationOTP(email, otp, project.name, project.emailTemplate, {
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+      projectId: project._id,
+      requestId: "Resend Action",
+    });
 
     return res.status(200).json({
       success: true,
@@ -668,6 +850,8 @@ export const resendVerification = async (req, res) => {
     });
   } catch (err) {
     console.error("Resend Verification Error:", err);
-    return res.status(500).json({ success: false, message: "Failed to resend verification email" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to resend verification email" });
   }
 };

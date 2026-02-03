@@ -6,10 +6,10 @@ import type { Provider } from "../types";
 const DEFAULT_BASE_URL = "https://api.authsphere.com";
 
 export async function redirectToLogin(provider: Provider): Promise<void> {
-  const { publicKey, redirectUri, baseUrl } = getConfig();
+  const { publicKey, projectId, redirectUri, baseUrl } = getConfig();
 
-  if (!publicKey || !redirectUri) {
-    throw new Error("AuthConfig missing publicKey or redirectUri");
+  if (!publicKey || !projectId || !redirectUri) {
+    throw new Error("AuthConfig missing publicKey, projectId or redirectUri");
   }
 
   // Generate PKCE parameters
@@ -27,6 +27,7 @@ export async function redirectToLogin(provider: Provider): Promise<void> {
 
   const params = {
     public_key: publicKey,
+    project_id: projectId,
     redirect_uri: redirectUri,
     provider,
     response_type: "code",

@@ -11,7 +11,7 @@
 
 ### The enterprise-grade identity orchestration engine for modern platforms.
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blue?style=flat-square&logo=github)](https://github.com/madhav9757/AuthSphere)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue?style=flat-square&logo=github)](https://github.com/madhav9757/AuthSphere)
 [![MIT License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/madhav9757/AuthSphere/blob/main/LICENSE)
 [![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -50,6 +50,7 @@ AuthSphere is architected as a modular monorepo, providing a full-stack experien
         <li>Node.js / Express Architecture</li>
         <li>MongoDB Persistence</li>
         <li>OIDC & PKCE Handshaking</li>
+        <li>Argon2id Password Hardening</li>
       </ul>
     </td>
     <td width="50%" valign="top">
@@ -57,8 +58,9 @@ AuthSphere is architected as a modular monorepo, providing a full-stack experien
       <p>A premium command center for developer teams to manage projects, monitor logs, and configure security policies.</p>
       <ul>
         <li>React 19 / Tailwind CSS 4</li>
-        // <li>Real-time Telemetry</li>
-        <li>Multi-Project Scaling</li>
+        <li>Email Template Customization Engine</li>
+        <li>Real-time Technical Telemetry</li>
+        <li>Multi-Project Management</li>
       </ul>
     </td>
   </tr>
@@ -69,7 +71,7 @@ AuthSphere is architected as a modular monorepo, providing a full-stack experien
       <ul>
         <li>PKCE Flow Support</li>
         <li>Automated Token Rotation</li>
-        <li>Minimal Runtime Weight</li>
+        <li>Built-in Identity Verification Flows</li>
       </ul>
     </td>
     <td width="50%" valign="top">
@@ -77,7 +79,7 @@ AuthSphere is architected as a modular monorepo, providing a full-stack experien
       <p>A reference implementation showcasing best practices for SDK integration and session handling.</p>
       <ul>
         <li>React Example Application</li>
-        <li>Verification Flow Demo</li>
+        <li>E2E Verification Flow Demo</li>
         <li>Profile Management Sample</li>
       </ul>
     </td>
@@ -92,23 +94,23 @@ AuthSphere is architected as a modular monorepo, providing a full-stack experien
   <table>
     <tr>
       <td><b>🛡️ Standardized Security</b></td>
-      <td>Native implementation of OAuth2/OIDC with PKCE (Proof Key for Code Exchange) to mitigate authorization code interception.</td>
+      <td>Native implementation of OAuth2/OIDC with PKCE (Proof Key for Code Exchange). Argon2id for password storage and AES-256-GCM for project secrets.</td>
     </tr>
     <tr>
       <td><b>🔌 Provider Bridge</b></td>
-      <td>Unified abstraction for social providers (Google, GitHub, Discord) with standardized identity claim normalization.</td>
+      <td>Unified abstraction for social providers (Google, GitHub, Discord) with standardized identity claim normalization and stateless session propagation.</td>
     </tr>
     <tr>
-      <td><b>📧 Atomic Verification</b></td>
-      <td>Built-in SMTP-driven OTP (One-Time Password) cycle for transactional identity verification and account recovery.</td>
+      <td><b>📧 Brand Orchestration</b></td>
+      <td>Full-fidelity email customization engine. Design your own templates with custom branding, colors, and secondary security metadata toggles.</td>
     </tr>
     <tr>
       <td><b>📊 Deep Observability</b></td>
-      <td>Immutable audit logging and authentication telemetry. Monitor error rates, provider latency, and user session cycles.</td>
+      <td>Immutable audit logging and technical telemetry. Monitor login success rates, geographical distribution, and provider-specific performance.</td>
     </tr>
     <tr>
-      <td><b>🎨 Premium UX</b></td>
-      <td>A breathtaking Dark-Mode interface with high-density layouts, glassmorphism, and framer-motion micro-interactions.</td>
+      <td><b>🎨 Premium Developer Experience</b></td>
+      <td>A stunning dark-mode dashboard with atomic UI elements, glassmorphism, and framer-motion micro-interactions for high-productivity management.</td>
     </tr>
   </table>
 </div>

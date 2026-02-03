@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import Home from "@/pages/public/Home";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
+import VerifyOTP from "@/pages/auth/VerifyOTP";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Documentation from "@/pages/public/Documentation";
 
@@ -66,6 +67,14 @@ export const routes = [
     element: (
       <MainLayout showNavAndFooter={false}>
         <Register />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/verify",
+    element: (
+      <MainLayout showNavAndFooter={false}>
+        <VerifyOTP />
       </MainLayout>
     ),
   },

@@ -64,6 +64,17 @@ const Security = () => {
                     </p>
                 </section>
 
+                {/* Audit Logging */}
+                <section className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Activity className="h-4 w-4 text-primary" />
+                        <h2 className="text-sm font-bold uppercase tracking-wider">Immutable Audit Logging</h2>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        Every security-critical event—from project configuration changes to authentication failures—is recorded in an immutable audit ledger. Each log entry includes detailed metadata (IP, User Agent, Location) and a cryptographically generated Request ID for end-to-end tracing.
+                    </p>
+                </section>
+
                 <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex gap-3 items-start">
                     <Activity size={16} className="text-red-500 mt-0.5 shrink-0" />
                     <div className="space-y-1">
