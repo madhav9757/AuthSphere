@@ -8,6 +8,7 @@ import sessionRoutes from "./session.routes.js";
 import auditLogRoutes from "./auditLog.routes.js";
 import authRoutes from "./auth.routes.js";
 import sdkRoutes from "./sdk.routes.js";
+import notificationRoutes from "./notification.routes.js";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use(`${API_PREFIX}/projects`, projectRoutes);
 router.use(`${API_PREFIX}/analytics`, analyticsRoutes);
 router.use(`${API_PREFIX}/sessions`, sessionRoutes);
 router.use(`${API_PREFIX}/audit-logs`, auditLogRoutes);
+router.use(`${API_PREFIX}/notifications`, notificationRoutes);
 
 // ================================
 // Auth routes (OAuth providers)

@@ -2,6 +2,7 @@ import Project from "../models/project.model.js";
 import EndUser from "../models/endUsers.models.js";
 import crypto from "crypto";
 import { logEvent } from "../utils/auditLogger.js";
+import { triggerWebhook } from "../utils/webhookSender.js";
 
 /* ============================================================
    CREATE PROJECT
@@ -123,7 +124,15 @@ export const updateProject = async (req, res) => {
     const developerId = req.developer._id;
     const { projectId } = req.params;
 
-    const allowedUpdates = ["name", "settings", "redirectUris", "providers", "allowedOrigins", "logoUrl", "emailTemplate"]; // prevent modifying keys manually
+    const allowedUpdates = [
+      "name",
+      "settings",
+      "redirectUris",
+      "providers",
+      "allowedOrigins",
+      "logoUrl",
+      "emailTemplate",
+    ]; // prevent modifying keys manually
     const updates = {};
 
     for (const key of allowedUpdates) {
@@ -133,7 +142,7 @@ export const updateProject = async (req, res) => {
     const updated = await Project.findOneAndUpdate(
       { _id: projectId, developer: developerId },
       updates,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updated) {
@@ -152,7 +161,7 @@ export const updateProject = async (req, res) => {
       metadata: {
         ip: req.ip,
         userAgent: req.headers["user-agent"],
-        details: { updates: Object.keys(updates) }
+        details: { updates: Object.keys(updates) },
       },
     });
 
@@ -177,7 +186,7 @@ export const rotateKeys = async (req, res) => {
     const project = await Project.findOneAndUpdate(
       { _id: projectId, developer: developerId },
       { publicKey: newPublicKey, privateKey: newPrivateKey },
-      { new: true }
+      { new: true },
     );
 
     if (!project) {
@@ -197,6 +206,12 @@ export const rotateKeys = async (req, res) => {
         ip: req.ip,
         userAgent: req.headers["user-agent"],
       },
+    });
+
+    // Trigger Webhook
+    triggerWebhook(project._id, "api_key.rotated", {
+      projectId: project._id,
+      timestamp: new Date().toISOString(),
     });
 
     return res.status(200).json({
@@ -273,7 +288,9 @@ export const getProjectUsers = async (req, res) => {
     }
 
     // 2. Fetch users
-    const users = await EndUser.find({ projectId }).select("-password").sort({ createdAt: -1 });
+    const users = await EndUser.find({ projectId })
+      .select("-password")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -308,10 +325,35 @@ export const deleteProjectUser = async (req, res) => {
     // 2. Delete user
     const user = await EndUser.findOneAndDelete({ _id: userId, projectId });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    return res.status(200).json({ success: true, message: "User deleted successfully" });
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId,
+      action: "USER_DELETED",
+      description: `User "${user.email}" was deleted from project "${project.name}".`,
+      category: "user",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
+    });
+
+    // Trigger Webhook
+    triggerWebhook(projectId, "user.deleted", {
+      userId: user._id,
+      email: user.email,
+      projectId: project._id,
+    });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User deleted successfully" });
   } catch (err) {
     console.error("Delete Project User Error:", err);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -341,16 +383,32 @@ export const toggleUserVerification = async (req, res) => {
     // 2. Find and update user
     const user = await EndUser.findOne({ _id: userId, projectId });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     user.isVerified = !user.isVerified;
     await user.save();
 
+    // Log the event
+    await logEvent({
+      developerId,
+      projectId,
+      action: "USER_VERIFICATION_TOGGLED",
+      description: `Verification for user "${user.email}" was toggled to ${user.isVerified ? "verified" : "unverified"}.`,
+      category: "user",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: user._id,
+      },
+    });
+
     return res.status(200).json({
       success: true,
-      message: `User ${user.isVerified ? 'verified' : 'unverified'} successfully`,
-      data: user
+      message: `User ${user.isVerified ? "verified" : "unverified"} successfully`,
+      data: user,
     });
   } catch (err) {
     console.error("Toggle User Verification Error:", err);
@@ -373,27 +431,80 @@ export const getConfiguredProviders = async (req, res) => {
         status: isConfigured ? "ready" : "not_configured",
         message: isConfigured
           ? "Ready to integrate"
-          : "Not yet configured. Add credentials to enable this provider."
+          : "Not yet configured. Add credentials to enable this provider.",
       };
     };
 
     const providers = {
-      google: getProviderStatus(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET),
-      github: getProviderStatus(process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET),
-      discord: getProviderStatus(process.env.DISCORD_CLIENT_ID, process.env.DISCORD_CLIENT_SECRET),
-      gitlab: getProviderStatus(process.env.GITLAB_CLIENT_ID, process.env.GITLAB_CLIENT_SECRET),
-      twitch: getProviderStatus(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET),
-      microsoft: getProviderStatus(process.env.MICROSOFT_CLIENT_ID, process.env.MICROSOFT_CLIENT_SECRET),
-      facebook: getProviderStatus(process.env.FACEBOOK_CLIENT_ID, process.env.FACEBOOK_CLIENT_SECRET),
-      twitter: getProviderStatus(process.env.TWITTER_CLIENT_ID, process.env.TWITTER_CLIENT_SECRET),
-      slack: getProviderStatus(process.env.SLACK_CLIENT_ID, process.env.SLACK_CLIENT_SECRET),
-      apple: getProviderStatus(process.env.APPLE_CLIENT_ID, process.env.APPLE_CLIENT_SECRET),
-      spotify: getProviderStatus(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET),
-      reddit: getProviderStatus(process.env.REDDIT_CLIENT_ID, process.env.REDDIT_CLIENT_SECRET),
-      linkedin: getProviderStatus(process.env.LINKEDIN_CLIENT_ID, process.env.LINKEDIN_CLIENT_SECRET),
-      hubspot: getProviderStatus(process.env.HUBSPOT_CLIENT_ID, process.env.HUBSPOT_CLIENT_SECRET),
-      instagram: getProviderStatus(process.env.INSTAGRAM_CLIENT_ID, process.env.INSTAGRAM_CLIENT_SECRET),
-      pinterest: getProviderStatus(process.env.PINTEREST_CLIENT_ID, process.env.PINTEREST_CLIENT_SECRET),
+      local: {
+        isConfigured: true,
+        status: "ready",
+        message: "Always available",
+      },
+      google: getProviderStatus(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+      ),
+      github: getProviderStatus(
+        process.env.GITHUB_CLIENT_ID,
+        process.env.GITHUB_CLIENT_SECRET,
+      ),
+      discord: getProviderStatus(
+        process.env.DISCORD_CLIENT_ID,
+        process.env.DISCORD_CLIENT_SECRET,
+      ),
+      gitlab: getProviderStatus(
+        process.env.GITLAB_CLIENT_ID,
+        process.env.GITLAB_CLIENT_SECRET,
+      ),
+      twitch: getProviderStatus(
+        process.env.TWITCH_CLIENT_ID,
+        process.env.TWITCH_CLIENT_SECRET,
+      ),
+      microsoft: getProviderStatus(
+        process.env.MICROSOFT_CLIENT_ID,
+        process.env.MICROSOFT_CLIENT_SECRET,
+      ),
+      facebook: getProviderStatus(
+        process.env.FACEBOOK_CLIENT_ID,
+        process.env.FACEBOOK_CLIENT_SECRET,
+      ),
+      twitter: getProviderStatus(
+        process.env.TWITTER_CLIENT_ID,
+        process.env.TWITTER_CLIENT_SECRET,
+      ),
+      slack: getProviderStatus(
+        process.env.SLACK_CLIENT_ID,
+        process.env.SLACK_CLIENT_SECRET,
+      ),
+      apple: getProviderStatus(
+        process.env.APPLE_CLIENT_ID,
+        process.env.APPLE_CLIENT_SECRET,
+      ),
+      spotify: getProviderStatus(
+        process.env.SPOTIFY_CLIENT_ID,
+        process.env.SPOTIFY_CLIENT_SECRET,
+      ),
+      reddit: getProviderStatus(
+        process.env.REDDIT_CLIENT_ID,
+        process.env.REDDIT_CLIENT_SECRET,
+      ),
+      linkedin: getProviderStatus(
+        process.env.LINKEDIN_CLIENT_ID,
+        process.env.LINKEDIN_CLIENT_SECRET,
+      ),
+      hubspot: getProviderStatus(
+        process.env.HUBSPOT_CLIENT_ID,
+        process.env.HUBSPOT_CLIENT_SECRET,
+      ),
+      instagram: getProviderStatus(
+        process.env.INSTAGRAM_CLIENT_ID,
+        process.env.INSTAGRAM_CLIENT_SECRET,
+      ),
+      pinterest: getProviderStatus(
+        process.env.PINTEREST_CLIENT_ID,
+        process.env.PINTEREST_CLIENT_SECRET,
+      ),
     };
 
     return res.status(200).json({
@@ -403,5 +514,134 @@ export const getConfiguredProviders = async (req, res) => {
   } catch (err) {
     console.error("Get Configured Providers Error:", err);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/* ============================================================
+   SEND TEST EMAIL
+============================================================ */
+export const sendTestEmail = async (req, res) => {
+  try {
+    const developerId = req.developer._id;
+    const { projectId } = req.params;
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
+    }
+
+    const project = await Project.findOne({
+      _id: projectId,
+      developer: developerId,
+    });
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    // Use a mock OTP for testing
+    const mockOtp = "123456";
+    const mockMetadata = {
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+      location: "Preview Render",
+      requestId: "test_" + Math.random().toString(36).substring(7),
+      projectId: project._id,
+    };
+
+    await sendVerificationOTP(
+      email,
+      mockOtp,
+      project.name,
+      project.emailTemplate,
+      mockMetadata,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Test email successfully sent to ${email}`,
+    });
+  } catch (err) {
+    console.error("Send Test Email Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to send test email",
+    });
+  }
+};
+
+/* ============================================================
+   WEBHOOK MANAGEMENT
+============================================================ */
+export const addWebhook = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { url, events } = req.body;
+    const developerId = req.developer._id;
+
+    if (!url || !events || !Array.isArray(events) || events.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "URL and events are required" });
+    }
+
+    const secret = crypto.randomBytes(32).toString("hex");
+
+    const project = await Project.findOneAndUpdate(
+      { _id: projectId, developer: developerId },
+      {
+        $push: {
+          webhooks: { url, events, secret },
+        },
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Webhook added successfully",
+      data: project.webhooks[project.webhooks.length - 1],
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteWebhook = async (req, res) => {
+  try {
+    const { projectId, webhookId } = req.params;
+    const developerId = req.developer._id;
+
+    const project = await Project.findOneAndUpdate(
+      { _id: projectId, developer: developerId },
+      {
+        $pull: {
+          webhooks: { _id: webhookId },
+        },
+      },
+      { new: true },
+    );
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project or Webhook not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Webhook deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

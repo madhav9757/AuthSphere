@@ -1,69 +1,116 @@
 import React from "react";
-import { KeyRound, RefreshCw, LogOut } from "lucide-react";
+import { KeyRound, RefreshCw, LogOut, ShieldCheck, Zap, History } from "lucide-react";
 import DocsCodeBlock from "../DocsCodeBlock";
+import { Badge } from "@/components/ui/badge";
 
 const SessionManagement = () => {
     return (
-        <article className="space-y-6 animate-in fade-in duration-500">
-            <div className="space-y-1.5">
-                <h1 className="text-2xl font-bold tracking-tight">Session lifecycle & Token Architecture</h1>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                    AuthSphere uses a stateless, multi-token propagation model to ensure high availability and security for distributed applications.
+        <article className="space-y-12 animate-in fade-in duration-500">
+            <div className="space-y-3">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Protocol: Stateless JWT / Opaque RT</Badge>
+                <h1 className="text-3xl font-bold tracking-tight">Session lifecycle & Token Architecture</h1>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                    AuthSphere utilizes a hardened multi-token propagation model designed for high availability and zero-trust verification across distributed microservices.
                 </p>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-16">
                 {/* Token Architecture */}
-                <section className="space-y-3">
-                    <div className="flex items-center gap-2">
-                        <KeyRound className="h-4 w-4 text-primary" />
-                        <h2 className="text-sm font-bold uppercase tracking-wider">Dual-Token propagation Model</h2>
-                    </div>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        The architecture utilizes a two-tier token system to balance credential security with low-latency API access.
-                    </p>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl border bg-card/50">
-                            <h4 className="text-[11px] font-bold mb-1">Access Token (JWT)</h4>
-                            <p className="text-[10px] text-muted-foreground leading-relaxed">Short-lived (15m). Signed via RS256. Intended for stateless verification at the resource server level. Standardized OIDC payload.</p>
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <KeyRound className="h-5 w-5" />
                         </div>
-                        <div className="p-3 rounded-xl border bg-card/50">
-                            <h4 className="text-[11px] font-bold mb-1">Refresh Token (Opaque)</h4>
-                            <p className="text-[10px] text-muted-foreground leading-relaxed">Long-lived (7d). Stored with AES-256 encryption. Used to negotiate new access tokens via the <code>/sdk/refresh</code> endpoint.</p>
+                        <h3 className="text-lg font-bold">Dual-Token propagation Model</h3>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
+                        Our architecture decouples identity assertion from session persistence. This allows for immediate revocation of access without sacrificing the performance of stateless verification.
+                    </p>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="p-5 rounded-2xl border bg-card/50 space-y-3 hover:border-primary/20 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <Zap className="h-4 w-4 text-amber-500" />
+                                <h4 className="text-sm font-bold">Access Token (JWT)</h4>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Short-lived (15 minutes). Signed using <strong>RS256</strong>. Contains user claims and scopes. 
+                                Designed for high-frequency API authorization with zero database lookups.
+                            </p>
+                            <code className="text-[10px] text-primary/80 font-mono">header.payload.signature</code>
+                        </div>
+                        <div className="p-5 rounded-2xl border bg-card/50 space-y-3 hover:border-primary/20 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <History className="h-4 w-4 text-blue-500" />
+                                <h4 className="text-sm font-bold">Refresh Token (Opaque)</h4>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Long-lived (7 days). Fully opaque and encrypted via <strong>AES-256-GCM</strong> on the server. 
+                                Used to negotiate new access tokens and rotate the session state.
+                            </p>
+                            <code className="text-[10px] text-primary/80 font-mono">rt_as_7721ab99...</code>
                         </div>
                     </div>
                 </section>
 
-                {/* Automatic Refresh */}
-                <section className="space-y-3">
-                    <div className="flex items-center gap-2">
-                        <RefreshCw className="h-4 w-4 text-primary" />
-                        <h2 className="text-sm font-bold uppercase tracking-wider">Silent Handshake & Rotation</h2>
+                {/* Silent Refresh & Rotation */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                            <RefreshCw className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-bold">Silent Rotation Handshake</h3>
                     </div>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        The SDK implementation includes a background monitor that evaluates token TTL. If an access token is within 60 seconds of expiration, a silent background request is dispatched to rotate the credentials without interrupting the user workflow.
-                    </p>
-                    <DocsCodeBlock
-                        id="manual-refresh"
-                        code={`// Programmatic session extension\nconst { accessToken, user } = await AuthSphere.refreshSession();\n// Internal: Dispatches POST /sdk/refresh with persistence-layered refresh_token`}
-                        language="javascript"
-                    />
+
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            The SDK implementation includes a <strong>Proactive Refresh Listener</strong>. 
+                            If an access token is within its renewal window (default: 60s), a silent background thread dispatches 
+                            a rotation request. If rotation fails due to refresh token expiry, the <code>onSessionExpired</code> 
+                            event is triggered.
+                        </p>
+                        <DocsCodeBlock
+                            id="manual-refresh"
+                            code={`// The SDK handles this automatically, but you can trigger it manually:\ntry {\n  const { accessToken, user } = await AuthSphere.refreshSession();\n} catch (err) {\n  if (err.code === 'SESSION_EXPIRED') {\n    window.location.href = '/login';\n  }\n}`}
+                            language="javascript"
+                        />
+                    </div>
                 </section>
 
-                {/* Termination */}
-                <section className="space-y-3">
-                    <div className="flex items-center gap-2">
-                        <LogOut className="h-4 w-4 text-primary" />
-                        <h2 className="text-sm font-bold uppercase tracking-wider">Secure State Termination</h2>
+                {/* Secure Termination */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
+                            <LogOut className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-bold">State Termination (Logout)</h3>
                     </div>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        The <code>logout</code> call performs a dual-action cleanup: it invalidates the current session on the AuthSphere cluster and performs a secure wipe of the client-side token store.
-                    </p>
-                    <DocsCodeBlock
-                        id="logout-code"
-                        code={`await AuthSphere.logout();\n// Clears local storage/cookies and notifies AuthSphere to blacklist the refresh token`}
-                        language="javascript"
-                    />
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                <code>AuthSphere.logout()</code> performs a destructive cleanup. It notifies the cluster to 
+                                <strong>blacklist</strong> the current refresh token preventing any further rotations, and 
+                                purges the local storage/cookie store on the client.
+                            </p>
+                            <div className="p-4 rounded-xl bg-muted/40 border space-y-2">
+                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase">
+                                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                    Cross-Tab Synchronization
+                                </div>
+                                <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+                                    The SDK uses BroadcastChannel API to ensure that logging out in one tab immediately 
+                                    invalidates the session across all open browser instances of your app.
+                                </p>
+                            </div>
+                        </div>
+                        <DocsCodeBlock
+                            id="logout-code"
+                            code={`// Perform a global sign-out\nawait AuthSphere.logout({\n  global: true, // Invalidate all active sessions for this user\n  onComplete: () => navigate('/login')\n});`}
+                            language="javascript"
+                        />
+                    </div>
                 </section>
             </div>
         </article>
@@ -71,3 +118,4 @@ const SessionManagement = () => {
 };
 
 export default SessionManagement;
+

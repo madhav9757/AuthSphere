@@ -2,12 +2,24 @@ import Developer from "../models/developer.model.js";
 import EndUser from "../models/endUsers.models.js";
 import { getGoogleAuthURL, getGoogleUser } from "../services/google.service.js";
 import { getGithubAuthURL, getGithubUser } from "../services/github.service.js";
-import { getDiscordAuthURL, getDiscordUser } from "../services/discord.service.js";
-import { getLinkedinAuthURL, getLinkedinUser } from "../services/linkedin.service.js";
+import {
+  getDiscordAuthURL,
+  getDiscordUser,
+} from "../services/discord.service.js";
+import {
+  getLinkedinAuthURL,
+  getLinkedinUser,
+} from "../services/linkedin.service.js";
 import { getGitlabAuthURL, getGitlabUser } from "../services/gitlab.service.js";
 import { getTwitchAuthURL, getTwitchUser } from "../services/twitch.service.js";
-import { getBitbucketAuthURL, getBitbucketUser } from "../services/bitbucket.service.js";
-import { getMicrosoftAuthURL, getMicrosoftUser } from "../services/microsoft.service.js";
+import {
+  getBitbucketAuthURL,
+  getBitbucketUser,
+} from "../services/bitbucket.service.js";
+import {
+  getMicrosoftAuthURL,
+  getMicrosoftUser,
+} from "../services/microsoft.service.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { handleSDKCallback, authRequests } from "./sdk.controller.js";
 import bcrypt from "bcryptjs";
@@ -17,6 +29,7 @@ import Project from "../models/project.model.js";
 import DeveloperSession from "../models/developerSession.model.js";
 import { logEvent } from "../utils/auditLogger.js";
 import { parseUserAgent } from "../utils/userAgentParser.js";
+import { triggerWebhook } from "../utils/webhookSender.js";
 import { conf } from "../configs/env.js";
 
 /* ============================================================
@@ -66,7 +79,7 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
       metadata: {
         ip: req.ip,
         userAgent: req.headers["user-agent"],
-      }
+      },
     });
   } else {
     // Update existing developer info
@@ -93,17 +106,20 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
 
   // ---------- CREATE SESSION RECORD ----------
   try {
-    const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"] || "";
+    const ipAddress =
+      req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
     let location = { city: "Unknown", country: "Unknown", countryCode: "???" };
     try {
-      const geoResponse = await axios.get(`https://ipapi.co/${ipAddress}/json/`).catch(() => null);
+      const geoResponse = await axios
+        .get(`https://ipapi.co/${ipAddress}/json/`)
+        .catch(() => null);
       if (geoResponse && geoResponse.data && !geoResponse.data.error) {
         location = {
           city: geoResponse.data.city,
           country: geoResponse.data.country_name,
-          countryCode: geoResponse.data.country_code
+          countryCode: geoResponse.data.country_code,
         };
       }
     } catch (geoError) {
@@ -117,30 +133,33 @@ const handleSocialAuth = async (res, req, userData, context = {}) => {
       userAgent: userAgent,
       deviceInfo: parseUserAgent(userAgent),
       location: location,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     // Log the event
     await logEvent({
       developerId: developer._id,
       action: "DEVELOPER_LOGIN",
-      description: `Successful login via ${userData.provider || 'Social Auth'} from ${location?.city || 'unknown location'}.`,
+      description: `Successful login via ${userData.provider || "Social Auth"} from ${location?.city || "unknown location"}.`,
       category: "security",
       metadata: {
         ip: ipAddress,
         userAgent: userAgent,
-        details: { location }
+        details: { location },
       },
     });
   } catch (sessionError) {
-    console.error("Failed to create developer session in social auth:", sessionError.message);
+    console.error(
+      "Failed to create developer session in social auth:",
+      sessionError.message,
+    );
   }
 
   // ---------- CLI LOGIN ----------
   if (cli === "true" || cli === true) {
     try {
       await fetch(
-        `${conf.cliUrl}/cli-update?name=${developer.username}&email=${developer.email}&id=${developer._id}&provider=${userData.provider}`
+        `${conf.cliUrl}/cli-update?name=${developer.username}&email=${developer.email}&id=${developer._id}&provider=${userData.provider}`,
       );
       return res.send("<script>window.close();</script>");
     } catch (error) {
@@ -176,7 +195,10 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
 
     if (!endUser) {
       console.log("👤 EndUser not found, creating new one...");
-      const randomPassword = await bcrypt.hash(Math.random().toString(36) + Date.now(), 10);
+      const randomPassword = await bcrypt.hash(
+        Math.random().toString(36) + Date.now(),
+        10,
+      );
 
       let baseUsername = userData.username || userData.email.split("@")[0];
       let username = baseUsername;
@@ -188,7 +210,9 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
       }
 
       const project = await Project.findById(authRequest.projectId);
-      const isVerifiedDefault = project?.settings?.requireEmailVerification ? false : true;
+      const isVerifiedDefault = project?.settings?.requireEmailVerification
+        ? false
+        : true;
 
       endUser = await EndUser.create({
         email: userData.email,
@@ -208,7 +232,7 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
           developerId: project.developer,
           projectId: project._id,
           action: "USER_REGISTERED",
-          description: `New user (${userData.email}) registered via ${userData.provider || 'Email'}.`,
+          description: `New user (${userData.email}) registered via ${userData.provider || "Email"}.`,
           category: "user",
           metadata: {
             ip: req.ip,
@@ -217,6 +241,15 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
           },
         });
       }
+
+      // Trigger Webhook
+      triggerWebhook(authRequest.projectId, "user.registered", {
+        userId: endUser._id,
+        email: endUser.email,
+        username: endUser.username,
+        provider: userData.provider || "social",
+        timestamp: new Date().toISOString(),
+      });
     } else {
       console.log("✅ EndUser found, updating profile info...");
       endUser.picture = userData.picture || endUser.picture;
@@ -228,7 +261,13 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
     // IMPORTANT: Set req.query.sdk_request for handleSDKCallback to use if it relies on it
     req.query.sdk_request = sdkRequestId;
     console.log("📞 Calling handleSDKCallback with requestId:", sdkRequestId);
-    return await handleSDKCallback(req, res, endUser, userData.provider, sdkRequestId);
+    return await handleSDKCallback(
+      req,
+      res,
+      endUser,
+      userData.provider,
+      sdkRequestId,
+    );
   } catch (err) {
     console.error("SDK Flow Error:", err);
     return res.status(500).send("Authentication failed. Please try again.");
@@ -236,13 +275,13 @@ const handleSDKFlow = async (res, req, userData, explicitSdkRequestId) => {
 };
 
 const getContextFromReq = (req) => {
-  if (req.query.sdk === 'true') {
-    return { type: 'sdk', sdk_request: req.query.sdk_request };
+  if (req.query.sdk === "true") {
+    return { type: "sdk", sdk_request: req.query.sdk_request };
   }
-  if (req.query.cli === 'true') {
-    return { type: 'cli' };
+  if (req.query.cli === "true") {
+    return { type: "cli" };
   }
-  return { type: 'dev' };
+  return { type: "dev" };
 };
 
 /* ============================================================
@@ -269,22 +308,27 @@ export async function googleCallback(req, res) {
 
     // Parse state to restore context
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
     console.log("🧩 Parsed Parse Context:", context);
 
     const googleUser = await getGoogleUser(code);
     console.log("✅ Google user:", googleUser.email);
 
-    await handleSocialAuth(res, req, {
-      email: googleUser.email,
-      username: googleUser.name,
-      picture: googleUser.picture,
-      provider: "Google",
-      providerId: googleUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: googleUser.email,
+        username: googleUser.name,
+        picture: googleUser.picture,
+        provider: "Google",
+        providerId: googleUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("Google callback error:", err);
     res.status(500).send("Google authentication failed");
@@ -314,22 +358,27 @@ export async function githubCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
     console.log("🧩 Parsed GitHub Context:", context);
 
     const githubUser = await getGithubUser(code);
     console.log("✅ GitHub user:", githubUser.email);
 
-    await handleSocialAuth(res, req, {
-      email: githubUser.email,
-      username: githubUser.login,
-      picture: githubUser.avatar,
-      provider: "GitHub",
-      providerId: String(githubUser.id),
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: githubUser.email,
+        username: githubUser.login,
+        picture: githubUser.avatar,
+        provider: "GitHub",
+        providerId: String(githubUser.id),
+      },
+      context,
+    );
   } catch (err) {
     console.error("GitHub callback error:", err);
     res.status(500).send("GitHub authentication failed");
@@ -359,22 +408,27 @@ export async function discordCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
     console.log("🧩 Parsed Discord Context:", context);
 
     const discordUser = await getDiscordUser(code);
     console.log("✅ Discord user:", discordUser.email);
 
-    await handleSocialAuth(res, req, {
-      email: discordUser.email,
-      username: discordUser.username,
-      picture: discordUser.avatar,
-      provider: "Discord",
-      providerId: discordUser.id,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: discordUser.email,
+        username: discordUser.username,
+        picture: discordUser.avatar,
+        provider: "Discord",
+        providerId: discordUser.id,
+      },
+      context,
+    );
   } catch (err) {
     console.error("Discord callback error:", err);
     res.status(500).send("Discord authentication failed");
@@ -401,20 +455,25 @@ export async function linkedinCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
 
     const linkedinUser = await getLinkedinUser(code);
 
-    await handleSocialAuth(res, req, {
-      email: linkedinUser.email,
-      username: linkedinUser.username,
-      picture: linkedinUser.picture,
-      provider: "LinkedIn",
-      providerId: linkedinUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: linkedinUser.email,
+        username: linkedinUser.username,
+        picture: linkedinUser.picture,
+        provider: "LinkedIn",
+        providerId: linkedinUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("LinkedIn callback error:", err);
     res.status(500).send("LinkedIn authentication failed");
@@ -441,20 +500,25 @@ export async function gitlabCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
 
     const gitlabUser = await getGitlabUser(code);
 
-    await handleSocialAuth(res, req, {
-      email: gitlabUser.email,
-      username: gitlabUser.username,
-      picture: gitlabUser.picture,
-      provider: "GitLab",
-      providerId: gitlabUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: gitlabUser.email,
+        username: gitlabUser.username,
+        picture: gitlabUser.picture,
+        provider: "GitLab",
+        providerId: gitlabUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("GitLab callback error:", err);
     res.status(500).send("GitLab authentication failed");
@@ -481,20 +545,25 @@ export async function twitchCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
 
     const twitchUser = await getTwitchUser(code);
 
-    await handleSocialAuth(res, req, {
-      email: twitchUser.email,
-      username: twitchUser.username,
-      picture: twitchUser.picture,
-      provider: "Twitch",
-      providerId: twitchUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: twitchUser.email,
+        username: twitchUser.username,
+        picture: twitchUser.picture,
+        provider: "Twitch",
+        providerId: twitchUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("Twitch callback error:", err);
     res.status(500).send("Twitch authentication failed");
@@ -521,20 +590,25 @@ export async function bitbucketCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
 
     const bitbucketUser = await getBitbucketUser(code);
 
-    await handleSocialAuth(res, req, {
-      email: bitbucketUser.email,
-      username: bitbucketUser.username,
-      picture: bitbucketUser.picture,
-      provider: "Bitbucket",
-      providerId: bitbucketUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: bitbucketUser.email,
+        username: bitbucketUser.username,
+        picture: bitbucketUser.picture,
+        provider: "Bitbucket",
+        providerId: bitbucketUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("Bitbucket callback error:", err);
     res.status(500).send("Bitbucket authentication failed");
@@ -561,20 +635,25 @@ export async function microsoftCallback(req, res) {
     if (!code) return res.status(400).send("Missing authorization code");
 
     let context = { cli: false, sdkRequest: null };
-    if (state === 'cli') context.cli = true;
-    if (state && state.startsWith('sdk:')) {
-      context.sdkRequest = state.split(':')[1];
+    if (state === "cli") context.cli = true;
+    if (state && state.startsWith("sdk:")) {
+      context.sdkRequest = state.split(":")[1];
     }
 
     const microsoftUser = await getMicrosoftUser(code);
 
-    await handleSocialAuth(res, req, {
-      email: microsoftUser.email,
-      username: microsoftUser.username,
-      picture: microsoftUser.picture,
-      provider: "Microsoft",
-      providerId: microsoftUser.sub,
-    }, context);
+    await handleSocialAuth(
+      res,
+      req,
+      {
+        email: microsoftUser.email,
+        username: microsoftUser.username,
+        picture: microsoftUser.picture,
+        provider: "Microsoft",
+        providerId: microsoftUser.sub,
+      },
+      context,
+    );
   } catch (err) {
     console.error("Microsoft callback error:", err);
     res.status(500).send("Microsoft authentication failed");

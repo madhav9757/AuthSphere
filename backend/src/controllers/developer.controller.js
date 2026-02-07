@@ -33,7 +33,7 @@ export const registerDeveloper = async (req, res) => {
 
     if (existedDeveloper) {
       return res.status(409).json({
-        message: "Developer with email or username already exists"
+        message: "Developer with email or username already exists",
       });
     }
 
@@ -46,8 +46,9 @@ export const registerDeveloper = async (req, res) => {
       provider: "local",
     });
 
-    const createdDeveloper = await Developer.findById(developer._id)
-      .select("-password -refreshToken");
+    const createdDeveloper = await Developer.findById(developer._id).select(
+      "-password -refreshToken",
+    );
 
     return res.status(201).json({
       success: true,
@@ -92,18 +93,25 @@ export const loginDeveloper = async (req, res) => {
 
     // Create session record
     try {
-      const userAgent = req.headers['user-agent'] || '';
-      const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const userAgent = req.headers["user-agent"] || "";
+      const ipAddress =
+        req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
-      let location = { city: "Unknown", country: "Unknown", countryCode: "???" };
+      let location = {
+        city: "Unknown",
+        country: "Unknown",
+        countryCode: "???",
+      };
       try {
         // Optional geolocation - using a free service (ipapi.co is limited but works for demo)
-        const geoResponse = await axios.get(`https://ipapi.co/${ipAddress}/json/`).catch(() => null);
+        const geoResponse = await axios
+          .get(`https://ipapi.co/${ipAddress}/json/`)
+          .catch(() => null);
         if (geoResponse && geoResponse.data && !geoResponse.data.error) {
           location = {
             city: geoResponse.data.city,
             country: geoResponse.data.country_name,
-            countryCode: geoResponse.data.country_code
+            countryCode: geoResponse.data.country_code,
           };
         }
       } catch (geoError) {
@@ -117,10 +125,13 @@ export const loginDeveloper = async (req, res) => {
         userAgent: userAgent,
         deviceInfo: parseUserAgent(userAgent),
         location: location,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days matching cookie
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days matching cookie
       });
     } catch (sessionError) {
-      console.error("Failed to create developer session:", sessionError.message);
+      console.error(
+        "Failed to create developer session:",
+        sessionError.message,
+      );
     }
 
     const options = getCookieOptions();
@@ -147,20 +158,24 @@ export const loginDeveloper = async (req, res) => {
 
 /* ---------------------- REFRESH TOKEN ---------------------- */
 export const refreshAccessToken = async (req, res) => {
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     return res.status(401).json({ message: "Unauthorized request" });
   }
 
   try {
-    const decodedToken = jwt.verify(incomingRefreshToken, conf.refreshTokenSecret);
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      conf.refreshTokenSecret,
+    );
 
     const developer = await Developer.findById(decodedToken?._id);
 
     if (!developer || incomingRefreshToken !== developer.refreshToken) {
       return res.status(401).json({
-        message: "Refresh token is expired or invalid"
+        message: "Refresh token is expired or invalid",
       });
     }
 
@@ -177,11 +192,14 @@ export const refreshAccessToken = async (req, res) => {
         {
           refreshToken: newRefreshToken,
           lastActive: new Date(),
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        }
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
       );
     } catch (sessionError) {
-      console.error("Failed to update developer session on refresh:", sessionError.message);
+      console.error(
+        "Failed to update developer session on refresh:",
+        sessionError.message,
+      );
     }
 
     const options = getCookieOptions();
@@ -206,7 +224,7 @@ export const logoutDeveloper = async (req, res) => {
   await Developer.findByIdAndUpdate(
     req.developer._id,
     { $set: { refreshToken: null } },
-    { new: true }
+    { new: true },
   );
 
   // Invalidate current session
@@ -215,7 +233,7 @@ export const logoutDeveloper = async (req, res) => {
     if (refreshToken) {
       await DeveloperSession.findOneAndUpdate(
         { refreshToken: refreshToken, developer: req.developer._id },
-        { isValid: false }
+        { isValid: false },
       );
     }
   } catch (error) {
@@ -253,19 +271,25 @@ export const getDashboardStats = async (req, res) => {
     const developerId = req.developer._id;
 
     // Count projects
-    const totalProjects = await Project.countDocuments({ developer: developerId });
+    const totalProjects = await Project.countDocuments({
+      developer: developerId,
+    });
 
     // Get all project IDs for this developer
-    const projects = await Project.find({ developer: developerId }).select('_id');
-    const projectIds = projects.map(p => p._id);
+    const projects = await Project.find({ developer: developerId }).select(
+      "_id",
+    );
+    const projectIds = projects.map((p) => p._id);
 
     // Count end users across all those projects
-    const totalEndUsers = await EndUser.countDocuments({ projectId: { $in: projectIds } });
+    const totalEndUsers = await EndUser.countDocuments({
+      projectId: { $in: projectIds },
+    });
 
     // Get latest end users
     const recentUsers = await EndUser.find({ projectId: { $in: projectIds } })
-      .select('email username createdAt projectId')
-      .populate('projectId', 'name')
+      .select("email username createdAt projectId")
+      .populate("projectId", "name")
       .sort({ createdAt: -1 })
       .limit(5);
 
@@ -277,16 +301,16 @@ export const getDashboardStats = async (req, res) => {
       {
         $match: {
           projectId: { $in: projectIds },
-          createdAt: { $gte: thirtyDaysAgo }
-        }
+          createdAt: { $gte: thirtyDaysAgo },
+        },
       },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     // Fill missing days
@@ -294,11 +318,11 @@ export const getDashboardStats = async (req, res) => {
     for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const found = rawTrend.find(item => item._id === dateStr);
+      const dateStr = d.toISOString().split("T")[0];
+      const found = rawTrend.find((item) => item._id === dateStr);
       signupTrend.push({
         date: dateStr,
-        count: found ? found.count : 0
+        count: found ? found.count : 0,
       });
     }
     signupTrend.reverse();
@@ -309,8 +333,8 @@ export const getDashboardStats = async (req, res) => {
         totalProjects,
         totalEndUsers,
         recentUsers,
-        signupTrend: signupTrend.map(d => ({ ...d, signups: d.count }))
-      }
+        signupTrend: signupTrend.map((d) => ({ ...d, signups: d.count })),
+      },
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -330,7 +354,7 @@ export const updateDeveloperProfile = async (req, res) => {
     // Check if username is taken by another developer
     const existing = await Developer.findOne({
       username,
-      _id: { $ne: developerId }
+      _id: { $ne: developerId },
     });
 
     if (existing) {
@@ -340,7 +364,7 @@ export const updateDeveloperProfile = async (req, res) => {
     const updatedDeveloper = await Developer.findByIdAndUpdate(
       developerId,
       { $set: { username } },
-      { new: true }
+      { new: true },
     ).select("-password -refreshToken");
 
     // Log the event
@@ -358,7 +382,7 @@ export const updateDeveloperProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: updatedDeveloper
+      data: updatedDeveloper,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -387,7 +411,7 @@ export const deleteDeveloperAccount = async (req, res) => {
       .clearCookie("refreshToken", options)
       .json({
         success: true,
-        message: "Account and all associated data deleted permanently"
+        message: "Account and all associated data deleted permanently",
       });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -407,13 +431,24 @@ export const updateDeveloperPreferences = async (req, res) => {
     const updatedDeveloper = await Developer.findByIdAndUpdate(
       developerId,
       { $set: { preferences } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password -refreshToken");
+
+    await logEvent({
+      developerId,
+      action: "PREFERENCES_UPDATED",
+      description: "Developer notification and theme preferences updated.",
+      category: "account",
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+    });
 
     return res.status(200).json({
       success: true,
       message: "Preferences updated successfully",
-      data: updatedDeveloper
+      data: updatedDeveloper,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -434,7 +469,7 @@ export const updateDeveloperOrganization = async (req, res) => {
     const updatedDeveloper = await Developer.findByIdAndUpdate(
       developerId,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password -refreshToken");
 
     await logEvent({
@@ -451,7 +486,7 @@ export const updateDeveloperOrganization = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Organization info updated successfully",
-      data: updatedDeveloper
+      data: updatedDeveloper,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -463,8 +498,9 @@ export const getDeveloperSettings = async (req, res) => {
   try {
     const developerId = req.developer._id;
 
-    const developer = await Developer.findById(developerId)
-      .select("-password -refreshToken");
+    const developer = await Developer.findById(developerId).select(
+      "-password -refreshToken",
+    );
 
     if (!developer) {
       return res.status(404).json({ message: "Developer not found" });
@@ -472,7 +508,7 @@ export const getDeveloperSettings = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: developer
+      data: developer,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
