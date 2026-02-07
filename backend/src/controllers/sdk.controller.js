@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { sendVerificationOTP } from "../services/email.service.js";
 import { logEvent } from "../utils/auditLogger.js";
 import { triggerWebhook } from "../utils/webhookSender.js";
+import { emitEvent } from "../services/socket.service.js";
 
 export const authRequests = new Map(); // sdk_request_id
 export const authCodes = new Map(); // authorization_code
@@ -154,6 +155,13 @@ export const authorize = async (req, res) => {
 
     console.log(`✓ SDK Auth request created: ${requestId}`);
 
+    emitEvent(project._id, "AUTH_REQUEST", {
+      requestId,
+      provider,
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+
     // ✅ Handle response
     if (
       req.headers.accept === "application/json" ||
@@ -269,6 +277,11 @@ export const handleSDKCallback = async (
     authRequests.delete(sdk_request);
 
     console.log(`✓ Auth code issued for ${endUser.email}`);
+
+    emitEvent(authRequest.projectId, "AUTH_CODE_ISSUED", {
+      email: endUser.email,
+      provider: endUser.provider || "local",
+    });
 
     const redirectUrl = new URL(authRequest.redirectUri);
     redirectUrl.searchParams.set("code", code);
@@ -431,6 +444,12 @@ export const token = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
+    emitEvent(projectId, "TOKEN_EXCHANGED", {
+      email: endUser.email,
+      userId: endUser._id,
+      ip: req.ip,
+    });
+
     // Prepare response matching AuthResponse interface in SDK
     return res.json({
       success: true,
@@ -523,6 +542,11 @@ export const refresh = async (req, res) => {
       accessToken,
       refreshToken: refreshToken,
       expiresAt: Date.now() + accessSeconds * 1000,
+    });
+
+    emitEvent(session.projectId, "TOKEN_REFRESHED", {
+      email: endUser.email,
+      userId: endUser._id,
     });
   } catch (err) {
     console.error("Token Refresh Error:", err);

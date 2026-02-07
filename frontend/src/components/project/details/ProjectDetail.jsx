@@ -10,6 +10,7 @@ import ProvidersPage from "@/pages/project/ProvidersPage";
 
 import ProjectUsersCard from "./ProjectUsersCard";
 import ProjectWebhooksCard from "./ProjectWebhooksCard";
+import LiveEventsStream from "../LiveEventsStream";
 
 // UI Imports
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import {
   Webhook,
   Settings2,
   Globe,
+  Terminal,
 } from "lucide-react";
 
 const ProjectDetail = () => {
@@ -139,6 +141,13 @@ const ProjectDetail = () => {
               <Globe className="h-4 w-4" />
               Identity Catalog
             </TabsTrigger>
+            <TabsTrigger
+              value="telemetry"
+              className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              <Terminal className="h-4 w-4" />
+              Live Telemetry
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -176,6 +185,26 @@ const ProjectDetail = () => {
         >
           <div className="bg-card/50 rounded-2xl border border-primary/10 overflow-hidden p-8">
             <ProvidersPage embedded={true} onUpdated={loadProject} />
+          </div>
+        </TabsContent>
+
+        <TabsContent
+          value="telemetry"
+          className="focus-visible:outline-none focus-visible:ring-0"
+        >
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                <Terminal className="h-6 w-6 text-primary" />
+                Command Center Telemetry
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-2xl">
+                Monitor authentication flows, token lifecycle, and cryptographic
+                handshakes in real-time. Perfect for debugging integrations and
+                monitoring system health.
+              </p>
+            </div>
+            <LiveEventsStream projectId={projectId} />
           </div>
         </TabsContent>
       </Tabs>
