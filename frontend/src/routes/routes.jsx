@@ -108,11 +108,11 @@ export const routes = [
     ),
   },
   {
-    path: "/projects/:projectId/providers",
+    path: "/projects/:projectId/email-customization",
     element: (
       <ProtectedRoute>
         <MainLayout>
-          <ProvidersPage />
+          <EmailCustomizationPage />
         </MainLayout>
       </ProtectedRoute>
     ),

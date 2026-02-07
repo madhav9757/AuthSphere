@@ -6,6 +6,7 @@ import { getProject } from "@/api/ProjectAPI";
 import ProjectDetailHeader from "./ProjectDetailHeader";
 import ProjectKeysCard from "./ProjectKeysCard";
 import ProjectSettings from "./ProjectSettings";
+import ProvidersPage from "@/pages/project/ProvidersPage";
 
 import ProjectUsersCard from "./ProjectUsersCard";
 import ProjectWebhooksCard from "./ProjectWebhooksCard";
@@ -23,6 +24,7 @@ import {
   Users,
   Webhook,
   Settings2,
+  Globe,
 } from "lucide-react";
 
 const ProjectDetail = () => {
@@ -95,12 +97,12 @@ const ProjectDetail = () => {
 
   /* MAIN RENDER */
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20 animate-in fade-in duration-500">
+    <div className="w-full px-4 md:px-8 lg:px-12 space-y-8 pb-20 animate-in fade-in duration-500">
       {/* Header */}
       <ProjectDetailHeader project={project} />
 
       <Tabs defaultValue="keys" className="space-y-8">
-        <div className="sticky top-16 z-10 py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="sticky top-16 z-10 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
           <TabsList className="h-12 p-1 bg-muted/50 rounded-xl">
             <TabsTrigger
               value="keys"
@@ -129,6 +131,13 @@ const ProjectDetail = () => {
             >
               <Settings2 className="h-4 w-4" />
               Project Settings
+            </TabsTrigger>
+            <TabsTrigger
+              value="catalog"
+              className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              <Globe className="h-4 w-4" />
+              Identity Catalog
             </TabsTrigger>
           </TabsList>
         </div>
@@ -159,6 +168,15 @@ const ProjectDetail = () => {
           className="focus-visible:outline-none focus-visible:ring-0"
         >
           <ProjectSettings project={project} onUpdated={loadProject} />
+        </TabsContent>
+
+        <TabsContent
+          value="catalog"
+          className="focus-visible:outline-none focus-visible:ring-0"
+        >
+          <div className="bg-card/50 rounded-2xl border border-primary/10 overflow-hidden p-8">
+            <ProvidersPage embedded={true} onUpdated={loadProject} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

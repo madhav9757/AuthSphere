@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { allProvidersList } from "@/lib/providers";
+import ProvidersPage from "@/pages/project/ProvidersPage";
 
 const ProjectSettings = ({ project, onUpdated }) => {
   const navigate = useNavigate();
@@ -116,9 +117,9 @@ const ProjectSettings = ({ project, onUpdated }) => {
     },
     {
       id: "providers",
-      label: "Providers",
+      label: "Identity Providers",
       icon: ShieldCheck,
-      description: "Identity providers",
+      description: "Active authentication methods",
     },
     {
       id: "danger",
@@ -129,22 +130,9 @@ const ProjectSettings = ({ project, onUpdated }) => {
     },
   ];
 
-  // Filter providers
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAll, setShowAll] = useState(false);
-
-  const relevantProviders = useMemo(() => {
-    return allProvidersList.filter(
-      (p) =>
-        ["ready", "available", "beta"].includes(p.status) &&
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [searchTerm]);
-
-  const enabledProvidersList = relevantProviders.filter((p) => providers[p.id]);
-  const disabledProvidersList = relevantProviders.filter(
-    (p) => !providers[p.id],
-  );
+  const activeProvidersList = useMemo(() => {
+    return allProvidersList.filter((p) => project.providers?.includes(p.id));
+  }, [project.providers]);
 
   // --- CHANGE DETECTION ---
   const hasChanges = useMemo(() => {
@@ -292,7 +280,7 @@ const ProjectSettings = ({ project, onUpdated }) => {
       </aside>
 
       {/* Content Area */}
-      <div className="flex-1 space-y-8 min-w-0 pb-24 max-w-4xl">
+      <div className="flex-1 space-y-8 min-w-0 pb-24">
         {activeSection === "general" && (
           <Card className="border-none shadow-sm bg-card/50">
             <CardHeader>
@@ -581,150 +569,54 @@ const ProjectSettings = ({ project, onUpdated }) => {
         )}
 
         {activeSection === "providers" && (
-          <Card className="border-none shadow-sm bg-card/50">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 space-y-0 pb-6 border-b mb-6">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  Active Providers
-                </CardTitle>
-                <CardDescription>
-                  Select which identity providers are enabled for this project.
-                </CardDescription>
-              </div>
-              <div className="w-full sm:max-w-xs">
-                <Input
-                  placeholder="Search providers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-background/50 rounded-full pl-6"
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Enabled Providers Section */}
-              {enabledProvidersList.length > 0 && (
-                <div className="mb-8">
-                  <h4 className="text-[10px] font-bold text-primary mb-3 uppercase tracking-[0.2em]">
-                    Enabled
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {enabledProvidersList.map((p) => (
-                      <div
-                        key={p.id}
-                        onClick={() => toggleProvider(p.id)}
-                        className="flex items-center gap-3 p-3 border rounded-xl transition-all duration-200 cursor-pointer bg-primary/5 border-primary/50 shadow-sm hover:shadow-md"
-                      >
-                        <div className="h-10 w-10 shrink-0 bg-white rounded-lg border p-2 flex items-center justify-center ring-2 ring-primary/20">
-                          <img
-                            src={p.logo}
-                            alt={p.name}
-                            className="h-full w-full object-contain"
-                            onError={(e) => {
-                              e.target.src =
-                                "https://www.svgrepo.com/show/506680/app-development.svg";
-                            }}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {p.name}
-                          </p>
-                          <p className="text-[10px] font-bold text-primary">
-                            Enabled
-                          </p>
-                        </div>
-                        <Switch
-                          checked={true}
-                          onCheckedChange={() => toggleProvider(p.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Available Providers Section */}
-              <div>
-                <h4 className="text-[10px] font-bold text-muted-foreground mb-3 uppercase tracking-[0.2em]">
-                  Available Catalog
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {disabledProvidersList
-                    .slice(0, searchTerm ? undefined : showAll ? undefined : 12)
-                    .map((p) => (
-                      <div
-                        key={p.id}
-                        onClick={() => toggleProvider(p.id)}
-                        className="flex items-center gap-3 p-3 border rounded-xl transition-all duration-200 cursor-pointer bg-background/50 hover:bg-muted/50 border-transparent hover:border-muted-foreground/20"
-                      >
-                        <div className="h-10 w-10 shrink-0 bg-white rounded-lg border p-2 flex items-center justify-center grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                          <img
-                            src={p.logo}
-                            alt={p.name}
-                            className="h-full w-full object-contain"
-                            onError={(e) => {
-                              e.target.src =
-                                "https://www.svgrepo.com/show/506680/app-development.svg";
-                            }}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {p.name}
-                          </p>
-                          <p className="text-[10px] font-bold text-muted-foreground">
-                            Available
-                          </p>
-                        </div>
-                        <Switch
-                          checked={false}
-                          onCheckedChange={() => toggleProvider(p.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    ))}
-                  {disabledProvidersList.length === 0 && (
-                    <div className="text-sm text-muted-foreground col-span-full py-8 text-center border border-dashed rounded-xl bg-muted/20">
-                      No providers found matching "{searchTerm}"
-                    </div>
-                  )}
-                </div>
-
-                {/* Show More Button */}
-                {!searchTerm && disabledProvidersList.length > 12 && (
-                  <div className="mt-6 text-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAll(!showAll)}
-                      className="gap-2 rounded-full px-6"
-                    >
-                      {showAll
-                        ? "Show Less"
-                        : `Show All (${disabledProvidersList.length})`}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div className="mt-8 pt-6 border-t text-center">
-                <Button
-                  variant="link"
-                  asChild
-                  className="text-primary hover:no-underline"
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                <ShieldCheck className="h-6 w-6 text-primary" />
+                Active Providers
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-2xl">
+                The following methods are currently enabled for your project. To
+                add more or configure settings, visit the main{" "}
+                <Link
+                  to="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // This is a bit hacky since we are inside a component that doesn't know about the parent's tabs
+                    // but usually in this context, the user just clicks the 'Catalog' tab above.
+                    // We'll just provide a textual hint.
+                  }}
+                  className="text-primary hover:underline font-semibold"
                 >
-                  <Link
-                    to={`/projects/${project._id}/providers`}
-                    className="flex items-center gap-2 group"
-                  >
-                    Configure Advanced Provider Settings
-                    <Plus className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  Identity Catalog
+                </Link>{" "}
+                tab.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {activeProvidersList.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex flex-col items-center justify-center p-4 border rounded-xl bg-background/50"
+                >
+                  <div className="h-10 w-10 mb-2 rounded-lg bg-white border flex items-center justify-center p-2 shadow-sm">
+                    <img
+                      src={p.logo}
+                      alt={p.name}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <span className="text-[11px] font-semibold text-center">
+                    {p.name}
+                  </span>
+                  <span className="text-[9px] text-primary font-bold uppercase mt-1">
+                    Active
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {activeSection === "danger" && (
