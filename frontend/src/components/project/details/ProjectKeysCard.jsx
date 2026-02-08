@@ -227,7 +227,11 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
             application.
           </p>
 
-          <Terminal className="max-w-none bg-black/80 backdrop-blur-xl border-white/10 shadow-2xl ring-1 ring-white/5">
+          <Terminal
+            copyable
+            codeToCopy={`import { initAuth } from "@authspherejs/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  projectId: "${project._id}",\n  redirectUri: "${project.redirectUris?.[0] || "YOUR_CALLBACK_URL"}"\n});`}
+            className="max-w-none bg-black/80 backdrop-blur-xl border-white/10 shadow-2xl ring-1 ring-white/5"
+          >
             <TypingAnimation className="text-cyan-400 font-bold">
               $ npm install @authspherejs/sdk
             </TypingAnimation>
@@ -255,23 +259,6 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
                 </span>
                 {`\n}`});
               </pre>
-            </AnimatedSpan>
-
-            <AnimatedSpan className="flex justify-start pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[11px] gap-2 border-white/10 hover:bg-white/5 text-slate-300"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `import { initAuth } from "@authspherejs/sdk";\n\nconst auth = initAuth({\n  publicKey: "${project.publicKey}",\n  projectId: "${project._id}",\n  redirectUri: "${project.redirectUris?.[0] || "YOUR_CALLBACK_URL"}"\n});`,
-                  );
-                  toast.success("Snippet copied");
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-                Copy Implementation
-              </Button>
             </AnimatedSpan>
           </Terminal>
         </div>

@@ -162,8 +162,11 @@ export const Terminal = ({
   className,
   sequence = true,
   startOnView = true,
+  copyable = false,
+  codeToCopy = "",
 }) => {
   const containerRef = useRef(null);
+  const [copied, setCopied] = useState(false);
   const isInView = useInView(containerRef, {
     amount: 0.3,
     once: true,
@@ -171,6 +174,13 @@ export const Terminal = ({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const sequenceHasStarted = sequence ? !startOnView || isInView : false;
+
+  const handleCopy = () => {
+    if (!codeToCopy) return;
+    navigator.clipboard.writeText(codeToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const contextValue = useMemo(() => {
     if (!sequence) return null;
@@ -199,19 +209,59 @@ export const Terminal = ({
     <div
       ref={containerRef}
       className={cn(
-        "border-border bg-background z-0 h-full max-h-[400px] w-full max-w-lg rounded-xl border",
+        "border-border bg-background z-0 w-full rounded-xl border overflow-hidden",
         className,
       )}
     >
-      <div className="border-border flex flex-col gap-y-2 border-b p-4">
+      <div className="border-border flex items-center justify-between border-b p-4">
         <div className="flex flex-row gap-x-2">
           <div className="h-2 w-2 rounded-full bg-red-500"></div>
           <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
           <div className="h-2 w-2 rounded-full bg-green-500"></div>
         </div>
+        {copyable && (
+          <button
+            onClick={handleCopy}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {copied ? (
+              <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter flex items-center gap-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Copied
+              </span>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            )}
+          </button>
+        )}
       </div>
-      <pre className="p-4">
-        <code className="grid gap-y-1 overflow-auto">{wrappedChildren}</code>
+      <pre className="p-4 overflow-auto">
+        <code className="grid gap-y-1">{wrappedChildren}</code>
       </pre>
     </div>
   );

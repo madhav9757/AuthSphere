@@ -103,9 +103,9 @@ const ProjectDetail = () => {
       {/* Header */}
       <ProjectDetailHeader project={project} />
 
-      <Tabs defaultValue="keys" className="space-y-8">
-        <div className="sticky top-16 z-10 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
-          <TabsList className="h-12 p-1 bg-muted/50 rounded-xl">
+      <Tabs defaultValue="keys" className="space-y-8 bg-transparent">
+        <div className="sticky top-16 z-10 py-4 bg-transparent backdrop-blur-sm border-b border-white/5">
+          <TabsList className="h-12 p-1 bg-transparent rounded-xl border border-white/5">
             <TabsTrigger
               value="keys"
               className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
