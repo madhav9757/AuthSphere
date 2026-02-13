@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -28,11 +28,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import {
-  getAnalyticsOverview,
-  getAnalyticsCharts,
-  getRecentActivity,
-} from "@/api/AnalyticsAPI";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   Card,
   CardContent,
@@ -135,33 +131,14 @@ const CustomTooltip = ({ active, payload, label }) => {
 const ProjectAnalytics = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({
-    overview: null,
-    charts: null,
-    activity: null,
-  });
+  const { overview, charts, activity, isLoading, isError } =
+    useAnalytics(projectId);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [ov, ch, ac] = await Promise.all([
-          getAnalyticsOverview(projectId),
-          getAnalyticsCharts(projectId),
-          getRecentActivity(projectId),
-        ]);
-        setData({ overview: ov.data, charts: ch.data, activity: ac.data });
-      } catch (error) {
-        toast.error("Failed to load analytics data");
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (isError) {
+    toast.error("Failed to load analytics data");
+  }
 
-    if (projectId) fetchData();
-  }, [projectId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
@@ -170,19 +147,19 @@ const ProjectAnalytics = () => {
     );
   }
 
-  const providerData = data.charts?.providerDistribution || [];
+  const providerData = charts.data?.providerDistribution || [];
 
   // Combine signup and DAU data for the main chart
   const combinedChartData =
-    data.charts?.dailySignups?.map((s, i) => ({
+    charts.data?.dailySignups?.map((s, i) => ({
       date: s.date,
       signups: s.count,
-      active: data.charts.dailyActiveUsers?.[i]?.count || 0,
+      active: charts.data.dailyActiveUsers?.[i]?.count || 0,
     })) || [];
 
   const generatePulse = () => {
-    if (!data.overview) return "Analyzing project signals...";
-    const signupTrend = data.overview.signups?.trend || "+0%";
+    if (!overview.data) return "Analyzing project signals...";
+    const signupTrend = overview.data.signups?.trend || "+0%";
     const isGrowing = signupTrend.startsWith("+");
     const topProvider = providerData?.[0]?.name || "Email";
     return (
@@ -266,28 +243,28 @@ const ProjectAnalytics = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatsCard
                 title="Total Signups"
-                value={data.overview?.signups?.month || 0}
-                trend={data.overview?.signups?.trend}
+                value={overview.data?.signups?.month || 0}
+                trend={overview.data?.signups?.trend}
                 icon={UserPlus}
                 description="Cumulative growth"
               />
               <StatsCard
                 title="Active Today"
-                value={data.overview?.logins?.today || 0}
-                trend={data.overview?.logins?.trend}
+                value={overview.data?.logins?.today || 0}
+                trend={overview.data?.logins?.trend}
                 icon={LogIn}
                 description="Live session count"
                 color="emerald"
               />
               <StatsCard
                 title="MAU Retention"
-                value={data.overview?.activeUsers?.retention || "84.2%"}
+                value={overview.data?.activeUsers?.retention || "84.2%"}
                 icon={Users}
                 description="Audience stickiness"
               />
               <StatsCard
                 title="IO Latency"
-                value={data.overview?.health?.latency || "42ms"}
+                value={overview.data?.health?.latency || "42ms"}
                 icon={Zap}
                 description="Avg response time"
                 color="emerald"
@@ -601,9 +578,9 @@ const ProjectAnalytics = () => {
               </Button>
             </CardHeader>
             <CardContent>
-              {data.activity?.recentLogins?.length > 0 ? (
+              {activity.data?.recentLogins?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.activity.recentLogins.slice(0, 6).map((login, i) => (
+                  {activity.data.recentLogins.slice(0, 6).map((login, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-4 p-3 rounded-xl border border-primary/5 bg-muted/20 hover:bg-muted/40 transition-colors"
