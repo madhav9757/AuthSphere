@@ -4,7 +4,7 @@ import { emitEvent } from "../services/core/socket.service.js";
 import { triggerWebhook } from "../utils/webhookSender.js";
 import Session from "../models/session.model.js";
 
-// Exporting these for backward compatibility/internal use by AuthService for now
+import logger from "../utils/logger.js";
 export const authRequests = sdkService.authRequests;
 export const authCodes = sdkService.authCodes;
 
@@ -16,7 +16,7 @@ export const authorize = async (req, res) => {
     const project = await sdkService.validateAuthorizeRequest(req.query);
     const requestId = sdkService.createAuthRequest(req.query, project._id);
 
-    console.log(`✓ SDK Auth request created: ${requestId}`);
+    logger.info(`SDK Auth request created: ${requestId}`);
 
     emitEvent(project._id, "AUTH_REQUEST", {
       requestId,
@@ -40,7 +40,7 @@ export const authorize = async (req, res) => {
       `/auth/${req.query.provider.toLowerCase()}?sdk=true&sdk_request=${requestId}`,
     );
   } catch (err) {
-    console.error("SDK Authorize error:", err.message);
+    logger.error("SDK Authorize error:", { error: err.message });
     return res
       .status(
         err.message.includes("Missing") || err.message.includes("Only")
@@ -74,13 +74,11 @@ export const handleSDKCallback = async (
     }
 
     const { project } = await sdkService
-      .loginLocal({
-        email: endUser.email,
-        password: "", // Handled differently here
-        actualPublicKey: authRequest.publicKey,
-        projectId: authRequest.projectId,
-      })
-      .catch(() => ({ project: null }));
+      .getProjectAndUser(authRequest.projectId, endUser.email)
+      .catch((err) => {
+        logger.error("Project fetch error:", { error: err });
+        return { project: null };
+      });
 
     const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
     const verificationRequired = await sdkService.handleEmailVerification(
@@ -123,7 +121,7 @@ export const handleSDKCallback = async (
     }
     return res.redirect(redirectUrl.toString());
   } catch (err) {
-    console.error("SDK callback error:", err);
+    logger.error("SDK callback error:", { error: err });
     return res.status(500).send("Authentication failed");
   }
 };
@@ -135,6 +133,12 @@ export const token = async (req, res) => {
   try {
     const { code, client_id, public_key, code_verifier } = req.body;
     const clientId = client_id || public_key;
+
+    logger.info("Token Endpoint Params:", {
+      code: code ? "Present" : "Missing",
+      clientId,
+      hasVerifier: !!code_verifier,
+    });
 
     if (!code)
       return res
@@ -154,11 +158,7 @@ export const token = async (req, res) => {
       return res.status(400).json({ error: "invalid_client" });
 
     const { project } = await sdkService
-      .loginLocal({
-        email: authData.endUser.email,
-        actualPublicKey: authData.publicKey,
-        projectId: authData.projectId,
-      })
+      .getProjectAndUser(authData.projectId, authData.endUser.email)
       .catch(() => ({ project: null }));
 
     if (!project) return res.status(400).json({ error: "invalid_client" });
@@ -211,7 +211,7 @@ export const token = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Token Exchange Error:", err.message);
+    logger.error("Token Exchange Error:", { error: err.message });
     return res
       .status(err.message.includes("verifier") ? 400 : 500)
       .json({ error: "invalid_grant", error_description: err.message });
@@ -242,11 +242,7 @@ export const refresh = async (req, res) => {
     }
 
     const { project } = await sdkService
-      .loginLocal({
-        email: session.endUserId.email,
-        actualPublicKey: "",
-        projectId: session.projectId,
-      })
+      .getProjectAndUser(session.projectId, session.endUserId.email)
       .catch(() => ({ project: null }));
 
     if (!project) return res.status(400).json({ error: "invalid_client" });
@@ -275,7 +271,7 @@ export const refresh = async (req, res) => {
 
     return res.json({ success: true, ...result });
   } catch (err) {
-    console.error("Token Refresh Error:", err);
+    logger.error("Token Refresh Error:", { error: err });
     return res.status(500).json({ error: "server_error" });
   }
 };

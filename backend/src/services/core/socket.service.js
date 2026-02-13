@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import logger from "../../utils/logger.js";
 
 let io;
 
@@ -15,11 +16,11 @@ export const initSocket = (server) => {
 
     if (projectId) {
       socket.join(projectId);
-      console.log(`📡 Socket connected & joined project: ${projectId}`);
+      logger.info(`Socket connected & joined project: ${projectId}`);
     }
 
     socket.on("disconnect", () => {
-      console.log("📡 Socket disconnected");
+      logger.info("Socket disconnected");
     });
   });
 

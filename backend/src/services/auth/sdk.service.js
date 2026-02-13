@@ -70,6 +70,11 @@ class SDKService {
     const requestId = crypto.randomBytes(16).toString("hex");
     this.authRequests.set(requestId, {
       ...params,
+      redirectUri: params.redirect_uri || params.redirectUri,
+      publicKey: params.public_key || params.publicKey,
+      codeChallenge: params.code_challenge || params.codeChallenge,
+      codeChallengeMethod:
+        params.code_challenge_method || params.codeChallengeMethod,
       projectId,
       createdAt: Date.now(),
     });
@@ -129,6 +134,7 @@ class SDKService {
   async verifyPKCE(authData, code_verifier) {
     if (authData.codeChallenge) {
       if (!code_verifier) throw new Error("Missing code_verifier");
+
       const hash = crypto
         .createHash("sha256")
         .update(code_verifier)
@@ -136,6 +142,13 @@ class SDKService {
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=/g, "");
+
+      console.log("PKCE Check:", {
+        expected: authData.codeChallenge,
+        actual: hash,
+        verifier: code_verifier,
+      });
+
       if (hash !== authData.codeChallenge)
         throw new Error("Code verifier failed");
     }
@@ -235,6 +248,20 @@ class SDKService {
     });
 
     return { user, project };
+  }
+
+  async getProjectAndUser(projectId, email) {
+    const project = await Project.findById(projectId);
+    if (!project || project.status !== "active")
+      throw new Error("Project not found or inactive");
+
+    const user = await EndUser.findOne({
+      email: email.toLowerCase().trim(),
+      projectId: project._id,
+    });
+    // user might be null if strictly fetching context for new social user, but usually we expect it.
+
+    return { project, user };
   }
 
   async loginLocal(data) {

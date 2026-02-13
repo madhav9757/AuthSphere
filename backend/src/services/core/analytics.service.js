@@ -2,6 +2,7 @@ import EndUser from "../../models/endUsers.models.js";
 import Session from "../../models/session.model.js";
 import Project from "../../models/project.model.js";
 import mongoose from "mongoose";
+import redisService from "./redis.service.js";
 
 class AnalyticsService {
   /**
@@ -33,6 +34,13 @@ class AnalyticsService {
    * Get overview stats for a project
    */
   async getOverview(projectId) {
+    return await redisService.getOrSetCache(
+      `analytics:overview:${projectId}`,
+      () => this._fetchOverview(projectId),
+    );
+  }
+
+  async _fetchOverview(projectId) {
     const { today, startOfPeriod, startOfPrevPeriod } = this.getDateRanges();
     const pId = new mongoose.Types.ObjectId(projectId);
 
@@ -93,6 +101,13 @@ class AnalyticsService {
    * Get chart data for a project
    */
   async getCharts(projectId) {
+    return await redisService.getOrSetCache(
+      `analytics:charts:${projectId}`,
+      () => this._fetchCharts(projectId),
+    );
+  }
+
+  async _fetchCharts(projectId) {
     const { startOfPeriod } = this.getDateRanges();
     const pId = new mongoose.Types.ObjectId(projectId);
 
@@ -180,6 +195,13 @@ class AnalyticsService {
    * Get recent activity for a project
    */
   async getRecentActivity(projectId, limit = 10) {
+    return await redisService.getOrSetCache(
+      `analytics:recent:${projectId}:${limit}`,
+      () => this._fetchRecentActivity(projectId, limit),
+    );
+  }
+
+  async _fetchRecentActivity(projectId, limit = 10) {
     const pId = new mongoose.Types.ObjectId(projectId);
 
     const recentSessions = await Session.find({ projectId: pId })

@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+import morgan from "morgan";
 
-import { httpLogger } from "./utils/logger.js";
+import logger, { stream } from "./utils/logger.js";
+import { handleError } from "./utils/AppError.js";
 import { conf } from "./configs/env.js";
 import { swaggerDocs } from "./configs/swagger.js";
 import routes from "./routes/index.js"; // centralized routes
@@ -11,10 +13,14 @@ import homeHandler from "./home.js";
 
 const app = express();
 
-// --- Logger (dev only) ---
-if (process.env.NODE_ENV !== "production") {
-  app.use(httpLogger);
-}
+// Use Morgan with Winston stream
+app.use(morgan("combined", { stream }));
+
+// Attach logger to request object
+app.use((req, res, next) => {
+  req.logger = logger;
+  next();
+});
 
 swaggerDocs(app);
 
@@ -31,7 +37,7 @@ app.use(
         connectSrc: ["'self'", "https:"],
       },
     },
-  })
+  }),
 );
 
 // --- Standard Middleware ---
@@ -43,7 +49,11 @@ app.use(
 
       const allowedOrigins = conf.corsOrigin.split(",");
 
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes("*") || process.env.NODE_ENV !== "production") {
+      if (
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes("*") ||
+        process.env.NODE_ENV !== "production"
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -52,7 +62,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "16kb" }));
@@ -74,20 +84,6 @@ app.get("/health", (req, res) => {
 app.use(routes);
 
 // --- Global Error Handler ---
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-
-  console.error("\n", err.statusCode ? "✖" : "❌", err.message);
-
-  if (process.env.NODE_ENV === "development" && err.stack) {
-    console.error(err.stack.split("\n")[1]);
-  }
-
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-    errors: err.errors || [],
-  });
-});
+app.use(handleError);
 
 export default app;

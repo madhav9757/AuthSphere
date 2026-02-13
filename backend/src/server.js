@@ -4,6 +4,7 @@ import app from "./app.js";
 import connectDB from "./database/connectDB.js";
 import { logStartup } from "./utils/startup.js";
 import { initSocket } from "./services/core/socket.service.js";
+import logger from "./utils/logger.js";
 
 const startServer = async () => {
   try {
@@ -16,7 +17,10 @@ const startServer = async () => {
       logStartup(conf.port);
     });
   } catch (error) {
-    console.error("✖ Server failed to start", error);
+    logger.error("✖ Server failed to start", {
+      error: error.message,
+      stack: error.stack,
+    });
     process.exit(1);
   }
 };

@@ -5,13 +5,15 @@ dotenv.config();
 const requiredEnvVars = [
   "MONGODB_URI",
   "ACCESS_TOKEN_SECRET",
-  "REFRESH_TOKEN_SECRET"
+  "REFRESH_TOKEN_SECRET",
 ];
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missingVars.length > 0) {
-  console.error(`❌ Missing required environment variables: ${missingVars.join(", ")}`);
+  console.error(
+    `❌ Missing required environment variables: ${missingVars.join(", ")}`,
+  );
   // Do not call process.exit(1) in serverless; let the application handle missing vars or throw an error later.
 }
 
@@ -26,6 +28,9 @@ const _conf = {
   // URLs
   frontendUrl: String(process.env.FRONTEND_URL || "http://localhost:5173"),
   cliUrl: String(process.env.CLI_URL || "http://localhost:5001"),
+
+  // Redis
+  redisUrl: String(process.env.REDIS_URL || "redis://localhost:6379"),
 
   // Google
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
