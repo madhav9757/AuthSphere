@@ -3,7 +3,7 @@ import { conf } from "./configs/env.js";
 import app from "./app.js";
 import connectDB from "./database/connectDB.js";
 import { logStartup } from "./utils/startup.js";
-import { initSocket } from "./services/socket.service.js";
+import { initSocket } from "./services/core/socket.service.js";
 
 const startServer = async () => {
   try {

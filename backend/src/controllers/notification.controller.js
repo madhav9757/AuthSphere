@@ -1,24 +1,9 @@
-import Notification from "../models/notification.model.js";
+import notificationService from "../services/core/notification.service.js";
 
 export const getNotifications = async (req, res) => {
   try {
-    const developerId = req.developer._id;
-    const notifications = await Notification.find({ developerId })
-      .sort({ createdAt: -1 })
-      .limit(20);
-
-    const unreadCount = await Notification.countDocuments({
-      developerId,
-      read: false,
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        notifications,
-        unreadCount,
-      },
-    });
+    const data = await notificationService.getNotifications(req.developer._id);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -27,12 +12,9 @@ export const getNotifications = async (req, res) => {
 export const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
-    const developerId = req.developer._id;
-
-    const notification = await Notification.findOneAndUpdate(
-      { _id: id, developerId },
-      { read: true },
-      { new: true },
+    const notification = await notificationService.markAsRead(
+      id,
+      req.developer._id,
     );
 
     if (!notification) {
@@ -41,10 +23,7 @@ export const markAsRead = async (req, res) => {
         .json({ success: false, message: "Notification not found" });
     }
 
-    return res.status(200).json({
-      success: true,
-      data: notification,
-    });
+    return res.status(200).json({ success: true, data: notification });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -52,10 +31,7 @@ export const markAsRead = async (req, res) => {
 
 export const markAllAsRead = async (req, res) => {
   try {
-    const developerId = req.developer._id;
-
-    await Notification.updateMany({ developerId, read: false }, { read: true });
-
+    await notificationService.markAllAsRead(req.developer._id);
     return res.status(200).json({
       success: true,
       message: "All notifications marked as read",

@@ -1,6 +1,6 @@
 import axios from "axios";
 import qs from "qs";
-import { conf } from "../configs/env.js";
+import { conf } from "../../configs/env.js";
 
 /**
  * Returns Google OAuth 2.0 authorization URL

@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { conf } from "../configs/env.js";
+import { conf } from "../../configs/env.js";
 
 if (!conf.smtpHost || !conf.smtpUser || !conf.smtpPass) {
   console.warn("⚠️ SMTP credentials missing. Email sending disabled.");
