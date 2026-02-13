@@ -54,11 +54,13 @@ if (process.env.NODE_ENV !== "production") {
           }
 
           // Special handling for HTTP requests logged via Morgan/stream
-          if (message.includes("HTTP/")) {
+          if (typeof message === "string" && message.includes("HTTP/")) {
             return `${chalk.gray(timestamp)} ${message}`;
           }
 
-          return `${chalk.gray(timestamp)} ${level}: ${message} ${metaStr ? "\n" + chalk.gray(metaStr) : ""}`;
+          return `${chalk.gray(timestamp)} ${level}: ${message} ${
+            metaStr ? "\n" + chalk.gray(metaStr) : ""
+          }`;
         }),
       ),
     }),

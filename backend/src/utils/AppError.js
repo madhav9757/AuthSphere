@@ -18,14 +18,13 @@ export const handleError = (err, req, res, next) => {
   err.status = err.status || "error";
 
   // Log error
+  console.error("💥 ERROR", err);
   if (req.logger) {
     req.logger.error(err.message, {
       method: req.method,
       url: req.originalUrl,
       stack: err.stack,
     });
-  } else {
-    console.error("❌ Global Error:", err);
   }
 
   // Development: Send detailed error

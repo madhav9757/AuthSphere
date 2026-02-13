@@ -19,6 +19,7 @@ if (missingVars.length > 0) {
 
 const _conf = {
   port: String(process.env.PORT || 8000),
+  baseUrl: String(process.env.BASE_URL || "http://localhost:8000"),
   mongodbUri: String(process.env.MONGODB_URI),
   corsOrigin: String(process.env.CORS_ORIGIN || "*"),
   accessTokenSecret: String(process.env.ACCESS_TOKEN_SECRET),

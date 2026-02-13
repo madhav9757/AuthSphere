@@ -9,6 +9,7 @@ import auditLogRoutes from "./auditLog.routes.js";
 import authRoutes from "./auth.routes.js";
 import sdkRoutes from "./sdk.routes.js";
 import notificationRoutes from "./notification.routes.js";
+import { authLimiter } from "../middlewares/rateLimiter.js";
 
 const router = Router();
 
@@ -28,11 +29,11 @@ router.use(`${API_PREFIX}/notifications`, notificationRoutes);
 // ================================
 // Auth routes (OAuth providers)
 // ================================
-router.use("/auth", authRoutes);
+router.use("/auth", authLimiter, authRoutes);
 
 // ================================
 // SDK routes (public, unversioned)
 // ================================
-router.use("/sdk", sdkRoutes);
+router.use("/sdk", authLimiter, sdkRoutes);
 
 export default router;
