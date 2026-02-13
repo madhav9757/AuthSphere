@@ -2,6 +2,7 @@ import sdkService from "../services/auth/sdk.service.js";
 import { conf } from "../configs/env.js";
 import { emitEvent } from "../services/core/socket.service.js";
 import { triggerWebhook } from "../utils/webhookSender.js";
+import { logEvent } from "../utils/auditLogger.js";
 import Session from "../models/session.model.js";
 import logger from "../utils/logger.js";
 import { successResponse } from "../utils/response.js";
@@ -239,6 +240,23 @@ export const refresh = async (req, res) => {
     emitEvent(session.projectId, "TOKEN_REFRESHED", {
       email: session.endUserId.email,
       userId: session.endUserId._id,
+    });
+
+    await logEvent({
+      projectId: session.projectId,
+      action: "TOKEN_REFRESHED",
+      description: `Session tokens refreshed for user (${session.endUserId.email}).`,
+      category: "security",
+      actor: {
+        type: "user",
+        id: session.endUserId._id.toString(),
+        name: session.endUserId.email,
+      },
+      metadata: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        resourceId: session._id,
+      },
     });
 
     return res.json({ success: true, ...result });

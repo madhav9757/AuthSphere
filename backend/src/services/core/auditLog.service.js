@@ -4,19 +4,23 @@ class AuditLogService {
   /**
    * Get logs for a specific project
    */
-  async getProjectLogs(projectId, limit = 50) {
-    return await AuditLog.find({ projectId })
-      .sort({ createdAt: -1 })
-      .limit(limit);
+  async getProjectLogs(projectId, filters = {}, limit = 50) {
+    const query = { projectId };
+    if (filters.category) query.category = filters.category;
+    if (filters.actorType) query["actor.type"] = filters.actorType;
+
+    return await AuditLog.find(query).sort({ createdAt: -1 }).limit(limit);
   }
 
   /**
    * Get global logs for a developer
    */
-  async getGlobalLogs(developerId, limit = 50) {
-    return await AuditLog.find({ developerId })
-      .sort({ createdAt: -1 })
-      .limit(limit);
+  async getGlobalLogs(developerId, filters = {}, limit = 50) {
+    const query = { developerId };
+    if (filters.category) query.category = filters.category;
+    if (filters.actorType) query["actor.type"] = filters.actorType;
+
+    return await AuditLog.find(query).sort({ createdAt: -1 }).limit(limit);
   }
 }
 

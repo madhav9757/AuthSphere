@@ -236,6 +236,11 @@ class SDKService {
       action: "USER_REGISTERED",
       description: `New local user (${email}) registered. OTP sent.`,
       category: "user",
+      actor: {
+        type: "user",
+        id: user._id.toString(),
+        name: user.username || email,
+      },
       metadata: { ...reqInfo, resourceId: user._id },
     });
 
@@ -313,6 +318,7 @@ class SDKService {
       action: "USER_VERIFIED",
       description: `User (${user.email}) successfully verified their email via OTP.`,
       category: "user",
+      actor: { type: "user", id: user._id.toString(), name: user.email },
       metadata: { resourceId: user._id },
     });
 
@@ -348,6 +354,7 @@ class SDKService {
       action: "OTP_RESENT",
       description: `Verification OTP resent to ${email}.`,
       category: "user",
+      actor: { type: "user", id: user._id.toString(), name: email },
       metadata: { ...reqInfo, resourceId: user._id },
     });
   }

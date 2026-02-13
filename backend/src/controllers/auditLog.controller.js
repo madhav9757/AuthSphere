@@ -4,6 +4,7 @@ import projectService from "../services/core/project.service.js";
 export const getProjectLogs = async (req, res) => {
   try {
     const { projectId } = req.params;
+    const { category, actorType } = req.query;
     const developerId = req.developer._id;
 
     // Verify ownership
@@ -14,7 +15,10 @@ export const getProjectLogs = async (req, res) => {
       });
     }
 
-    const logs = await auditLogService.getProjectLogs(projectId);
+    const logs = await auditLogService.getProjectLogs(projectId, {
+      category,
+      actorType,
+    });
 
     return res.status(200).json({
       success: true,
@@ -28,7 +32,11 @@ export const getProjectLogs = async (req, res) => {
 export const getGlobalLogs = async (req, res) => {
   try {
     const developerId = req.developer._id;
-    const logs = await auditLogService.getGlobalLogs(developerId);
+    const { category, actorType } = req.query;
+    const logs = await auditLogService.getGlobalLogs(developerId, {
+      category,
+      actorType,
+    });
 
     return res.status(200).json({
       success: true,
