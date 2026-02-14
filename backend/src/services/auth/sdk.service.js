@@ -286,6 +286,12 @@ class SDKService {
     }).select("+password");
     if (!user) throw new Error("Invalid credentials");
 
+    if (user.isBlocked) {
+      throw new Error(
+        "This account has been suspended by the project administrator.",
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Invalid credentials");
 

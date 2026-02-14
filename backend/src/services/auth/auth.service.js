@@ -125,6 +125,12 @@ class AuthService {
       projectId: authRequest.projectId,
     });
 
+    if (endUser && endUser.isBlocked) {
+      throw new Error(
+        "This account has been suspended by the project administrator.",
+      );
+    }
+
     if (!endUser) {
       const randomPassword = await bcrypt.hash(
         Math.random().toString(36) + Date.now(),

@@ -9,6 +9,7 @@ import {
   getProjectUsers,
   deleteProjectUser,
   toggleUserVerification,
+  toggleUserBlock,
   getConfiguredProviders,
   sendTestEmail,
   addWebhook,
@@ -46,6 +47,9 @@ router.delete("/:projectId/users/:userId", deleteProjectUser);
 
 // 👥 Toggle user verification
 router.patch("/:projectId/users/:userId/verify", toggleUserVerification);
+
+// 👥 Toggle user block status
+router.patch("/:projectId/users/:userId/block", toggleUserBlock);
 
 // ⚙ Get backend provider configuration
 router.get("/:projectId/providers-config", getConfiguredProviders);

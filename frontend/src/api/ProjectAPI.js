@@ -101,6 +101,18 @@ export const toggleUserVerification = async (projectId, userId) => {
   }
 };
 
+/* ------------------- TOGGLE USER BLOCK STATUS ------------------- */
+export const toggleUserBlock = async (projectId, userId) => {
+  try {
+    const { data } = await api.patch(
+      `${PROJECTS_URL}/${projectId}/users/${userId}/block`,
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
 /* ------------------- DELETE PROJECT ------------------- */
 export const deleteProject = async (projectId) => {
   try {

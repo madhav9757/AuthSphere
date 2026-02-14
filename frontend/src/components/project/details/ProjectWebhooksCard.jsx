@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Webhook,
   Plus,
@@ -18,16 +19,17 @@ import {
   Key,
   Globe,
   CheckCircle2,
-  ChevronDown,
   Check,
-  HelpCircle,
   Info,
   ShieldCheck,
   Zap,
   Activity,
   RefreshCw,
+  Send,
+  Lock,
+  AlertCircle,
+  Copy,
 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Terminal,
@@ -36,10 +38,31 @@ import {
 } from "@/components/ui/terminal";
 
 const AVAILABLE_EVENTS = [
-  { id: "user.registered", label: "User Registered" },
-  { id: "user.login", label: "User Login" },
-  { id: "user.deleted", label: "User Deleted" },
-  { id: "api_key.rotated", label: "API Key Rotated" },
+  {
+    id: "user.registered",
+    label: "User Registered",
+    description:
+      "Triggered when a new user successfully completes registration",
+    icon: "👤",
+  },
+  {
+    id: "user.login",
+    label: "User Login",
+    description: "Fired each time a user authenticates successfully",
+    icon: "🔓",
+  },
+  {
+    id: "user.deleted",
+    label: "User Deleted",
+    description: "Sent when a user account is permanently removed",
+    icon: "🗑️",
+  },
+  {
+    id: "api_key.rotated",
+    label: "API Key Rotated",
+    description: "Notifies when project API keys are regenerated for security",
+    icon: "🔄",
+  },
 ];
 
 const ProjectWebhooksCard = ({ project, onUpdated }) => {
@@ -57,7 +80,7 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
     try {
       setLoading(true);
       await addWebhook(project._id, { url, events: selectedEvents });
-      toast.success("Webhook added successfully");
+      toast.success("Webhook registered successfully");
       setUrl("");
       setSelectedEvents(["user.registered"]);
       setIsAdding(false);
@@ -90,297 +113,564 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
     );
   };
 
+  const copySecret = (secret) => {
+    navigator.clipboard.writeText(secret);
+    toast.success("Signing secret copied to clipboard");
+  };
+
   return (
-    <Card className="overflow-hidden border-primary/10 shadow-lg">
-      <CardHeader className="bg-muted/30 pb-6 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Webhook className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-xl">Webhooks</CardTitle>
-              <CardDescription>
-                Receive real-time notifications on your server when events
-                happen.
-              </CardDescription>
-            </div>
-          </div>
-          {!isAdding && (
-            <Button
-              onClick={() => setIsAdding(true)}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Webhook
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-
-      <CardContent className="pt-6">
-        {isAdding && (
-          <form
-            onSubmit={handleAdd}
-            className="mb-8 p-6 rounded-xl border bg-muted/20 animate-in slide-in-from-top duration-300"
-          >
-            <CardTitle className="text-lg mb-4 flex items-center gap-2">
-              <Plus className="h-4 w-4 text-primary" />
-              Configure New Webhook
-            </CardTitle>
-
-            <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header Section */}
+      <Card className="bg-card/30 border-border/50">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                <Webhook className="h-6 w-6 text-primary" />
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="url">Payload URL</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="url"
-                      placeholder="https://your-api.com/webhooks/auth"
-                      className="pl-10"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  We'll send POST requests to this URL with an HMAC signature in
-                  the X-AuthSphere-Signature header.
+                <CardTitle className="text-2xl">Webhook Endpoints</CardTitle>
+                <CardDescription className="text-sm leading-relaxed max-w-2xl">
+                  Configure HTTP endpoints to receive real-time event
+                  notifications from AuthSphere. Webhooks enable your
+                  application to react instantly to authentication events
+                  without polling.
+                </CardDescription>
+              </div>
+            </div>
+            {!isAdding && (
+              <Button
+                onClick={() => setIsAdding(true)}
+                size="sm"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Endpoint
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* What Are Webhooks - Educational Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-blue-500/5 border-blue-500/20">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10 shrink-0">
+                <Info className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">What Are Webhooks?</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Webhooks are "reverse APIs" — instead of your application
+                  requesting data from AuthSphere, we push event data to your
+                  server the moment something happens. This eliminates the need
+                  for constant polling.
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
+        <Card className="bg-amber-500/5 border-amber-500/20">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10 shrink-0">
+                <Zap className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Why Use Them?</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Build real-time integrations: sync user data to your CRM, send
+                  welcome emails instantly, update analytics dashboards, or
+                  trigger custom workflows — all with zero latency.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-emerald-500/5 border-emerald-500/20">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 shrink-0">
+                <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Security Built-In</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Every webhook request includes an HMAC-SHA256 signature in the{" "}
+                  <code className="px-1 py-0.5 bg-muted rounded text-[10px] font-mono">
+                    X-AuthSphere-Signature
+                  </code>{" "}
+                  header. Verify it using your signing secret to ensure
+                  authenticity.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add Webhook Form */}
+      {isAdding && (
+        <Card className="bg-card/30 border-primary/30 shadow-lg">
+          <CardHeader className="border-b bg-muted/20">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Register New Webhook Endpoint
+            </CardTitle>
+            <CardDescription className="text-sm mt-2">
+              Configure the URL where you want to receive event notifications
+              and select which events to subscribe to.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleAdd} className="space-y-6">
+              {/* URL Input */}
               <div className="space-y-3">
-                <Label>Select Events</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Label htmlFor="url" className="text-sm font-semibold">
+                  Endpoint URL
+                </Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="url"
+                    placeholder="https://api.yourapp.com/webhooks/authsphere"
+                    className="pl-10 font-mono text-sm bg-background/50"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                  />
+                </div>
+                <div className="p-3 bg-blue-500/5 rounded-lg border border-blue-500/20">
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                    <span className="font-semibold text-foreground">
+                      What happens:
+                    </span>{" "}
+                    AuthSphere will send HTTP POST requests to this URL whenever
+                    subscribed events occur.
+                  </p>
+                  <Separator className="my-2 bg-blue-500/20" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">
+                      Requirements:
+                    </span>{" "}
+                    Must be a publicly accessible HTTPS endpoint that returns a{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded font-mono text-[10px]">
+                      200 OK
+                    </code>{" "}
+                    status within 5 seconds.
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Event Selection */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-semibold">
+                    Subscribe to Events
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Choose which authentication events should trigger
+                    notifications to your endpoint. Select only the events your
+                    application needs to process.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
                   {AVAILABLE_EVENTS.map((event) => (
                     <div
                       key={event.id}
                       onClick={() => toggleEvent(event.id)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      className={`group flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
                         selectedEvents.includes(event.id)
-                          ? "bg-primary/5 border-primary shadow-sm"
-                          : "hover:bg-muted/50"
+                          ? "bg-primary/5 border-primary/50 shadow-sm"
+                          : "hover:bg-muted/30 border-border/50"
                       }`}
                     >
                       <div
-                        className={`h-5 w-5 rounded border flex items-center justify-center transition-colors ${
+                        className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all shrink-0 mt-0.5 ${
                           selectedEvents.includes(event.id)
                             ? "bg-primary border-primary"
-                            : "border-muted-foreground/30"
+                            : "border-muted-foreground/30 group-hover:border-primary/50"
                         }`}
                       >
                         {selectedEvents.includes(event.id) && (
-                          <Check className="h-3.5 w-3.5 text-white" />
+                          <Check className="h-3 w-3 text-white" />
                         )}
                       </div>
-                      <span className="text-sm font-medium">{event.label}</span>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{event.icon}</span>
+                          <span className="text-sm font-semibold">
+                            {event.label}
+                          </span>
+                          <code className="text-[10px] font-mono px-1.5 py-0.5 bg-muted rounded text-muted-foreground">
+                            {event.id}
+                          </code>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {event.description}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <Separator />
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={() => setIsAdding(false)}
+                  variant="outline"
+                  onClick={() => {
+                    setIsAdding(false);
+                    setUrl("");
+                    setSelectedEvents(["user.registered"]);
+                  }}
                   disabled={loading}
                 >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading} className="gap-2">
                   {loading ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Registering...
+                    </>
                   ) : (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      Register Webhook
+                    </>
                   )}
-                  Register Webhook
                 </Button>
               </div>
-            </div>
-          </form>
-        )}
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-        <div className="space-y-4">
+      {/* Active Webhooks List */}
+      <Card className="bg-card/30 border-border/50">
+        <CardHeader className="border-b">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            Active Endpoints
+            {project.webhooks?.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {project.webhooks.length}
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Manage your registered webhook endpoints and their event
+            subscriptions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
           {project.webhooks?.length > 0 ? (
-            project.webhooks.map((webhook) => (
-              <div
-                key={webhook._id}
-                className="group p-5 rounded-xl border bg-card hover:bg-muted/10 transition-all shadow-sm"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-mono text-sm font-semibold truncate text-primary">
-                        {webhook.url}
-                      </p>
-                      <Badge
-                        variant="secondary"
-                        className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                      >
-                        Active
-                      </Badge>
-                    </div>
+            <div className="space-y-3">
+              {project.webhooks.map((webhook) => (
+                <div
+                  key={webhook._id}
+                  className="group p-5 rounded-xl border border-border/50 bg-background/30 hover:bg-muted/20 transition-all"
+                >
+                  <div className="space-y-4">
+                    {/* URL and Status */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Send className="h-4 w-4 text-primary shrink-0" />
+                          <code className="font-mono text-sm font-semibold truncate text-primary">
+                            {webhook.url}
+                          </code>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shrink-0"
+                          >
+                            ● Active
+                          </Badge>
+                        </div>
 
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {webhook.events.map((ev) => (
-                        <Badge
-                          key={ev}
-                          variant="outline"
-                          className="text-[10px] font-normal px-2 py-0 border-primary/20 bg-primary/5"
-                        >
-                          {ev}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="hidden lg:flex flex-col items-end mr-4">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-                        Signing Secret
-                      </span>
-                      <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-muted p-1 px-2 rounded">
-                        <Key className="h-3 w-3" />
-                        {webhook.secret.substring(0, 8)}...
+                        {/* Events */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {webhook.events.map((ev) => {
+                            const eventInfo = AVAILABLE_EVENTS.find(
+                              (e) => e.id === ev,
+                            );
+                            return (
+                              <Badge
+                                key={ev}
+                                variant="outline"
+                                className="text-[10px] font-normal px-2 py-0.5 border-primary/30 bg-primary/5"
+                              >
+                                {eventInfo?.icon} {ev}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(webhook._id)}
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(webhook._id)}
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                    <Separator />
+
+                    {/* Signing Secret */}
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Lock className="h-4 w-4 text-amber-600" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+                            Signing Secret
+                          </p>
+                          <code className="text-xs font-mono text-foreground">
+                            {webhook.secret.substring(0, 12)}...
+                            {webhook.secret.substring(
+                              webhook.secret.length - 4,
+                            )}
+                          </code>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copySecret(webhook.secret)}
+                        className="gap-2 text-xs"
+                      >
+                        <Copy className="h-3 w-3" />
+                        Copy
+                      </Button>
+                    </div>
+
+                    <div className="p-2 bg-amber-500/5 rounded border border-amber-500/20">
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        <span className="font-semibold text-foreground">
+                          Security:
+                        </span>{" "}
+                        Use this secret to verify webhook signatures. Never
+                        expose it publicly or commit it to version control.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
-            <div className="py-12 flex flex-col items-center justify-center text-center opacity-60">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Webhook className="h-8 w-8 text-muted-foreground" />
+            <div className="py-16 flex flex-col items-center justify-center text-center">
+              <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <Webhook className="h-8 w-8 text-muted-foreground/50" />
               </div>
-              <p className="text-sm font-medium">No webhooks configured</p>
-              <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
-                Add a webhook URL to receive real-time updates on your server.
+              <p className="text-sm font-medium text-muted-foreground">
+                No webhook endpoints configured
               </p>
+              <p className="text-xs text-muted-foreground/70 mt-2 max-w-sm">
+                Register your first webhook endpoint to start receiving
+                real-time event notifications from AuthSphere.
+              </p>
+              {!isAdding && (
+                <Button
+                  onClick={() => setIsAdding(true)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 mt-6"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Your First Webhook
+                </Button>
+              )}
             </div>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Informational Section */}
-        <div className="mt-12 pt-8 border-t border-dashed">
-          <div className="flex items-center gap-2 mb-6">
-            <HelpCircle className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-lg">Understanding Webhooks</h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
-              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
-                <Info className="h-4 w-4 text-blue-600" />
-              </div>
-              <h4 className="font-medium mb-1 text-sm">What they are</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Webhooks are "reverse APIs". Instead of you calling us, we push
-                data to your server as soon as an event occurs, enabling
-                instantaneous reactions.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
-              <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3">
-                <Zap className="h-4 w-4 text-amber-600" />
-              </div>
-              <h4 className="font-medium mb-1 text-sm">The Advantages</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Eliminate polling overhead, reduce latency, and build seamless
-                automation. Sync user data, trigger welcome emails, or update
-                external logs in real-time.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
-              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
-              </div>
-              <h4 className="font-medium mb-1 text-sm">Security First</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Every request includes an HMAC signature. Use your unique
-                Signing Secret to verify that payloads are authentic and haven't
-                been tampered with.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 p-6 rounded-xl bg-primary/5 border border-primary/10">
+      {/* Implementation Guide */}
+      <Card className="bg-card/30 border-border/50">
+        <CardHeader className="border-b">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            Implementation Guide
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Step-by-step instructions for integrating webhooks into your
+            application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-6">
+          {/* Checklist */}
+          <div className="p-5 rounded-xl bg-primary/5 border border-primary/10">
             <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Implementation Checklist
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Integration Checklist
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                "Expose a public HTTP POST endpoint",
-                "Parse the JSON payload from the request body",
-                "Verify the 'X-AuthSphere-Signature' header",
-                "Return a 2xx status code quickly to acknowledge",
-                "Handle idempotency to prevent duplicate processing",
-                "Select only the events your system needs",
-              ].map((step, i) => (
+                {
+                  step: "Create a public HTTPS endpoint",
+                  detail: "Must accept POST requests and return 200 OK",
+                },
+                {
+                  step: "Parse the JSON payload",
+                  detail: "Extract event data from the request body",
+                },
+                {
+                  step: "Verify the signature header",
+                  detail: "Use HMAC-SHA256 with your signing secret",
+                },
+                {
+                  step: "Respond quickly (< 5 seconds)",
+                  detail: "Acknowledge receipt, then process async",
+                },
+                {
+                  step: "Handle duplicate events",
+                  detail: "Use event IDs for idempotency",
+                },
+                {
+                  step: "Subscribe to relevant events only",
+                  detail: "Reduce noise and processing overhead",
+                },
+              ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
                     {i + 1}
                   </div>
-                  <span className="text-xs text-muted-foreground">{step}</span>
+                  <div>
+                    <p className="text-xs font-medium text-foreground">
+                      {item.step}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {item.detail}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-8">
-            <h4 className="font-bold text-sm mb-4 flex items-center gap-2">
-              <Key className="h-4 w-4 text-primary" />
-              Verification Example (Node.js)
+          {/* Payload Structure */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <Send className="h-4 w-4 text-primary" />
+              Webhook Payload Structure
             </h4>
+            <div className="p-4 bg-muted/30 rounded-lg border font-mono text-xs">
+              <pre className="text-muted-foreground leading-relaxed">
+                {`{
+  "event": "user.registered",
+  "timestamp": "2024-02-14T10:30:00Z",
+  "data": {
+    "userId": "usr_abc123",
+    "email": "user@example.com",
+    "username": "johndoe",
+    "projectId": "proj_xyz789"
+  }
+}`}
+              </pre>
+            </div>
+            <div className="p-3 bg-blue-500/5 rounded-lg border border-blue-500/20">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">
+                  Structure:
+                </span>{" "}
+                All webhooks include an{" "}
+                <code className="px-1 py-0.5 bg-muted rounded font-mono text-[10px]">
+                  event
+                </code>{" "}
+                type,{" "}
+                <code className="px-1 py-0.5 bg-muted rounded font-mono text-[10px]">
+                  timestamp
+                </code>
+                , and event-specific{" "}
+                <code className="px-1 py-0.5 bg-muted rounded font-mono text-[10px]">
+                  data
+                </code>{" "}
+                object.
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Signature Verification */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <Key className="h-4 w-4 text-primary" />
+              Signature Verification (Node.js)
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Verify that webhook requests are authentic by validating the HMAC
+              signature in the{" "}
+              <code className="px-1 py-0.5 bg-muted rounded font-mono text-[10px]">
+                X-AuthSphere-Signature
+              </code>{" "}
+              header.
+            </p>
 
             <Terminal
               copyable
               codeToCopy={`const crypto = require("crypto");
 
-function verifySignature(payload, signature, secret) {
+function verifyWebhookSignature(payload, signature, secret) {
   const hmac = crypto.createHmac("sha256", secret);
-  const digest = hmac
-    .update(JSON.stringify(payload))
-    .digest("hex");
+  const digest = hmac.update(JSON.stringify(payload)).digest("hex");
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(digest)
+  );
+}
 
-  return signature === digest;
-}`}
-              className="max-w-none bg-black/80 backdrop-blur-xl border-white/10 shadow-2xl ring-1 ring-white/5"
+// Usage in your endpoint
+app.post("/webhooks/authsphere", (req, res) => {
+  const signature = req.headers["x-authsphere-signature"];
+  const payload = req.body;
+  const secret = process.env.WEBHOOK_SECRET;
+  
+  if (!verifyWebhookSignature(payload, signature, secret)) {
+    return res.status(401).send("Invalid signature");
+  }
+  
+  // Process the webhook event
+  console.log("Event received:", payload.event);
+  
+  res.status(200).send("OK");
+});`}
+              className="max-w-none bg-black/90 backdrop-blur-xl border-white/10 shadow-2xl"
               startOnView={false}
             >
               <TypingAnimation className="text-cyan-400 font-bold">
-                $ node verify-signature.js
+                $ node webhook-server.js
               </TypingAnimation>
 
               <AnimatedSpan className="text-zinc-500 italic">
-                <span># Verifying webhook signature</span>
+                <span># Webhook signature verification example</span>
               </AnimatedSpan>
 
               <AnimatedSpan className="text-slate-300">
-                <pre className="font-mono text-[13px] leading-relaxed">
+                <pre className="font-mono text-[12px] leading-relaxed">
                   <span className="text-purple-400">const</span>{" "}
                   <span className="text-blue-300">crypto</span>{" "}
                   <span className="text-purple-400">= require</span>(
                   <span className="text-emerald-400">"crypto"</span>);
                   {"\n\n"}
                   <span className="text-purple-400">function</span>{" "}
-                  <span className="text-yellow-300">verifySignature</span>(
-                  payload, signature, secret) {"{"}
+                  <span className="text-yellow-300">
+                    verifyWebhookSignature
+                  </span>
+                  ( payload, signature, secret) {"{"}
                   {"\n  "}
                   <span className="text-purple-400">const</span>{" "}
                   <span className="text-blue-300">hmac</span> =
@@ -388,24 +678,72 @@ function verifySignature(payload, signature, secret) {
                   <span className="text-emerald-400">"sha256"</span>, secret);
                   {"\n  "}
                   <span className="text-purple-400">const</span>{" "}
-                  <span className="text-blue-300">digest</span> = hmac
-                  {"\n    "}
-                  .update(JSON.stringify(payload))
-                  {"\n    "}
-                  .digest(
+                  <span className="text-blue-300">digest</span> =
+                  hmac.update(JSON.stringify(payload)).digest(
                   <span className="text-emerald-400">"hex"</span>);
-                  {"\n\n  "}
-                  <span className="text-purple-400">return</span> signature ===
-                  digest;
+                  {"\n  \n  "}
+                  <span className="text-purple-400">return</span>{" "}
+                  crypto.timingSafeEqual(
+                  {"\n    "}
+                  Buffer.from(signature),
+                  {"\n    "}
+                  Buffer.from(digest)
+                  {"\n  "});
                   {"\n"}
                   {"}"}
                 </pre>
               </AnimatedSpan>
             </Terminal>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {/* Best Practices */}
+          <div className="p-5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">
+                  Security Best Practices
+                </h4>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 shrink-0">•</span>
+                    <span>
+                      Always verify the signature before processing webhook data
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 shrink-0">•</span>
+                    <span>
+                      Store signing secrets in environment variables, never in
+                      code
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 shrink-0">•</span>
+                    <span>
+                      Use HTTPS endpoints only (HTTP is not supported)
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 shrink-0">•</span>
+                    <span>
+                      Implement retry logic with exponential backoff for failed
+                      processing
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 shrink-0">•</span>
+                    <span>
+                      Log webhook events for debugging and audit trails
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

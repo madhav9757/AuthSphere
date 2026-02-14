@@ -233,6 +233,35 @@ class ProjectService {
     return { user };
   }
 
+  async toggleUserBlock(projectId, userId, developerId, reqInfo) {
+    const project = await Project.findOne({
+      _id: projectId,
+      developer: developerId,
+    });
+    if (!project) return { error: "Project not found" };
+
+    const user = await EndUser.findOne({ _id: userId, projectId });
+    if (!user) return { error: "User not found" };
+
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+
+    await logEvent({
+      developerId,
+      projectId,
+      action: user.isBlocked ? "USER_BLOCKED" : "USER_UNBLOCKED",
+      description: `User "${user.email}" was ${user.isBlocked ? "blocked from" : "unblocked for"} authentication in project "${project.name}".`,
+      category: "user",
+      metadata: {
+        ip: reqInfo.ip,
+        userAgent: reqInfo.userAgent,
+        resourceId: user._id,
+      },
+    });
+
+    return { user };
+  }
+
   async addWebhook(projectId, developerId, webhookData) {
     const { url, events } = webhookData;
     const secret = crypto.randomBytes(32).toString("hex");

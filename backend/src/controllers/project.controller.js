@@ -288,6 +288,37 @@ export const toggleUserVerification = async (req, res) => {
 };
 
 /* ============================================================
+   TOGGLE USER BLOCK STATUS
+ ============================================================ */
+export const toggleUserBlock = async (req, res) => {
+  try {
+    const developerId = req.developer._id;
+    const { projectId, userId } = req.params;
+
+    const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
+    const result = await projectService.toggleUserBlock(
+      projectId,
+      userId,
+      developerId,
+      reqInfo,
+    );
+
+    if (result.error) {
+      return res.status(404).json({ success: false, message: result.error });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `User account ${result.user.isBlocked ? "blocked" : "unblocked"} successfully`,
+      data: result.user,
+    });
+  } catch (err) {
+    console.error("Toggle User Block Error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/* ============================================================
    GET CONFIGURED PROVIDERS
  ============================================================ */
 export const getConfiguredProviders = async (req, res) => {

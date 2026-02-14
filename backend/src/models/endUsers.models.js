@@ -36,8 +36,9 @@ const endUserSchema = new mongoose.Schema(
     picture: { type: String, default: "" },
     provider: { type: String, default: "local" },
     providerId: { type: String },
+    isBlocked: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 endUserSchema.pre("save", async function () {
