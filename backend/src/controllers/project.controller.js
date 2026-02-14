@@ -526,3 +526,103 @@ export const deleteWebhook = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const testWebhook = async (req, res) => {
+  try {
+    const { projectId, webhookId } = req.params;
+    const { event } = req.body;
+    const developerId = req.developer._id;
+
+    if (!event) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Event required" });
+    }
+
+    const { getProject } = await import("../services/core/project.service.js");
+    // We need to import projectService or use the one already imported at top
+    // projectService is default export at top: import projectService from "../services/core/project.service.js";
+
+    // Check if projectService is available in scope. Yes, line 1.
+    // However, I need to make sure I am not messing up imports.
+    // Ah, projectService is imported as default.
+
+    // Let's rely on existing import.
+    // But wait, getProject inside projectService might not be exactly what I need if I need secret.
+    // getProject returns the document, so it should have webhooks.
+
+    // Let's re-read project.service.js getProject.
+    // It does return Project.findOne(...).
+
+    // I'll proceed assuming projectService is available.
+
+    // But wait, I can't easily import crypto and axios inside function in ES modules without dynamic import or top level.
+    // Top level imports are better.
+    // I'll use dynamic imports for now to avoid messing up top of file.
+
+    const project = await (
+      await import("../services/core/project.service.js")
+    ).default.getProject(projectId, developerId);
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    // Find webhook
+    // Project model likely has webhooks array.
+    const webhook = project.webhooks.id(webhookId);
+    if (!webhook) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Webhook not found" });
+    }
+
+    const mockPayload = {
+      event,
+      timestamp: new Date().toISOString(),
+      projectId: project._id,
+      data: {
+        userId: "test_" + Math.random().toString(36).substring(7),
+        email: "test@example.com",
+        username: "test_user",
+        provider: "local",
+        isTest: true,
+      },
+    };
+
+    const crypto = await import("crypto");
+    const signature = crypto.default
+      .createHmac("sha256", webhook.secret)
+      .update(JSON.stringify(mockPayload))
+      .digest("hex");
+
+    const axios = (await import("axios")).default;
+
+    try {
+      const response = await axios.post(webhook.url, mockPayload, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-AuthSphere-Signature": signature,
+          "X-AuthSphere-Event": event,
+          "X-AuthSphere-Delivery": "test",
+        },
+        timeout: 5000,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `High-Five! Webhook delivered. remote_server_responded: ${response.status} ${response.statusText}`,
+      });
+    } catch (deliveryError) {
+      return res.status(502).json({
+        success: false,
+        message: `Delivery Failed: ${deliveryError.message}`,
+        details: deliveryError.response ? deliveryError.response.data : null,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
