@@ -1,112 +1,116 @@
-# 🗄️ AuthSphere Backend
+# 🗄️ AuthSphere Core Engine (Backend)
 
-The AuthSphere Backend is a robust Node.js and Express server that powers the AuthSphere ecosystem. It manages user authentication, project configurations, and OAuth2/PKCE flows.
+The AuthSphere Backend is a high-availability, zero-trust identity orchestrator built on the **Node.js** and **Express** stack. It serves as the authoritative source of truth for the entire AuthSphere ecosystem, managing complex OIDC (OpenID Connect) handshakes, cryptographic key lifecycles, and multi-tenant project isolation.
 
-## 🚀 Key Features
-
-- **Project Management**: API for creating and managing developer projects with unique 2048-bit RSA keys.
-- **Branding Engine**: High-fidelity email orchestration allowing per-project customization of logos, colors, and legal links.
-- **OAuth2 Engine**: Implements the Authorization Code Flow with PKCE for secure client-side authentication.
-- **Social Providers**: Integrated with Google, GitHub, and Discord for one-click logins.
-- **Session Management**: Securely handles user sessions using stateless JWS (JSON Web Signatures) and secure cookies.
-- **Email Verification**: Atomic OTP generation, template-driven delivery via SMTP, and metadata visibility controls.
-- **User Management**: Administrative APIs to delete project users or manually toggle verification status.
-- **Database**: Uses MongoDB (via Mongoose) for persistent storage of projects, users, and sessions.
-- **Audit Logging**: Immutable technical logs for every authentication and configuration event.
-- **Security**: State-aware CORS, layered password hashing, and automated token rotation.
-
-## 🛠️ Tech Stack
-
-- **Node.js**: Runtime environment.
-- **Express**: Web framework for the API.
-- **MongoDB & Mongoose**: Database and ODM.
-- **JSON Web Tokens (JWT)**: For stateless authentication.
-- **Axios**: For making requests to social provider APIs.
-
-## 🏁 Getting Started
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- A running MongoDB instance (Local or Atlas)
-
-### Installation
-
-1. Navigate to the backend directory:
-
-   ```bash
-   cd backend
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Configure Environment Variables:
-   Create a `.env` file in the `backend` root and populate it with the following:
-
-   ```env
-   PORT=8000
-   MONGODB_URI=your_mongodb_connection_string
-   CORS_ORIGIN=http://localhost:5173
-   ACCESS_TOKEN_SECRET=your_long_random_string
-   ACCESS_TOKEN_EXPIRY=1d
-   REFRESH_TOKEN_SECRET=another_long_random_string
-   REFRESH_TOKEN_EXPIRY=10d
-
-   # Social Providers (Optional)
-   GOOGLE_CLIENT_ID=your_id
-   GOOGLE_CLIENT_SECRET=your_secret
-   GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
-
-   GITHUB_CLIENT_ID=your_id
-   GITHUB_CLIENT_SECRET=your_secret
-   GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback
-
-   DISCORD_CLIENT_ID=your_id
-   DISCORD_CLIENT_SECRET=your_secret
-   DISCORD_REDIRECT_URI=http://localhost:8000/auth/discord/callback
-   ```
-
-### Running the Server
-
-- **Development Mode** (with nodemon):
-  ```bash
-  npm run dev
-  ```
-- **Production Mode**:
-  ```bash
-  npm start
-  ```
-
-## 🛤️ API Endpoints
-
-### Project APIs
-
-- `GET /api/v1/projects`: List all developer projects.
-- `POST /api/v1/projects`: Create a new project.
-- `GET /api/v1/projects/:projectId`: Get project details.
-- `PATCH /api/v1/projects/:projectId`: Update project settings.
-- `GET /api/v1/projects/:projectId/users`: List all end-users for a project.
-- `DELETE /api/v1/projects/:projectId/users/:userId`: Permanent user deletion.
-- `PATCH /api/v1/projects/:projectId/users/:userId/verify`: Toggle user verification.
-
-### Auth Hub APIs
-
-- `POST /api/v1/auth/exchange`: Exchange PKCE code for a session token.
-- `GET /api/v1/auth/session`: Validate and retrieve session data.
-- `POST /api/v1/auth/verify-otp`: Verify 6-digit OTP for email verification.
-- `GET /auth/:provider`: Initiate social provider redirect.
-- `GET /auth/:provider/callback`: Handle social provider callback.
-
-## 🛡️ Security
-
-- **PKCE**: Mandatory for all client-side authentication flows.
-- **JWT**: Used for secure, verifiable session identification.
-- **Password Hashing**: User passwords (if any) are hashed with Bcrypt.
+- **Live API Gateway:** [auth-sphere-6s2v.vercel.app](https://auth-sphere-6s2v.vercel.app/)
 
 ---
 
-Built with ❤️ by the AuthSphere Team.
+## 🛡️ The Zero-Trust Engine Architecture
+
+AuthSphere is engineered for maximum security with zero compromises on developer velocity. Our backend architecture is designed around the principle that every request must be authenticated and every identity token must be verifiable.
+
+### **1. Cryptographic Identity Signing**
+
+Every identity token (JWT) issued by AuthSphere is signed using **RSA-2048 (RS256)**.
+
+- **Asymmetric Signing**: We use a private key stored in an encrypted vault for signing.
+- **Public Verification**: A matching public key is provided to developers, allowing for "Offline Verification." Your server can verify a user's identity without ever having to make a network request to AuthSphere.
+
+### **2. Protocol Fidelity: OIDC & PKCE**
+
+We implement the full **Authorization Code Flow with PKCE (RFC 7636)**.
+
+- **Proof-Key Security**: This protocol ensures that authorization codes cannot be intercepted and used by malicious actors, providing the "Gold Standard" for securing Single Page Applications (SPAs) and Mobile Apps.
+
+### **3. Identity Hardening with Argon2id**
+
+Local credentials (email/password) are never stored in plain text. We utilize **Argon2id**, the winner of the Password Hashing Competition.
+
+- **Memory-Hard Performance**: Unlike older algorithms like Bcrypt, Argon2id is intentionally designed to be memory-intensive, making it nearly impossible to crack using specialized hardware like GPUs or ASICs.
+
+### **4. Field-Level Authenticated Encryption**
+
+Sensitive project configurations — such as Client Secrets for Google/GitHub or SMTP passwords — are stored using **AES-256-GCM**.
+
+- **Authenticated Encryption**: This ensures not only the confidentiality of the data but its integrity as well. If the encrypted data is tampered with in the database, the decryption will fail.
+
+---
+
+## 🚀 Key Features & Capabilities
+
+- **Logical Project Isolation**: AuthSphere provides total multi-tenant separation. A developer's project data is cryptographically and logically siloed, ensuring no cross-contamination.
+- **Branding Orchestration Hub**: A sophisticated engine that manages the delivery of user-facing emails. It injects project-specific branding (logos, colors, legal links) into HTML templates in real-time.
+- **Social Provider Bridge**: A unified adapter system for **Google, GitHub, and Discord**. We normalize the disparate payloads from these providers into a standardized "Identity Claim."
+- **Immutable Audit Logging**: Every critical event — from user registration to project key rotation — is logged in an immutable database with fingerprinting (IP, User-Agent, Location).
+- **Verification Lifecycle**: Atomic 6-digit OTP (One-Time Password) generation and verification system that maintains state across redirects via SDK-preserving handshakes.
+
+---
+
+## 🛠️ Deep Tech Stack
+
+- **Runtime**: Node.js (v20+ LTS)
+- **Web Framework**: Express.js with high-performance middleware.
+- **Persistence**: MongoDB with Mongoose ODM (Object Document Mapper).
+- **Security Primitives**: Node's native `crypto` library utilizing `OpenSSL 3.0`.
+- **Identity Transport**: JSON Web Tokens (JWT) adhering to RFC 7519.
+- **Email Delivery**: Specialized SMTP orchestration via Nodemailer and Resend integration.
+
+---
+
+## 🛤️ API Architecture & Endpoint Map (V1)
+
+### **👥 Project & User Intelligence**
+
+- `GET /api/v1/projects`: Retrieve a list of all identity environments managed by the developer.
+- `POST /api/v1/projects`: Provision a new identity vault with isolated keys.
+- `PATCH /api/v1/projects/:id`: Update security policies, OIDC callback URIs, or branding metadata.
+- `GET /api/v1/projects/:id/users`: A high-throughput stream of project-specific end-users.
+- `DELETE /api/v1/projects/:id/users/:uId`: Permanent identity expunging (GDPR/CCPA compliant).
+- `PATCH /api/v1/projects/:id/users/:uId/block`: Toggle the account suspension state for a specific user.
+
+### **🔐 The Authentication Hub**
+
+- `POST /api/v1/auth/exchange`: The authoritative PKCE-secured code exchange endpoint.
+- `POST /api/v1/auth/register`: Local identity creation with automated verification email trigger.
+- `POST /api/v1/auth/login-local`: Secure email/password authentication using Argon2id validation.
+- `POST /api/v1/auth/verify-otp`: Resolution endpoint for 6-digit identity challenges.
+- `GET /auth/:provider`: Initiation point for social identity handshakes (Google/GitHub/Discord).
+
+### **📡 System Integrity & Telemetry**
+
+- `GET /api/v1/logs/:projectId`: Access the high-fidelity audit trail for a specific project.
+- `POST /api/v1/webhooks/test`: Dispatch test identity payloads to configured developer endpoints.
+
+---
+
+## 🏁 Installation & Production Deployment
+
+### **Prerequisites**
+
+- **Node.js**: v20 or higher (required for latest cryptographic support).
+- **Database**: MongoDB (Local instance or Atlas cluster).
+- **Environment**: A valid `.env` file based on `.env.example`.
+
+### **Quick Setup**
+
+1. **Enter the Workspace**:
+   ```bash
+   cd backend
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Configure the Environment**:
+   ```bash
+   cp .env.example .env
+   ```
+   _Note: Generate high-entropy strings for `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` using `openssl rand -hex 64`._
+4. **Launch the Engine**:
+   - **Performance Mode**: `npm start`
+   - **Developer Mode**: `npm run dev`
+
+---
+
+Built for 🔐 security and 🚀 scale by the AuthSphere Engineering Team.

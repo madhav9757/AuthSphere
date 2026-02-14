@@ -34,6 +34,12 @@ const projectSchema = new mongoose.Schema(
     settings: {
       requireEmailVerification: { type: Boolean, default: false },
       mfaEnabled: { type: Boolean, default: false },
+      // Brute Force Protection
+      bruteForceProtection: {
+        enabled: { type: Boolean, default: true },
+        maxAttempts: { type: Number, default: 5 },
+        lockoutDuration: { type: Number, default: 900 }, // 15 mins in seconds
+      },
       // Token Lifecycle Management
       tokenValidity: {
         accessToken: { type: Number, default: 900 }, // 15 mins in seconds
@@ -55,6 +61,25 @@ const projectSchema = new mongoose.Schema(
         default: "Use the code below to verify your account.",
       },
     },
+    webhooks: [
+      {
+        url: { type: String, required: true },
+        events: [
+          {
+            type: String,
+            enum: [
+              "user.registered",
+              "user.login",
+              "user.deleted",
+              "api_key.rotated",
+            ],
+          },
+        ],
+        secret: { type: String, required: true },
+        isActive: { type: Boolean, default: true },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     metadata: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true },

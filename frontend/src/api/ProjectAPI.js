@@ -101,6 +101,18 @@ export const toggleUserVerification = async (projectId, userId) => {
   }
 };
 
+/* ------------------- TOGGLE USER BLOCK STATUS ------------------- */
+export const toggleUserBlock = async (projectId, userId) => {
+  try {
+    const { data } = await api.patch(
+      `${PROJECTS_URL}/${projectId}/users/${userId}/block`,
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
 /* ------------------- DELETE PROJECT ------------------- */
 export const deleteProject = async (projectId) => {
   try {
@@ -117,6 +129,31 @@ export const sendTestEmail = async (projectId, email) => {
     const { data } = await api.post(
       `${PROJECTS_URL}/${projectId}/send-test-email`,
       { email },
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
+/* ------------------- ADD WEBHOOK ------------------- */
+export const addWebhook = async (projectId, payload) => {
+  try {
+    const { data } = await api.post(
+      `${PROJECTS_URL}/${projectId}/webhooks`,
+      payload,
+    );
+    return data;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+};
+
+/* ------------------- DELETE WEBHOOK ------------------- */
+export const deleteWebhook = async (projectId, webhookId) => {
+  try {
+    const { data } = await api.delete(
+      `${PROJECTS_URL}/${projectId}/webhooks/${webhookId}`,
     );
     return data;
   } catch (error) {

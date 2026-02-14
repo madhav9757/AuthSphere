@@ -20,7 +20,7 @@ const ProjectCard = ({ project }) => {
   return (
     <Card
       onClick={handleNavigate}
-      className="group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+      className="group cursor-pointer bg-card/30 border-border/50 hover:bg-card/50 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
     >
       <ShineBorder shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]} />
       <CardHeader className="pb-3">
@@ -29,7 +29,9 @@ const ProjectCard = ({ project }) => {
             <Shield className="h-5 w-5" />
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">Active</Badge>
+            <Badge variant="secondary" className="text-xs">
+              Active
+            </Badge>
             <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>

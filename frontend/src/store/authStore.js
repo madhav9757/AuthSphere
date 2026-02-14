@@ -1,46 +1,57 @@
-import { create } from 'zustand';
-import api from '../api/axios';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import api from "../api/axios";
 
-const useAuthStore = create((set, get) => ({
-  user: null,
-  loading: true,
-  loggingOut: false,
+const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      user: null,
+      loading: true,
+      loggingOut: false,
 
-  setUser: (user) => set({ user }),
-  setLoading: (loading) => set({ loading }),
-  
-  checkAuth: async () => {
-    set({ loading: true });
-    try {
-      const res = await api.get('/developers/me');
-      if (res.data.success) {
-        set({ user: res.data.data });
-      } else {
-        set({ user: null });
-      }
-    } catch (err) {
-      set({ user: null });
-      // Only log non-401 errors
-      if (err.response?.status !== 401) {
-        console.error("Auth check failed:", err.message);
-      }
-    } finally {
-      set({ loading: false });
-    }
-  },
+      setUser: (user) => set({ user }),
+      setLoading: (loading) => set({ loading }),
 
-  logout: async () => {
-    set({ loggingOut: true });
-    try {
-      await api.post('/developers/logout');
-    } catch (error) {
-      console.error("Logout request failed:", error);
-    } finally {
-      set({ user: null, loggingOut: false });
-      window.location.href = '/login';
-    }
-  },
-}));
+      checkAuth: async () => {
+        set({ loading: true });
+        try {
+          const res = await api.get("/developers/me");
+          if (res.data.success) {
+            set({ user: res.data.data });
+          } else {
+            set({ user: null });
+          }
+        } catch (err) {
+          set({ user: null });
+          // Only log non-401 errors
+          if (err.response?.status !== 401) {
+            console.error("Auth check failed:", err.message);
+          }
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      logout: async () => {
+        set({ loggingOut: true });
+        try {
+          await api.post("/developers/logout");
+        } catch (error) {
+          console.error("Logout request failed:", error);
+        } finally {
+          set({ user: null, loggingOut: false });
+          // Clear storage on logout to be safe
+          localStorage.removeItem("auth-storage");
+          window.location.href = "/login";
+        }
+      },
+    }),
+    {
+      name: "auth-storage", // name of the item in the storage (must be unique)
+      partialize: (state) => ({ user: state.user }), // only persist the user object
+    },
+  ),
+);
 
 // Setup listeners for axios interceptor events
 // This should be called once in the app (e.g., in App.jsx or a focused component)
@@ -49,7 +60,7 @@ export const setupAuthListeners = () => {
 
   const handleTokenRefreshed = async () => {
     try {
-      const res = await api.get('/developers/me');
+      const res = await api.get("/developers/me");
       if (res.data.success) {
         setUser(res.data.data);
       }

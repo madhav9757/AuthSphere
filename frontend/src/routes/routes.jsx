@@ -16,7 +16,6 @@ import Pricing from "@/pages/public/Pricing";
 import Settings from "@/pages/dashboard/Settings";
 import AuditLogs from "@/pages/dashboard/AuditLogs";
 import ProvidersPage from "@/pages/project/ProvidersPage";
-import ProjectUsers from "@/pages/project/ProjectUsers";
 
 import TemplatesPage from "@/pages/public/TemplatesPage";
 import EmailCustomizationPage from "@/pages/project/EmailCustomizationPage";
@@ -109,21 +108,11 @@ export const routes = [
     ),
   },
   {
-    path: "/projects/:projectId/users",
+    path: "/projects/:projectId/email-customization",
     element: (
       <ProtectedRoute>
         <MainLayout>
-          <ProjectUsers />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/projects/:projectId/providers",
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <ProvidersPage />
+          <EmailCustomizationPage />
         </MainLayout>
       </ProtectedRoute>
     ),

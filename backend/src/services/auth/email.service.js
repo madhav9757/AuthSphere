@@ -1,8 +1,9 @@
 import nodemailer from "nodemailer";
-import { conf } from "../configs/env.js";
+import { conf } from "../../configs/env.js";
+import logger from "../../utils/logger.js";
 
 if (!conf.smtpHost || !conf.smtpUser || !conf.smtpPass) {
-  console.warn("⚠️ SMTP credentials missing. Email sending disabled.");
+  logger.warn("SMTP credentials missing. Email sending disabled.");
 }
 
 const transporter = nodemailer.createTransport({
@@ -18,9 +19,9 @@ const transporter = nodemailer.createTransport({
 // Optional but HIGHLY recommended
 transporter.verify((err) => {
   if (err) {
-    console.error("❌ SMTP connection failed:", err.message);
+    logger.error("SMTP connection failed:", { error: err.message });
   } else {
-    console.log("✅ SMTP server ready");
+    logger.info("SMTP server ready");
   }
 });
 

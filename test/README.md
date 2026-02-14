@@ -1,73 +1,85 @@
-# 🧪 AuthSphere SDK Demo App
+# 🧪 AuthSphere Reference Application (SDK Demo)
 
-This is a demonstration project built with React and Vite to showcase the seamless integration of the `@authspherejs/sdk`. It provides a practical example of how to implement a full authentication flow from scratch.
+This is a comprehensive reference implementation built with **React** and **Vite** designed to showcase the full power of the `@authspherejs/sdk`. It serves as a blueprint for developers building secure, identity-aware applications with AuthSphere.
 
-## 🚀 Key Features Demonstrated
+## 🚀 Orchestration Patterns Demonstrated
 
-- **SDK Initialization**: How to properly configure the SDK with a Public Key.
-- **Provider Login**: Implementing redirects for Google, GitHub, and Discord.
-- **Local Authentication**: Example implementation of Email/Password login and signup.
-- **Email Verification**: Integration of the 6-digit OTP verification page.
-- **Callback Handling**: Processing the OAuth2 response to establish a secure session.
-- **Protected Routes**: Restricting access to dashboard views based on auth status.
-- **User Hook**: Accessing user profile data and session state throughout the app.
-- **Logout Flow**: Safely clearing sessions and redirecting users.
+- **SDK Bootstrapping**: Standardized initialization patterns for production and local development environments.
+- **Provider Handshakes**: Low-latency redirects for **Google, GitHub, and Discord** with automatic PKCE state management.
+- **Identity Creation**: End-to-end flow for **Email/Password** registration with integrated OTP triggers.
+- **Challenge Resolution**: Implementation of a dedicated **OTP Verification** interface that preserves original login context.
+- **Ecxhange Resolution**: Secure processing of the OIDC authorization code to establish high-entropy sessions.
+- **Route Guarding**: Pattern for restricting access to sensitive dashboard views based on authenticated identity state.
+- **Profile Propagation**: Real-time access to user claims and session metadata across the React component tree.
 
 ## 🛠️ Implementation Highlights
 
-### SDK Setup
-The SDK is initialized in the main entry point to ensure auth state is available globally.
+### ⚡ Global Identity Context
 
-### Secure Callbacks
-The `/callback` route demonstrates the use of `AuthSphere.handleAuthCallback()` which handles the PKCE code exchange automatically.
+The SDK is initialized at the application root, ensuring that the `AuthSphere` singleton is pre-warmed for instant authentication events.
 
-### Session Management
-Once authenticated, the user profile is accessible via the SDK's `getUser()` method, persisting across page reloads.
+### 🛡️ Secure Callbacks
+
+The `/callback` route demonstrates the "Handshake Resolution" pattern, where `AuthSphere.handleAuthCallback()` performs the cryptographic exchange behind the scenes.
+
+### 🔄 State Persistence
+
+Identity is maintained via secure storage, with the `getUser()` hook providing a reactive bridge to the underlying session.
 
 ## 🏁 Getting Started
 
 ### Prerequisites
 
-1.  **Run the Backend**: Ensure the AuthSphere backend is running at `http://localhost:8000`.
-2.  **Create a Project**: Go to the [Frontend Dashboard](http://localhost:5173), create a project, and get your **Public Key**.
+1. **Backend Engine**: Verify that the AuthSphere Core is active (Production: `https://auth-sphere-6s2v.vercel.app` or Local: `http://localhost:8000`).
+2. **Identity Vault**: Create a project in the [Command Center](https://auth-sphere-gilt.vercel.app/) and retrieve your **Project Public Key**.
 
-### Installation
+### Installation & Launch
 
-1.  Navigate to the test directory:
-    ```bash
-    cd test
-    ```
+1. **Enter Workspace**:
 
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+   ```bash
+   cd test
+   ```
 
-3.  Update Config:
-    Open `src/App.jsx` (or your config file) and replace the `publicKey` with your project's key.
+2. **Sync Dependencies**:
 
-4.  Run the App:
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm install
+   ```
 
-## 📸 Common Flow
+3. **Configure Project**:
+   Update your SDK initialization in `src/App.jsx` with your project's Public Key:
 
-1. User clicks **"Login with Google"**.
-2. App redirects to AuthSphere Auth Hub.
-3. User authenticates.
-4. AuthSphere redirects back to `http://localhost:5174/callback?code=...`.
-5. SDK exchanges code for tokens.
-6. User is redirected to `/dashboard`.
+   ```javascript
+   AuthSphere.initAuth({
+     publicKey: "YOUR_KEY_HERE",
+     baseUrl: "https://auth-sphere-6s2v.vercel.app",
+   });
+   ```
 
-### Local Auth Flow
-1. User enters Email/Password and clicks **"Sign Up"**.
-2. SDK sends registration data to backend.
-3. User is redirected to `/verify-otp`.
-4. User enters 6-digit code sent to their email.
-5. SDK verifies OTP and automatically logs the user in.
-6. User is redirected to `/dashboard`.
+4. **Ignite App**:
+   ```bash
+   npm run dev
+   ```
+
+## 📸 The Handshake Lifecycle
+
+### Social Identity Flow
+
+1. User selects **"Login with GitHub"**.
+2. App generates a `code_verifier` and redirects to the AuthSphere Hub.
+3. Upon approval, User returns to `/callback?code=...`.
+4. SDK exchanges the code + verifier for tokens.
+5. Identity is established and User enters the dashboard.
+
+### Local Identity Flow
+
+1. User provides credentials in the **Sign Up** interface.
+2. Backend generates a cryptographic OTP and waits for resolution.
+3. User is navigated to the **Challenge Page** (`/verify`).
+4. Upon entering the correct 6-digit code, the SDK resolves the pending handshake.
+5. Session is established and User enters the dashboard.
 
 ---
 
-Built with ❤️ by the AuthSphere Team.
+Designed for 🧬 high-security integration by the AuthSphere Team.

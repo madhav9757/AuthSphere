@@ -1,5 +1,5 @@
 import axios from "axios";
-import { conf } from "../configs/env.js";
+import { conf } from "../../configs/env.js";
 
 export function getDiscordAuthURL(context = { type: "dev" }) {
   let state = "dev";

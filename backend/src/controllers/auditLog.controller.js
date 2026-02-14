@@ -1,44 +1,48 @@
-import AuditLog from "../models/auditLog.model.js";
-import Project from "../models/project.model.js";
+import auditLogService from "../services/core/auditLog.service.js";
+import projectService from "../services/core/project.service.js";
 
 export const getProjectLogs = async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const developerId = req.developer._id;
+  try {
+    const { projectId } = req.params;
+    const { category, actorType } = req.query;
+    const developerId = req.developer._id;
 
-        // Verify ownership
-        const project = await Project.findOne({ _id: projectId, developer: developerId });
-        if (!project) {
-            return res.status(403).json({ success: false, message: "Forbidden: You don't own this project" });
-        }
-
-        const logs = await AuditLog.find({ projectId })
-            .sort({ createdAt: -1 })
-            .limit(50); // Fetch last 50 events
-
-        return res.status(200).json({
-            success: true,
-            data: logs,
-        });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+    // Verify ownership
+    if (!(await projectService.verifyOwnership(projectId, developerId))) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You don't own this project",
+      });
     }
+
+    const logs = await auditLogService.getProjectLogs(projectId, {
+      category,
+      actorType,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: logs,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 export const getGlobalLogs = async (req, res) => {
-    try {
-        const developerId = req.developer._id;
+  try {
+    const developerId = req.developer._id;
+    const { category, actorType } = req.query;
+    const logs = await auditLogService.getGlobalLogs(developerId, {
+      category,
+      actorType,
+    });
 
-        // Fetch all logs related to this developer (all their projects)
-        const logs = await AuditLog.find({ developerId })
-            .sort({ createdAt: -1 })
-            .limit(50);
-
-        return res.status(200).json({
-            success: true,
-            data: logs,
-        });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
-    }
+    return res.status(200).json({
+      success: true,
+      data: logs,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
