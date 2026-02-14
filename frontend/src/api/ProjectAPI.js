@@ -157,7 +157,19 @@ export const deleteWebhook = async (projectId, webhookId) => {
     );
     return data;
   } catch (error) {
-    throw normalizeError(error);
+    throw error.response?.data || error;
+  }
+};
+
+export const testWebhook = async (projectId, webhookId, event) => {
+  try {
+    const { data } = await api.post(
+      `${PROJECTS_URL}/${projectId}/webhooks/${webhookId}/test`,
+      { event },
+    );
+    return data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 };
 

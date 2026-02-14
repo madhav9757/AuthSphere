@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addWebhook, deleteWebhook } from "@/api/ProjectAPI";
+import { addWebhook, deleteWebhook, testWebhook } from "@/api/ProjectAPI";
 import {
   Card,
   CardContent,
@@ -12,6 +12,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Webhook,
   Plus,
@@ -29,6 +44,7 @@ import {
   Lock,
   AlertCircle,
   Copy,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -71,6 +87,12 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
   const [url, setUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState(["user.registered"]);
 
+  // Test State
+  const [testWebhookId, setTestWebhookId] = useState(null);
+  const [testEvent, setTestEvent] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!url) return toast.error("Please enter a webhook URL");
@@ -105,6 +127,34 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
     }
   };
 
+  const handleTest = async () => {
+    if (!testEvent) return toast.error("Please select an event type");
+
+    try {
+      setTesting(true);
+      setTestResult(null);
+      const res = await testWebhook(project._id, testWebhookId, testEvent);
+      setTestResult({ success: true, message: res.message });
+      toast.success("Test payload sent!");
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: error.message || "Failed to send payload",
+        details: error.details,
+      });
+      toast.error("Test delivery failed");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const openTestDialog = (webhook) => {
+    setTestWebhookId(webhook._id);
+    // Default to first available event or generic
+    setTestEvent(webhook.events[0] || "user.registered");
+    setTestResult(null);
+  };
+
   const toggleEvent = (eventId) => {
     setSelectedEvents((prev) =>
       prev.includes(eventId)
@@ -118,8 +168,98 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
     toast.success("Signing secret copied to clipboard");
   };
 
+  const currentTestWebhook = project.webhooks?.find(
+    (w) => w._id === testWebhookId,
+  );
+
   return (
     <div className="space-y-8">
+      {/* Test Dialog */}
+      <Dialog
+        open={!!testWebhookId}
+        onOpenChange={(open) => !open && setTestWebhookId(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-500" />
+              Test Webhook Delivery
+            </DialogTitle>
+            <DialogDescription>
+              Send a mock event payload to verify your endpoint configuration.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Target URL</Label>
+              <div className="p-2 bg-muted rounded border text-xs font-mono break-all text-muted-foreground">
+                {currentTestWebhook?.url || "Loading..."}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Event Type</Label>
+              <Select value={testEvent} onValueChange={setTestEvent}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select event to simulate" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentTestWebhook?.events.map((ev) => {
+                    const info = AVAILABLE_EVENTS.find((e) => e.id === ev);
+                    return (
+                      <SelectItem key={ev} value={ev}>
+                        <div className="flex items-center gap-2">
+                          <span>{info?.icon || "⚡"}</span>
+                          <span>{info?.label || ev}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {testResult && (
+              <div
+                className={`p-4 rounded-lg text-xs leading-relaxed border ${testResult.success ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" : "bg-destructive/10 border-destructive/20 text-destructive"}`}
+              >
+                <div className="font-semibold mb-1 flex items-center gap-2">
+                  {testResult.success ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4" />
+                  )}
+                  {testResult.success
+                    ? "Delivery Successful"
+                    : "Delivery Failed"}
+                </div>
+                <div>{testResult.message}</div>
+                {testResult.details && (
+                  <pre className="mt-2 p-2 bg-black/10 rounded overflow-x-auto">
+                    {JSON.stringify(testResult.details, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTestWebhookId(null)}>
+              Close
+            </Button>
+            <Button onClick={handleTest} disabled={testing} className="gap-2">
+              {testing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Send Test Payload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header Section */}
       <Card className="bg-card/30 border-border/50">
         <CardHeader>
@@ -417,14 +557,25 @@ const ProjectWebhooksCard = ({ project, onUpdated }) => {
                         </div>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(webhook._id)}
-                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openTestDialog(webhook)}
+                          className="text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-colors shrink-0"
+                          title="Test Delivery"
+                        >
+                          <Play className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(webhook._id)}
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     <Separator />

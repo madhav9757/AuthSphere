@@ -10,6 +10,7 @@ import ProvidersPage from "@/pages/project/ProvidersPage";
 
 import ProjectUsersCard from "./ProjectUsersCard";
 import ProjectWebhooksCard from "./ProjectWebhooksCard";
+import ProjectLogsCard from "./ProjectLogsCard";
 import LiveEventsStream from "../LiveEventsStream";
 
 // UI Imports
@@ -23,9 +24,11 @@ import {
   Loader2,
   Key,
   Users,
-  Webhook,
   Settings2,
   Globe,
+  ShieldCheck,
+  Activity,
+  Webhook,
   Terminal,
 } from "lucide-react";
 
@@ -121,35 +124,30 @@ const ProjectDetail = () => {
               User Management
             </TabsTrigger>
             <TabsTrigger
-              value="webhooks"
+              value="security"
               className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
-              <Webhook className="h-4 w-4" />
-              Webhooks
+              <ShieldCheck className="h-4 w-4" />
+              Security & Logs
             </TabsTrigger>
             <TabsTrigger
               value="settings"
               className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               <Settings2 className="h-4 w-4" />
-              Project Settings
+              Settings
             </TabsTrigger>
             <TabsTrigger
               value="catalog"
               className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               <Globe className="h-4 w-4" />
-              Identity Catalog
-            </TabsTrigger>
-            <TabsTrigger
-              value="telemetry"
-              className="rounded-lg px-6 gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              <Terminal className="h-4 w-4" />
-              Live Telemetry
+              Catalog
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* --- TABS CONTENT --- */}
 
         <TabsContent
           value="keys"
@@ -165,11 +163,50 @@ const ProjectDetail = () => {
           <ProjectUsersCard projectId={projectId} />
         </TabsContent>
 
+        {/* SECURITY & LOGS TAB (Nested Logic) */}
         <TabsContent
-          value="webhooks"
+          value="security"
           className="focus-visible:outline-none focus-visible:ring-0"
         >
-          <ProjectWebhooksCard project={project} onUpdated={loadProject} />
+          <Tabs defaultValue="audit" className="w-full space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList className="bg-muted/50 border border-white/5">
+                <TabsTrigger value="audit" className="gap-2 text-xs">
+                  <Activity className="h-3 w-3" /> Audit Logs
+                </TabsTrigger>
+                <TabsTrigger value="live" className="gap-2 text-xs">
+                  <Terminal className="h-3 w-3" /> Live Stream
+                </TabsTrigger>
+                <TabsTrigger value="webhooks" className="gap-2 text-xs">
+                  <Webhook className="h-3 w-3" /> Webhooks
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="audit" className="mt-0">
+              <ProjectLogsCard projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="live" className="mt-0">
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Terminal className="h-5 w-5 text-primary" />
+                    Real-time Telemetry
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Watch authentication events stream in directly from the core
+                    engine.
+                  </p>
+                </div>
+                <LiveEventsStream projectId={projectId} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="webhooks" className="mt-0">
+              <ProjectWebhooksCard project={project} onUpdated={loadProject} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent
@@ -185,26 +222,6 @@ const ProjectDetail = () => {
         >
           <div className="bg-card/50 rounded-2xl border border-primary/10 overflow-hidden p-8">
             <ProvidersPage embedded={true} onUpdated={loadProject} />
-          </div>
-        </TabsContent>
-
-        <TabsContent
-          value="telemetry"
-          className="focus-visible:outline-none focus-visible:ring-0"
-        >
-          <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
-                <Terminal className="h-6 w-6 text-primary" />
-                Command Center Telemetry
-              </h2>
-              <p className="text-muted-foreground text-sm max-w-2xl">
-                Monitor authentication flows, token lifecycle, and cryptographic
-                handshakes in real-time. Perfect for debugging integrations and
-                monitoring system health.
-              </p>
-            </div>
-            <LiveEventsStream projectId={projectId} />
           </div>
         </TabsContent>
       </Tabs>

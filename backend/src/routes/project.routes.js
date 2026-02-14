@@ -14,6 +14,7 @@ import {
   sendTestEmail,
   addWebhook,
   deleteWebhook,
+  testWebhook,
 } from "../controllers/project.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -60,6 +61,7 @@ router.post("/:projectId/send-test-email", sendTestEmail);
 // 🪝 Webhook routes
 router.post("/:projectId/webhooks", addWebhook);
 router.delete("/:projectId/webhooks/:webhookId", deleteWebhook);
+router.post("/:projectId/webhooks/:webhookId/test", testWebhook);
 
 // 🗑 Delete project
 router.delete("/:projectId", deleteProject);
