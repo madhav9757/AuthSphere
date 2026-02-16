@@ -251,7 +251,27 @@ AuthSphere is built for the "High Performance" web, where every millisecond coun
 
 ---
 
-## 🛠️ 9. Local Development & Contribution
+## 🐳 9. Containerized Deployment (Docker)
+
+Deploy the entire AuthSphere stack (Frontend, Backend, MongoDB, Redis) with a single command.
+
+### **Quick Start**
+
+```bash
+# 1. Configure Environment
+cp backend/.env.example backend/.env
+# (Update backend/.env with your secrets)
+
+# 2. Launch the Stack
+docker-compose up --build
+```
+
+- **Command Center (Frontend):** `http://localhost:3000`
+- **API Engine (Backend):** `http://localhost:8000`
+
+---
+
+## 🛠️ 10. Local Development & Contribution
 
 Follow these steps to spin up the entire AuthSphere ecosystem in your local environment.
 
@@ -292,7 +312,7 @@ Visit `http://localhost:5174` to see the reference implementation in action.
 
 ---
 
-## 🤝 10. Community & Integration Partners
+## 🤝 11. Community & Integration Partners
 
 AuthSphere is an evolving ecosystem. We are actively working on:
 

@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "diagnose": "node scripts/diagnose.js",
-    "test:env": "node -e \"console.log('Environment check passed')\" && node scripts/diagnose.js"
+    "test:env": "node -e \"console.log('Environment check passed')\" && node scripts/diagnose.js",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -41,6 +42,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "@eslint/js": "^9.9.0"
   }
 }
