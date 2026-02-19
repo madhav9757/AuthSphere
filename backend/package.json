@@ -35,16 +35,19 @@
     "nodemailer": "^7.0.13",
     "qs": "^6.14.1",
     "socket.io": "^4.8.3",
-    "swagger-jsdoc": "^6.2.8",
+    "swagger-jsdoc": "6.2.8",
     "swagger-ui-express": "^5.0.1",
     "ua-parser-js": "^2.0.8",
     "winston": "^3.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11",
-    "eslint": "^9.9.0",
+    "@eslint/js": "^9.9.0",
+    "eslint": "^10.0.0",
     "globals": "^15.9.0",
-    "@eslint/js": "^9.9.0"
+    "nodemon": "3"
+  },
+  "overrides": {
+    "minimatch": "^10.2.1"
   }
 }
