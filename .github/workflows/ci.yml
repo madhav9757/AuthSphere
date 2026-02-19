@@ -115,7 +115,9 @@ jobs:
           cache-dependency-path: test/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Lint
         run: npm run lint
