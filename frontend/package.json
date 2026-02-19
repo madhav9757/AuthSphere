@@ -64,5 +64,8 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*",
     "lightningcss-linux-x64-gnu": "*"
+  },
+  "overrides": {
+    "ajv": "^8.18.0"
   }
 }

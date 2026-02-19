@@ -48,6 +48,7 @@
     "nodemon": "3"
   },
   "overrides": {
-    "minimatch": "^10.2.1"
+    "minimatch": "^10.2.1",
+    "ajv": "^8.18.0"
   }
 }
