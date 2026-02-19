@@ -1,16 +1,5 @@
 import winston from "winston";
-import path from "path";
 import chalk from "chalk";
-import { conf } from "../configs/env.js";
-
-// Define log format
-const logFormat = winston.format.printf(
-  ({ level, message, timestamp, ...meta }) => {
-    return `${timestamp} [${level.toUpperCase()}]: ${message} ${
-      Object.keys(meta).length ? JSON.stringify(meta) : ""
-    }`;
-  },
-);
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",

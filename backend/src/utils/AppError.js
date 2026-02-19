@@ -13,7 +13,7 @@ export class AppError extends Error {
   }
 }
 
-export const handleError = (err, req, res, next) => {
+export const handleError = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 

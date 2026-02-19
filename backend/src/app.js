@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   try {
     req.id = crypto.randomUUID?.() || Date.now().toString();
     next();
-  } catch (err) {
+  } catch (_err) {
     next();
   }
 });
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
         ? logger.child({ requestId: req.id })
         : logger;
     next();
-  } catch (err) {
+  } catch (_err) {
     req.logger = logger;
     next();
   }

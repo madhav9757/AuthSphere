@@ -63,9 +63,9 @@ jobs:
           echo "REFRESH_TOKEN_SECRET=super_secret_refresh_token_should_be_at_least_32_chars_long" >> .env
           echo "CORS_ORIGIN=http://localhost:5173" >> .env
           echo "GOOGLE_CLIENT_ID=dummy_google_id" >> .env
+          echo "GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback" >> .env
           echo "GITHUB_CLIENT_ID=dummy_github_id" >> .env
-
-          echo "GITHUB_CLIENT_ID=dummy_github_id" >> .env
+          echo "GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback" >> .env
 
       - name: Lint
         run: npm run lint
