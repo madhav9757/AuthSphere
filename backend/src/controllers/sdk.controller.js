@@ -54,7 +54,7 @@ export const handleSDKCallback = async (
     const sdk_request = manualSdkRequestId || req.query.sdk_request;
     if (!sdk_request) return null;
 
-    const authRequest = sdkService.getAuthRequest(sdk_request);
+    const authRequest = await sdkService.getAuthRequest(sdk_request);
     if (!authRequest) {
       return res.status(400).send("Invalid or expired request");
     }
@@ -129,7 +129,7 @@ export const token = catchAsync(async (req, res) => {
     throw new AppError("Missing code", 400);
   }
 
-  const authData = sdkService.getAuthCode(code);
+  const authData = await sdkService.getAuthCode(code);
   if (!authData) {
     throw new AppError("Invalid or expired code", 400);
   }

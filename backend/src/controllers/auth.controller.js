@@ -32,6 +32,7 @@ import {
 } from "../services/auth/microsoft.service.js";
 import authService from "../services/auth/auth.service.js";
 import { handleSDKCallback } from "./sdk.controller.js";
+import sdkService from "../services/auth/sdk.service.js";
 import { conf } from "../configs/env.js";
 import redisService from "../services/core/redis.service.js";
 import crypto from "crypto";
@@ -114,12 +115,35 @@ export async function googleCallback(req, res) {
     return res.redirect(`${conf.frontendUrl}/auth/callback?error=missing_code`);
   }
 
-  try {
-    // Parse context from state
-    let context = { cli: false, sdkRequest: null };
-    if (state === "cli") context.cli = true;
-    if (state?.startsWith("sdk:")) context.sdkRequest = state.split(":")[1];
+  // Parse context from state BEFORE the try block so we can use it in catch
+  let context = { cli: false, sdkRequest: null };
+  if (state === "cli") context.cli = true;
+  if (state?.startsWith("sdk:")) context.sdkRequest = state.split(":")[1];
 
+  // Pre-resolve the developer's redirectUri so errors go to the RIGHT place.
+  // For SDK flows the error must redirect to developer's app, not AuthSphere.
+  let sdkErrorBase = null;
+  if (context.sdkRequest) {
+    try {
+      const authReq = await sdkService.getAuthRequest(context.sdkRequest);
+      if (authReq?.redirectUri) {
+        const u = new URL(authReq.redirectUri);
+        sdkErrorBase = u.origin + u.pathname; // strip existing query params
+      }
+    } catch (_e) {
+      /* fall back to AuthSphere */
+    }
+  }
+
+  /** Route errors to the correct destination (developer app vs AuthSphere) */
+  const redirectError = (errorCode) => {
+    if (sdkErrorBase) {
+      return res.redirect(`${sdkErrorBase}?error=${errorCode}`);
+    }
+    return res.redirect(`${conf.frontendUrl}/login?error=${errorCode}`);
+  };
+
+  try {
     // Exchange code → google user (dedup guard lives inside getGoogleUser)
     const googleUser = await getGoogleUser(code);
 
@@ -206,18 +230,18 @@ export async function googleCallback(req, res) {
         return res.status(200).send("<script>window.close();</script>");
 
       case "INVALID_GRANT":
-        // The code expired or was already used by a previous attempt
-        return res.redirect(`${conf.frontendUrl}/login?error=session_expired`);
+        return redirectError("session_expired");
 
       case "USERINFO_FETCH_FAILED":
       case "USERINFO_INVALID":
       case "TOKEN_EXCHANGE_FAILED":
-        return res.redirect(
-          `${conf.frontendUrl}/login?error=google_auth_failed`,
-        );
+        return redirectError("google_auth_failed");
+
+      case "Invalid or expired SDK request":
+        return redirectError("session_expired");
 
       default:
-        return res.redirect(`${conf.frontendUrl}/login?error=auth_failed`);
+        return redirectError("auth_failed");
     }
   }
 }

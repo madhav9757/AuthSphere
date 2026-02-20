@@ -9,24 +9,31 @@ import { sendVerificationOTP } from "./email.service.js";
 import { logEvent } from "../../utils/auditLogger.js";
 import { triggerWebhook } from "../../utils/webhookSender.js";
 import { emitEvent } from "../core/socket.service.js";
+import redisService from "../core/redis.service.js";
 
 class SDKService {
   constructor() {
-    this.authRequests = new Map();
-    this.authCodes = new Map();
-    this.AUTH_REQUEST_TTL = 10 * 60 * 1000;
-    this.AUTH_CODE_TTL = 10 * 60 * 1000;
+    // ⚠️  IMPORTANT: Do NOT use plain in-memory Maps for auth state on Vercel.
+    // Vercel serverless functions are stateless — each request can hit a fresh
+    // cold instance with an empty Map. Auth requests created in /sdk/authorize
+    // would be invisible to /auth/google/callback running on a different instance.
+    // We use Redis as the shared state store with TTL-based expiry.
+    // These Maps act only as a LOCAL FALLBACK when Redis is unavailable.
+    this.authRequests = new Map(); // fallback only
+    this.authCodes = new Map(); // fallback only
+    this.AUTH_REQUEST_TTL = 10 * 60; // seconds
+    this.AUTH_CODE_TTL = 10 * 60; // seconds
 
-    // Cleanup job
+    // Cleanup job for the in-memory fallback Maps
     setInterval(
       () => {
         const now = Date.now();
         for (const [key, value] of this.authRequests.entries()) {
-          if (now - value.createdAt > this.AUTH_REQUEST_TTL)
+          if (now - value.createdAt > this.AUTH_REQUEST_TTL * 1000)
             this.authRequests.delete(key);
         }
         for (const [key, value] of this.authCodes.entries()) {
-          if (now - value.createdAt > this.AUTH_CODE_TTL)
+          if (now - value.createdAt > this.AUTH_CODE_TTL * 1000)
             this.authCodes.delete(key);
         }
       },
@@ -68,21 +75,54 @@ class SDKService {
 
   createAuthRequest(params, projectId) {
     const requestId = crypto.randomBytes(16).toString("hex");
-    this.authRequests.set(requestId, {
+    const data = {
       ...params,
       redirectUri: params.redirect_uri || params.redirectUri,
       publicKey: params.public_key || params.publicKey,
       codeChallenge: params.code_challenge || params.codeChallenge,
       codeChallengeMethod:
         params.code_challenge_method || params.codeChallengeMethod,
-      projectId,
+      projectId: projectId.toString(),
       createdAt: Date.now(),
-    });
+    };
+
+    // Primary: persist in Redis (survives across serverless instances)
+    redisService.client
+      ?.set(
+        `sdk:authRequest:${requestId}`,
+        JSON.stringify(data),
+        "EX",
+        this.AUTH_REQUEST_TTL,
+      )
+      .catch((e) =>
+        console.warn("[SDK] Redis authRequest set failed:", e.message),
+      );
+
+    // Fallback: also store in-memory for same-instance fast path
+    this.authRequests.set(requestId, data);
     return requestId;
   }
 
-  getAuthRequest(requestId) {
-    return this.authRequests.get(requestId);
+  async getAuthRequest(requestId) {
+    // 1. Check in-memory (fastest, same instance)
+    const local = this.authRequests.get(requestId);
+    if (local) return local;
+
+    // 2. Check Redis (cross-instance, serverless-safe)
+    try {
+      const raw = await redisService.client?.get(
+        `sdk:authRequest:${requestId}`,
+      );
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        this.authRequests.set(requestId, parsed); // warm local cache
+        return parsed;
+      }
+    } catch (e) {
+      console.warn("[SDK] Redis authRequest get failed:", e.message);
+    }
+
+    return undefined;
   }
 
   async handleEmailVerification(endUser, project, sdk_request, reqInfo) {
@@ -111,24 +151,58 @@ class SDKService {
 
   issueAuthCode(authRequest, endUser) {
     const code = crypto.randomBytes(32).toString("hex");
-    this.authCodes.set(code, {
-      ...authRequest,
-      endUser,
-      createdAt: Date.now(),
-    });
+    const data = { ...authRequest, endUser, createdAt: Date.now() };
+
+    // Primary: persist in Redis
+    redisService.client
+      ?.set(
+        `sdk:authCode:${code}`,
+        JSON.stringify(data),
+        "EX",
+        this.AUTH_CODE_TTL,
+      )
+      .catch((e) =>
+        console.warn("[SDK] Redis authCode set failed:", e.message),
+      );
+
+    this.authCodes.set(code, data);
     return code;
   }
 
-  getAuthCode(code) {
-    return this.authCodes.get(code);
+  async getAuthCode(code) {
+    const local = this.authCodes.get(code);
+    if (local) return local;
+
+    try {
+      const raw = await redisService.client?.get(`sdk:authCode:${code}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        this.authCodes.set(code, parsed);
+        return parsed;
+      }
+    } catch (e) {
+      console.warn("[SDK] Redis authCode get failed:", e.message);
+    }
+
+    return undefined;
   }
 
   deleteAuthCode(code) {
     this.authCodes.delete(code);
+    redisService.client
+      ?.del(`sdk:authCode:${code}`)
+      .catch((e) =>
+        console.warn("[SDK] Redis authCode del failed:", e.message),
+      );
   }
 
   deleteAuthRequest(requestId) {
     this.authRequests.delete(requestId);
+    redisService.client
+      ?.del(`sdk:authRequest:${requestId}`)
+      .catch((e) =>
+        console.warn("[SDK] Redis authRequest del failed:", e.message),
+      );
   }
 
   async verifyPKCE(authData, code_verifier) {
@@ -142,12 +216,6 @@ class SDKService {
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=/g, "");
-
-      console.log("PKCE Check:", {
-        expected: authData.codeChallenge,
-        actual: hash,
-        verifier: code_verifier,
-      });
 
       if (hash !== authData.codeChallenge)
         throw new Error("Code verifier failed");
