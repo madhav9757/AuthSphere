@@ -33,6 +33,8 @@ import {
 import authService from "../services/auth/auth.service.js";
 import { handleSDKCallback } from "./sdk.controller.js";
 import { conf } from "../configs/env.js";
+import redisService from "../services/core/redis.service.js";
+import crypto from "crypto";
 
 /* ============================================================
    SOCIAL AUTH HANDLER (TRANSPORT LAYER)
@@ -105,22 +107,24 @@ export async function googleLogin(req, res) {
 }
 
 export async function googleCallback(req, res) {
-  try {
-    const { code, state } = req.query;
-    console.log("Google callback received:", {
-      state,
-      code: code ? "EXISTS" : "MISSING",
-    });
-    if (!code) return res.status(400).send("Missing authorization code");
+  const { code, state } = req.query;
 
+  // ── Guard: missing code ──────────────────────────────────────────────
+  if (!code) {
+    return res.redirect(`${conf.frontendUrl}/auth/callback?error=missing_code`);
+  }
+
+  try {
+    // Parse context from state
     let context = { cli: false, sdkRequest: null };
     if (state === "cli") context.cli = true;
-    if (state && state.startsWith("sdk:"))
-      context.sdkRequest = state.split(":")[1];
+    if (state?.startsWith("sdk:")) context.sdkRequest = state.split(":")[1];
 
+    // Exchange code → google user (dedup guard lives inside getGoogleUser)
     const googleUser = await getGoogleUser(code);
-    await processSocialAuth(
-      res,
+
+    // Run social auth logic (creates/finds user, generates tokens)
+    const result = await authService.handleSocialAuth(
       req,
       {
         email: googleUser.email,
@@ -131,13 +135,126 @@ export async function googleCallback(req, res) {
       },
       context,
     );
-  } catch (err) {
-    console.error("Google Callback Error:", err);
-    // Duplicate callback: the first request already handled auth. Silently close.
-    if (err.message === "DUPLICATE_CALLBACK") {
-      return res.status(200).send("<script>window.close();</script>");
+
+    // ── SDK Flow ────────────────────────────────────────────────────
+    if (result.endUser) {
+      req.query.sdk_request = result.sdkRequestId;
+      return await handleSDKCallback(
+        req,
+        res,
+        result.endUser,
+        result.provider,
+        result.sdkRequestId,
+      );
     }
-    res.status(500).send("Google authentication failed");
+
+    // ── CLI Flow ────────────────────────────────────────────────────
+    const { developer, accessToken, refreshToken, cli } = result;
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+
+    if (cli === "true" || cli === true) {
+      res.cookie("accessToken", accessToken, cookieOptions);
+      res.cookie("refreshToken", refreshToken, cookieOptions);
+      try {
+        await fetch(
+          `${conf.cliUrl}/cli-update?name=${developer.username}&email=${developer.email}&id=${developer._id}&provider=Google`,
+        );
+      } catch (cliErr) {
+        console.error("[Google OAuth] CLI callback failed:", cliErr.message);
+      }
+      return res.send("<script>window.close();</script>");
+    }
+
+    // ── Standard Developer Flow: Bridge Token Pattern ───────────────────
+    // Instead of setting cookies here and redirecting, we:
+    // 1. Set the cookies immediately (they travel with the redirect)
+    // 2. Also store a short-lived bridge token in Redis so the frontend
+    //    can verify the session was established (useful for SPAs)
+    // 3. Redirect immediately — the callback URL NEVER stays in the browser
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    // Generate a short-lived bridge token for the frontend to optionally verify
+    const bridgeToken = crypto.randomBytes(32).toString("hex");
+    try {
+      await redisService.client?.set(
+        `oauth:bridge:${bridgeToken}`,
+        JSON.stringify({ userId: developer._id, provider: "Google" }),
+        "EX",
+        60, // 60 second claim window
+      );
+    } catch (_e) {
+      // Non-fatal: cookies are already set; bridge token is supplementary
+    }
+
+    // Immediately redirect — callback URL must never linger in the browser
+    return res.redirect(
+      `${conf.frontendUrl}/auth/callback?token=${bridgeToken}`,
+    );
+  } catch (err) {
+    console.error("[Google OAuth] Callback error:", err.message);
+
+    switch (err.message) {
+      case "DUPLICATE_CALLBACK":
+        // A concurrent request already handled this — close silently
+        return res.status(200).send("<script>window.close();</script>");
+
+      case "INVALID_GRANT":
+        // The code expired or was already used by a previous attempt
+        return res.redirect(`${conf.frontendUrl}/login?error=session_expired`);
+
+      case "USERINFO_FETCH_FAILED":
+      case "USERINFO_INVALID":
+      case "TOKEN_EXCHANGE_FAILED":
+        return res.redirect(
+          `${conf.frontendUrl}/login?error=google_auth_failed`,
+        );
+
+      default:
+        return res.redirect(`${conf.frontendUrl}/login?error=auth_failed`);
+    }
+  }
+}
+
+/**
+ * Frontend calls this after being redirected to /auth/callback?token=...
+ * It validates the bridge token and returns the authenticated user info.
+ * Cookies were already set during the callback redirect above.
+ *
+ * GET /auth/session/:token
+ */
+export async function exchangeSession(req, res) {
+  const { token } = req.params;
+  if (!token) return res.status(400).json({ error: "Missing session token" });
+
+  try {
+    const key = `oauth:bridge:${token}`;
+    const raw = await redisService.client?.get(key);
+    if (!raw) {
+      return res
+        .status(400)
+        .json({ error: "Session token expired or invalid" });
+    }
+
+    // One-time use: delete the bridge token immediately
+    await redisService.client?.del(key);
+
+    const { userId, provider } = JSON.parse(raw);
+    return res.status(200).json({
+      success: true,
+      message: "Authentication successful",
+      provider,
+      userId,
+    });
+  } catch (err) {
+    console.error("[Auth] Session exchange error:", err.message);
+    return res.status(500).json({ error: "Failed to exchange session token" });
   }
 }
 

@@ -1,4 +1,3 @@
-// routes/auth.routes.js
 import { Router } from "express";
 import {
   googleLogin,
@@ -17,6 +16,7 @@ import {
   bitbucketCallback,
   microsoftLogin,
   microsoftCallback,
+  exchangeSession,
 } from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -52,5 +52,10 @@ router.get("/bitbucket/callback", bitbucketCallback);
 /* ---------------------- MICROSOFT ---------------------- */
 router.get("/microsoft", microsoftLogin);
 router.get("/microsoft/callback", microsoftCallback);
+
+/* ---------------------- SESSION BRIDGE ---------------------- */
+// Frontend calls this after OAuth redirect to verify session was established.
+// GET /auth/session/:token → validates short-lived bridge token, returns provider/userId
+router.get("/session/:token", exchangeSession);
 
 export default router;
