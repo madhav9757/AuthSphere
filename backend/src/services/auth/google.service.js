@@ -1,6 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 import { conf } from "../../configs/env.js";
+import redisService from "../core/redis.service.js";
 
 /**
  * Returns Google OAuth 2.0 authorization URL
@@ -39,6 +40,32 @@ export function getGoogleAuthURL(context = { type: "dev" }) {
  */
 export async function getGoogleUser(code) {
   if (!code) throw new Error("No code provided from Google callback");
+
+  // ── Deduplication Guard ──────────────────────────────────────────────────
+  // Google auth codes are one-time-use. On Vercel (serverless), the callback
+  // can be hit twice almost simultaneously (duplicate requests / retries).
+  // We use Redis to atomically mark this code as "in-use" before exchanging.
+  // If the code was already marked, we abort immediately to avoid invalid_grant.
+  const codeKey = `oauth:google:code:${code.substring(0, 20)}`;
+  try {
+    const alreadyUsed = await redisService.client?.get(codeKey);
+    if (alreadyUsed) {
+      console.warn(
+        "Google OAuth code already used (duplicate callback). Aborting.",
+      );
+      throw new Error("DUPLICATE_CALLBACK");
+    }
+    // Mark as used for 2 minutes (codes expire in ~10 min but we only need protection for concurrent hits)
+    await redisService.client?.set(codeKey, "1", "EX", 120);
+  } catch (guardErr) {
+    if (guardErr.message === "DUPLICATE_CALLBACK") throw guardErr;
+    // If Redis is down, log and continue (don't block auth)
+    console.warn(
+      "Redis dedup guard failed (continuing without guard):",
+      guardErr.message,
+    );
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   try {
     // Exchange code for tokens

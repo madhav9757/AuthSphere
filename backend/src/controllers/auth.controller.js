@@ -133,6 +133,10 @@ export async function googleCallback(req, res) {
     );
   } catch (err) {
     console.error("Google Callback Error:", err);
+    // Duplicate callback: the first request already handled auth. Silently close.
+    if (err.message === "DUPLICATE_CALLBACK") {
+      return res.status(200).send("<script>window.close();</script>");
+    }
     res.status(500).send("Google authentication failed");
   }
 }
