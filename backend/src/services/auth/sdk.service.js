@@ -13,32 +13,8 @@ import redisService from "../core/redis.service.js";
 
 class SDKService {
   constructor() {
-    // ⚠️  IMPORTANT: Do NOT use plain in-memory Maps for auth state on Vercel.
-    // Vercel serverless functions are stateless — each request can hit a fresh
-    // cold instance with an empty Map. Auth requests created in /sdk/authorize
-    // would be invisible to /auth/google/callback running on a different instance.
-    // We use Redis as the shared state store with TTL-based expiry.
-    // These Maps act only as a LOCAL FALLBACK when Redis is unavailable.
-    this.authRequests = new Map(); // fallback only
-    this.authCodes = new Map(); // fallback only
     this.AUTH_REQUEST_TTL = 10 * 60; // seconds
     this.AUTH_CODE_TTL = 10 * 60; // seconds
-
-    // Cleanup job for the in-memory fallback Maps
-    setInterval(
-      () => {
-        const now = Date.now();
-        for (const [key, value] of this.authRequests.entries()) {
-          if (now - value.createdAt > this.AUTH_REQUEST_TTL * 1000)
-            this.authRequests.delete(key);
-        }
-        for (const [key, value] of this.authCodes.entries()) {
-          if (now - value.createdAt > this.AUTH_CODE_TTL * 1000)
-            this.authCodes.delete(key);
-        }
-      },
-      5 * 60 * 1000,
-    );
   }
 
   async validateAuthorizeRequest(params) {
@@ -86,7 +62,6 @@ class SDKService {
       createdAt: Date.now(),
     };
 
-    // Primary: persist in Redis (survives across serverless instances)
     redisService.client
       ?.set(
         `sdk:authRequest:${requestId}`,
@@ -95,31 +70,22 @@ class SDKService {
         this.AUTH_REQUEST_TTL,
       )
       .catch((e) =>
-        console.warn("[SDK] Redis authRequest set failed:", e.message),
+        console.warn("[SDK] Cache authRequest set failed:", e.message),
       );
 
-    // Fallback: also store in-memory for same-instance fast path
-    this.authRequests.set(requestId, data);
     return requestId;
   }
 
   async getAuthRequest(requestId) {
-    // 1. Check in-memory (fastest, same instance)
-    const local = this.authRequests.get(requestId);
-    if (local) return local;
-
-    // 2. Check Redis (cross-instance, serverless-safe)
     try {
       const raw = await redisService.client?.get(
         `sdk:authRequest:${requestId}`,
       );
       if (raw) {
-        const parsed = JSON.parse(raw);
-        this.authRequests.set(requestId, parsed); // warm local cache
-        return parsed;
+        return JSON.parse(raw);
       }
     } catch (e) {
-      console.warn("[SDK] Redis authRequest get failed:", e.message);
+      console.warn("[SDK] Cache authRequest get failed:", e.message);
     }
 
     return undefined;
@@ -153,7 +119,6 @@ class SDKService {
     const code = crypto.randomBytes(32).toString("hex");
     const data = { ...authRequest, endUser, createdAt: Date.now() };
 
-    // Primary: persist in Redis
     redisService.client
       ?.set(
         `sdk:authCode:${code}`,
@@ -162,46 +127,38 @@ class SDKService {
         this.AUTH_CODE_TTL,
       )
       .catch((e) =>
-        console.warn("[SDK] Redis authCode set failed:", e.message),
+        console.warn("[SDK] Cache authCode set failed:", e.message),
       );
 
-    this.authCodes.set(code, data);
     return code;
   }
 
   async getAuthCode(code) {
-    const local = this.authCodes.get(code);
-    if (local) return local;
-
     try {
       const raw = await redisService.client?.get(`sdk:authCode:${code}`);
       if (raw) {
-        const parsed = JSON.parse(raw);
-        this.authCodes.set(code, parsed);
-        return parsed;
+        return JSON.parse(raw);
       }
     } catch (e) {
-      console.warn("[SDK] Redis authCode get failed:", e.message);
+      console.warn("[SDK] Cache authCode get failed:", e.message);
     }
 
     return undefined;
   }
 
   deleteAuthCode(code) {
-    this.authCodes.delete(code);
     redisService.client
       ?.del(`sdk:authCode:${code}`)
       .catch((e) =>
-        console.warn("[SDK] Redis authCode del failed:", e.message),
+        console.warn("[SDK] Cache authCode del failed:", e.message),
       );
   }
 
   deleteAuthRequest(requestId) {
-    this.authRequests.delete(requestId);
     redisService.client
       ?.del(`sdk:authRequest:${requestId}`)
       .catch((e) =>
-        console.warn("[SDK] Redis authRequest del failed:", e.message),
+        console.warn("[SDK] Cache authRequest del failed:", e.message),
       );
   }
 

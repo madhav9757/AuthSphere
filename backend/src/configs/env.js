@@ -32,9 +32,6 @@ const _conf = {
   ).trim(),
   cliUrl: String(process.env.CLI_URL || "http://localhost:5001").trim(),
 
-  // Redis
-  redisUrl: String(process.env.REDIS_URL || "redis://localhost:6379").trim(),
-
   // Google
   GOOGLE_CLIENT_ID: String(process.env.GOOGLE_CLIENT_ID || "")
     .trim()
