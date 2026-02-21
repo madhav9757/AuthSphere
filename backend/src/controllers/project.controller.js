@@ -1,5 +1,6 @@
 import projectService from "../services/core/project.service.js";
 import { sendVerificationOTP } from "../services/auth/email.service.js";
+import { invalidateSdkCorsCache } from "../middlewares/sdkCors.middleware.js";
 
 /* ============================================================
    CREATE PROJECT
@@ -127,6 +128,11 @@ export const updateProject = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Project not found" });
+    }
+
+    // Bust the SDK CORS cache so the new allowedOrigins take effect instantly
+    if (updates.allowedOrigins !== undefined) {
+      invalidateSdkCorsCache(updated.publicKey);
     }
 
     return res.status(200).json({ success: true, data: updated });

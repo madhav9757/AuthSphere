@@ -65,10 +65,8 @@ const buildAllowedOrigins = () => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // No origin = server-to-server / curl / mobile app — always allow
       if (!origin) return callback(null, true);
 
-      // Wildcard or non-production: allow everything
       if (conf.corsOrigin === "*" || process.env.NODE_ENV !== "production") {
         return callback(null, true);
       }
@@ -78,7 +76,6 @@ app.use(
         return callback(null, true);
       }
 
-      // Log blocked origin to help diagnose misconfiguration
       logger.warn(
         `CORS blocked origin: "${origin}". Allowed: [${allowedOrigins.join(", ")}]`,
       );
