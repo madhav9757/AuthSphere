@@ -43,7 +43,7 @@ const Integration = () => {
                 </Badge>
               </div>
 
-              <h2 className="text-5xl font-black tracking-tighter mb-6 text-foreground leading-[0.9]">
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6 text-foreground leading-[0.9]">
                 Zero-Trust <br />
                 <span className="text-primary">Implementation.</span>
               </h2>

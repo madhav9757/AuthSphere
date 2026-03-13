@@ -23,9 +23,13 @@ import {
   FileCode2,
   Webhook,
   ArrowUpRight,
+  Download,
 } from "lucide-react";
+import { usePWA } from "@/hooks/usePWA";
 
 const Hero = ({ user }) => {
+  const { isInstallable, installPWA } = usePWA();
+  
   return (
     <section className="relative pt-32 pb-40 overflow-hidden bg-transparent">
       {/* Structural Orbitals - Fixed Visibility & Precision */}
@@ -78,25 +82,25 @@ const Hero = ({ user }) => {
             </div>
 
             {/* High-End Topography */}
-            <h1 className="text-7xl md:text-[100px] font-semibold tracking-[-0.04em] leading-[0.85] text-foreground mb-10">
+            <h1 className="text-5xl md:text-7xl lg:text-[100px] font-semibold tracking-[-0.04em] leading-[0.85] text-foreground mb-6 md:mb-10">
               AuthSphere <br />
               <span className="text-muted-foreground font-light">
                 Identity Mesh
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-muted-foreground font-normal leading-relaxed max-w-2xl mb-12">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-normal leading-relaxed max-w-2xl mb-10 md:mb-12">
               The distributed IAM engine for global scale. Open-source,{" "}
               <span className="text-foreground">sub-millisecond latency</span>,
               and architected for modern microservices.
             </p>
 
             {/* CTA Group */}
-            <div className="flex flex-wrap gap-4 mb-16">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-16">
               <Button
                 asChild
                 size="lg"
-                className="h-14 px-10 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all font-medium text-base"
+                className="w-full sm:w-auto h-14 px-10 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all font-medium text-base"
               >
                 <Link to={user ? "/dashboard" : "/register"}>
                   {user ? "Go to Dashboard" : "Get Started"}
@@ -107,7 +111,7 @@ const Hero = ({ user }) => {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-14 px-10 rounded-full border-border bg-transparent hover:bg-muted font-medium text-base transition-all"
+                className="w-full sm:w-auto h-14 px-10 rounded-full border-border bg-transparent hover:bg-muted font-medium text-base transition-all"
               >
                 <a
                   href="https://github.com/madhav9757/AuthSphere"
@@ -118,6 +122,16 @@ const Hero = ({ user }) => {
                   Source Code
                 </a>
               </Button>
+              {isInstallable && (
+                <Button
+                  onClick={installPWA}
+                  size="lg"
+                  className="w-full sm:w-auto h-14 px-10 rounded-full bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 border transition-all font-medium text-base animate-pulse"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Install PWA App
+                </Button>
+              )}
             </div>
 
             {/* Clean Tech Row */}

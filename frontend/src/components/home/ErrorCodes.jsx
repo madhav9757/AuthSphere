@@ -42,7 +42,7 @@ const ErrorCodes = ({ errorCodes }) => {
           </p>
         </div>
 
-        <div className="max-w-6xl mx-auto border border-border/50 rounded-3xl bg-background shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div className="max-w-6xl mx-auto border border-border/50 rounded-3xl bg-background shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-x-auto">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-transparent border-none">

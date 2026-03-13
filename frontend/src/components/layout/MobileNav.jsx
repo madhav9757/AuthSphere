@@ -2,19 +2,22 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  FolderKanban,
   Settings,
   Activity,
-  Plus,
+  Home,
+  CreditCard,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useAuthStore from "@/store/authStore";
 
 const MobileNav = () => {
   const location = useLocation();
+  const { user } = useAuthStore();
 
-  const navItems = [
+  const authenticatedNav = [
     {
-      label: "Home",
+      label: "Dashboard",
       icon: LayoutDashboard,
       href: "/dashboard",
       active: location.pathname === "/dashboard",
@@ -32,6 +35,29 @@ const MobileNav = () => {
       active: location.pathname.startsWith("/settings"),
     },
   ];
+
+  const publicNav = [
+    {
+      label: "Home",
+      icon: Home,
+      href: "/",
+      active: location.pathname === "/",
+    },
+    {
+      label: "Pricing",
+      icon: CreditCard,
+      href: "/pricing",
+      active: location.pathname === "/pricing",
+    },
+    {
+      label: "Login",
+      icon: UserCircle,
+      href: "/login",
+      active: location.pathname === "/login",
+    },
+  ];
+
+  const navItems = user ? authenticatedNav : publicNav;
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t pb-safe">
