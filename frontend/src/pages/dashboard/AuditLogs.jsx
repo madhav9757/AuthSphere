@@ -87,22 +87,22 @@ const AuditLogs = () => {
       {
         name: "Project",
         value: logs.filter((l) => l.category === "project").length,
-        color: "#10b981",
+        color: "var(--chart-2)",
       },
       {
         name: "Security",
         value: logs.filter((l) => l.category === "security").length,
-        color: "#f43f5e",
+        color: "var(--chart-1)",
       },
       {
         name: "User",
         value: logs.filter((l) => l.category === "user").length,
-        color: "#3b82f6",
+        color: "var(--chart-3)",
       },
       {
         name: "API",
         value: logs.filter((l) => l.category === "api").length,
-        color: "#f59e0b",
+        color: "var(--chart-4)",
       },
     ].filter((c) => c.value > 0),
   };

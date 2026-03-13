@@ -30,6 +30,9 @@ import {
   Github,
   Activity,
   Bell,
+  CreditCard,
+  Layers,
+  FileText,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -72,9 +75,9 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Pricing", href: "/pricing" },
-    { name: "Templates", href: "/templates" },
-    { name: "Documentation", href: "/docs" },
+    { name: "Pricing", href: "/pricing", icon: CreditCard },
+    { name: "Templates", href: "/templates", icon: Layers },
+    { name: "Documentation", href: "/docs", icon: FileText },
   ];
 
   return (
@@ -302,40 +305,59 @@ const Navbar = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-muted"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
 
               <SheetContent
                 side="right"
-                className="w-[85vw] max-w-sm p-0 bg-background border-l h-fit"
+                className="w-64 p-4 bg-background/95 backdrop-blur-xl border-l h-fit top-5 bottom-auto rounded-tl-3xl shadow-2xl"
               >
-                <div className="px-6 py-5 border-b">
-                  <SheetTitle className="text-lg font-semibold">
-                    Menu
-                  </SheetTitle>
-                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="px-2 pt-2">
+                    <SheetTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50">
+                      Explore
+                    </SheetTitle>
+                  </div>
 
-                <div className="flex flex-col h-full">
-                  <div className="px-6 py-6 flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {navLinks.map((link) => {
                       const active = location.pathname === link.href;
+                      const Icon = link.icon;
                       return (
                         <Link
                           key={link.name}
                           to={link.href}
-                          className={`rounded-lg px-4 py-3 text-base font-medium transition
-                  ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted text-foreground"
-                  }`}
+                          className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300
+                          ${
+                            active
+                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
                         >
+                          <Icon
+                            className={`h-4 w-4 shrink-0 ${active ? "animate-pulse" : "group-hover:scale-110 transition-transform"}`}
+                          />
                           {link.name}
                         </Link>
                       );
                     })}
+                  </div>
+
+                  <div className="mt-2 pt-4 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-3 rounded-2xl border-dashed py-6 text-xs"
+                      onClick={() => navigate("/login")}
+                    >
+                      <User className="h-4 w-4" />
+                      Partner Portal
+                    </Button>
                   </div>
                 </div>
               </SheetContent>

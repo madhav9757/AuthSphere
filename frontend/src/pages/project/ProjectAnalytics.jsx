@@ -42,12 +42,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 const COLORS = [
-  "#6366f1",
-  "#8b5cf6",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--primary)",
 ];
 
 const StatsCard = ({
@@ -312,12 +312,12 @@ const ProjectAnalytics = () => {
                       >
                         <stop
                           offset="5%"
-                          stopColor="hsl(var(--primary))"
+                          stopColor="var(--primary)"
                           stopOpacity={0.15}
                         />
                         <stop
                           offset="95%"
-                          stopColor="hsl(var(--primary))"
+                          stopColor="var(--primary)"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -330,12 +330,12 @@ const ProjectAnalytics = () => {
                       >
                         <stop
                           offset="5%"
-                          stopColor="#10b981"
+                          stopColor="var(--chart-2)"
                           stopOpacity={0.15}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#10b981"
+                          stopColor="var(--chart-2)"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -343,7 +343,8 @@ const ProjectAnalytics = () => {
                     <CartesianGrid
                       strokeDasharray="5 5"
                       vertical={false}
-                      className="stroke-muted/10"
+                      stroke="var(--border)"
+                      opacity={0.4}
                     />
                     <XAxis
                       dataKey="date"
@@ -352,7 +353,7 @@ const ProjectAnalytics = () => {
                       tick={{
                         fontSize: 10,
                         fontWeight: 600,
-                        fill: "hsl(var(--muted-foreground))",
+                        fill: "var(--muted-foreground)",
                       }}
                       tickFormatter={(str) => format(new Date(str), "MMM d")}
                       dy={10}
@@ -363,7 +364,7 @@ const ProjectAnalytics = () => {
                       tick={{
                         fontSize: 10,
                         fontWeight: 600,
-                        fill: "hsl(var(--muted-foreground))",
+                        fill: "var(--muted-foreground)",
                       }}
                       dx={-10}
                     />
@@ -372,7 +373,7 @@ const ProjectAnalytics = () => {
                       name="Signups"
                       type="monotone"
                       dataKey="signups"
-                      stroke="hsl(var(--primary))"
+                      stroke="var(--primary)"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorSignups)"
@@ -381,7 +382,7 @@ const ProjectAnalytics = () => {
                       name="Active Users"
                       type="monotone"
                       dataKey="active"
-                      stroke="#10b981"
+                      stroke="var(--chart-2)"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorActive)"
@@ -426,8 +427,9 @@ const ProjectAnalytics = () => {
                         </Pie>
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            borderColor: "hsl(var(--border))",
+                            backgroundColor: "var(--card)",
+                            borderColor: "var(--border)",
+                            color: "var(--foreground)",
                             borderRadius: "12px",
                             fontSize: "11px",
                             fontWeight: "bold",
