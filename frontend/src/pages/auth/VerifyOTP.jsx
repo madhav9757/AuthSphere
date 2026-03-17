@@ -99,8 +99,8 @@ const VerifyOTP = () => {
                         Back to Login
                     </Link>
 
-                    <Card className="bg-card/20 border-white/10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-primary to-transparent opacity-50" />
+                    <Card className="bg-card/80 dark:bg-card/20 border-black/5 dark:border-white/10 backdrop-blur-md shadow-xl dark:shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-primary to-transparent opacity-20 dark:opacity-50" />
                         
                         <CardHeader className="space-y-4 text-center pb-8">
                             <div className="flex justify-center flex-col items-center gap-4">
@@ -128,7 +128,7 @@ const VerifyOTP = () => {
                                         inputMode="numeric"
                                         autoComplete="one-time-code"
                                         placeholder="0 0 0 0 0 0"
-                                        className="h-14 text-center text-2xl font-mono tracking-[0.5em] bg-background/50 border-white/10 focus:ring-primary/20 focus:border-primary/30 transition-all rounded-xl"
+                                        className="h-14 text-center text-2xl font-mono tracking-[0.5em] bg-background/50 border-border dark:border-white/10 focus:ring-primary/20 focus:border-primary/30 transition-all rounded-xl"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         disabled={isVerifying}
@@ -153,7 +153,7 @@ const VerifyOTP = () => {
                             </form>
                         </CardContent>
 
-                        <CardFooter className="flex flex-col gap-4 pb-8 border-t border-white/5 pt-6 mx-6 px-0 text-center">
+                        <CardFooter className="flex flex-col gap-4 pb-8 border-t border-border dark:border-white/5 pt-6 mx-6 px-0 text-center">
                             <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground">
                                     Didn't receive the email? Check your spam folder or request a new one.
