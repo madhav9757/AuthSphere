@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as _motion } from "framer-motion";
 import {
   Activity,
   Shield,
@@ -347,7 +347,7 @@ const AuditLogs = () => {
                 <AnimatePresence mode="popLayout">
                   {filteredLogs.length > 0 ? (
                     filteredLogs.map((log) => (
-                      <motion.div
+                      <_motion.div
                         key={log._id}
                         layout
                         initial={{ opacity: 0 }}
@@ -412,7 +412,7 @@ const AuditLogs = () => {
                             )}
                           </div>
                         </div>
-                      </motion.div>
+                      </_motion.div>
                     ))
                   ) : (
                     <div className="flex flex-col items-center justify-center py-20">
