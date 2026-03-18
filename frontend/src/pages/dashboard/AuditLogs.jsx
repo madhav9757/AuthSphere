@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
   Shield,
@@ -14,21 +14,17 @@ import {
   ChevronLeft,
   Loader2,
   Clock,
-  LayoutGrid,
   MapPin,
   ShieldAlert,
   BarChart2,
   Search,
   Filter,
-  ArrowUpRight,
-  ShieldCheck,
 } from "lucide-react";
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Cell,
@@ -44,8 +40,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const EVENT_ICONS = {
   PROJECT_CREATED: <PlusCircle className="h-4 w-4 text-emerald-500" />,
@@ -65,29 +69,6 @@ const CATEGORY_COLORS = {
   user: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
   api: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
 };
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 const AuditLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -129,22 +110,22 @@ const AuditLogs = () => {
         {
           name: "Project",
           value: logs.filter((l) => l.category === "project").length,
-          color: "#10b981", // emerald-500
+          color: "#10b981",
         },
         {
           name: "Security",
           value: logs.filter((l) => l.category === "security").length,
-          color: "#f43f5e", // rose-500
+          color: "#f43f5e",
         },
         {
           name: "User",
           value: logs.filter((l) => l.category === "user").length,
-          color: "#3b82f6", // blue-500
+          color: "#3b82f6",
         },
         {
           name: "API",
           value: logs.filter((l) => l.category === "api").length,
-          color: "#f59e0b", // amber-500
+          color: "#f59e0b",
         },
       ].filter((c) => c.value > 0),
     }),
@@ -153,416 +134,385 @@ const AuditLogs = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
-        >
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-        </motion.div>
-        <p className="text-sm text-muted-foreground font-medium animate-pulse">
-          Synchronizing activity stream...
-        </p>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+        <p className="text-xs text-muted-foreground">Loading audit logs...</p>
       </div>
     );
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="container mx-auto py-12 px-6 max-w-6xl"
-    >
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="space-y-4">
-          <motion.div variants={itemVariants}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="group -ml-2 text-muted-foreground hover:text-foreground transition-all"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-              Back
-            </Button>
-          </motion.div>
-          <div className="space-y-1">
-            <motion.h1
-              variants={itemVariants}
-              className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70"
-            >
-              System Intelligence
-            </motion.h1>
-            <motion.p
-              variants={itemVariants}
-              className="text-lg text-muted-foreground max-w-2xl"
-            >
-              Continuous security monitoring and event tracking across your
-              infrastructure nodes.
-            </motion.p>
-          </div>
+    <div className="h-[93vh] w-[90vw] mx-auto py-6 pt-0 flex flex-col overflow-hidden">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b shrink-0">
+        <div className="space-y-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="group -ml-2 text-muted-foreground hover:text-foreground mb-1"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Back
+          </Button>
+          <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
+          <p className="text-sm text-muted-foreground">
+            Security monitoring and event tracking across your projects.
+          </p>
         </div>
-        <motion.div variants={itemVariants} className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
           <Badge
             variant="outline"
-            className="px-4 py-1.5 gap-2 border-primary/20 bg-primary/5 text-primary font-bold tracking-tight rounded-full"
+            className="text-[10px] font-mono uppercase tracking-wider border-primary/20 bg-primary/5 text-primary gap-1.5"
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
             </span>
-            Real-time Feed
+            Live
           </Badge>
-          <div className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-[0.2em]">
-            Node: US-EAST-1
-          </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* STATS BENTO GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      {/* STATS ROW */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-5 shrink-0">
         {[
           {
             label: "Total Events",
             value: stats.total,
             icon: Activity,
             color: "text-primary",
-            bg: "bg-primary/10",
-            desc: "Recorded logs",
           },
           {
             label: "Security Alerts",
             value: stats.security,
             icon: ShieldAlert,
             color: "text-rose-500",
-            bg: "bg-rose-500/10",
-            desc: "Risk detections",
           },
           {
-            label: "Unique Nodes",
+            label: "Unique IPs",
             value: stats.uniqueIps,
             icon: Globe,
             color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            desc: "Entry points",
           },
           {
             label: "Uptime",
             value: "99.9%",
             icon: Clock,
             color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
-            desc: "System status",
           },
-        ].map((stat, i) => (
-          <motion.div key={i} variants={itemVariants}>
-            <Card className="border-none bg-card/40 backdrop-blur-md hover:bg-card/60 transition-all duration-300 group overflow-hidden">
-              <CardContent className="p-6 relative">
-                <div
-                  className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity`}
-                >
-                  <stat.icon size={80} />
+        ].map((metric, i) => (
+          <Card
+            key={i}
+            className="bg-card/50 border-border/50 hover:bg-card/70 transition-colors"
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2 rounded-lg bg-muted ${metric.color}`}>
+                  <metric.icon className="h-4 w-4" />
                 </div>
-                <div className="flex flex-col gap-4 relative z-10">
-                  <div
-                    className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center`}
-                  >
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl font-black">{stat.value}</h3>
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 mt-1">
-                      {stat.label}
-                      <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-2">
-                      {stat.desc}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </div>
+              <div className="text-2xl font-bold mb-0.5">{metric.value}</div>
+              <p className="text-xs text-muted-foreground">{metric.label}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8 mb-12">
-        {/* LEFT COLUMN: VISUALS & TOOLS */}
-        <div className="lg:col-span-4 space-y-6">
-          <motion.div variants={itemVariants}>
-            <Card className="border-none bg-card/40 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-[0.2em] flex items-center gap-2">
-                  <BarChart2 className="h-4 w-4 text-primary" /> Traffic
-                  Distribution
-                </CardTitle>
-                <CardDescription>
-                  Event volume by protocol category
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[220px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={stats.byCategory}
-                      layout="vertical"
-                      margin={{ left: -30, right: 10 }}
-                    >
-                      <XAxis type="number" hide />
-                      <YAxis
-                        dataKey="name"
-                        type="category"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 11, fontWeight: 500 }}
-                      />
-                      <RechartsTooltip
-                        cursor={{ fill: "transparent" }}
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="bg-background/90 backdrop-blur-md border border-border px-3 py-2 rounded-lg shadow-xl text-xs">
-                                <p className="font-bold">
-                                  {payload[0].payload.name}
-                                </p>
-                                <p className="text-muted-foreground">
-                                  Volume: {payload[0].value}
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24}>
-                        {stats.byCategory.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={entry.color}
-                            fillOpacity={0.8}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Card className="border-none bg-primary/5 dark:bg-primary/10 overflow-hidden relative">
-              <div className="absolute -right-8 -bottom-8 opacity-10">
-                <Shield className="h-48 w-48 text-primary" />
-              </div>
-              <CardContent className="p-6 space-y-4 relative z-10">
-                <div className="flex items-center gap-2 text-primary">
-                  <AlertTriangle className="h-5 w-5" />
-                  <h4 className="font-black text-sm uppercase tracking-tighter">
-                    Security Protocol
-                  </h4>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Audit logs are immutable and cryptographically signed. They
-                  provide a forensic trail of all administrative actions.
-                  Unauthorized access attempts are automatically escalated to
-                  security nodes.
-                </p>
-                <div className="pt-2">
-                  <Badge
-                    variant="outline"
-                    className="text-[9px] border-primary/30 text-primary"
+      {/* MAIN CONTENT - fills remaining space */}
+      <div className="grid lg:grid-cols-12 gap-5 flex-1 min-h-0">
+        {/* LEFT SIDEBAR */}
+        <div className="lg:col-span-4 flex flex-col gap-5 min-h-0">
+          {/* Chart */}
+          <Card className="bg-card/30 border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <BarChart2 className="h-4 w-4 text-primary" />
+                Event Distribution
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Volume by category
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[140px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats.byCategory}
+                    layout="vertical"
+                    margin={{ left: -30, right: 10 }}
                   >
-                    AES-256 ENCRYPTED
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                    <XAxis type="number" hide />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 11, fontWeight: 500 }}
+                    />
+                    <RechartsTooltip
+                      cursor={{ fill: "transparent" }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-card border rounded-lg px-3 py-2 shadow-lg text-xs">
+                              <p className="font-medium">
+                                {payload[0].payload.name}
+                              </p>
+                              <p className="text-muted-foreground">
+                                Count: {payload[0].value}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                      {stats.byCategory.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.color}
+                          fillOpacity={0.7}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Info */}
+          <Card className="bg-primary/5 border-primary/10">
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-center gap-2 text-primary">
+                <Shield className="h-4 w-4" />
+                <h4 className="font-semibold text-sm">Security Info</h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Audit logs are immutable and cryptographically signed. They
+                provide a forensic trail of all administrative actions.
+              </p>
+              <Badge
+                variant="outline"
+                className="text-[10px] border-primary/20 text-primary font-mono"
+              >
+                AES-256 Encrypted
+              </Badge>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* RIGHT COLUMN: ACTIVITY STREAM */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* SEARCH & FILTER BAR */}
-          <motion.div
-            variants={itemVariants}
-            className="flex items-center gap-4"
-          >
+        {/* RIGHT: ACTIVITY STREAM */}
+        <div className="lg:col-span-8 flex flex-col min-h-0">
+          {/* Search Bar */}
+          <div className="flex items-center gap-3 mb-4 shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search event logs (e.g. project created, auth)..."
-                className="pl-10 bg-card/40 border-none h-11 focus-visible:ring-primary/20 transition-all rounded-xl"
+                placeholder="Search events..."
+                className="pl-10 h-9 bg-muted/30 border-border/50"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button
-              variant="outline"
-              className="h-11 border-none bg-card/40 backdrop-blur-md px-4 rounded-xl gap-2 font-bold text-xs uppercase tracking-widest"
-            >
-              <Filter className="h-4 w-4" /> Filter
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+              <Filter className="h-3.5 w-3.5" /> Filter
             </Button>
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants}>
-            <Card className="border-none bg-card/40 backdrop-blur-md shadow-2xl overflow-hidden min-h-[600px]">
-              <CardHeader className="border-b border-border/10 pb-6 px-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl flex items-center gap-2 font-black tracking-tight">
-                      Activity Stream
-                    </CardTitle>
-                    <CardDescription>
-                      Live system event broadcast
-                    </CardDescription>
-                  </div>
-                  <div className="text-[10px] font-bold text-muted-foreground/60 bg-muted/50 px-2 py-1 rounded">
-                    BUFFER: FIXED 50
-                  </div>
+          {/* Activity Stream Card - scrollable */}
+          <Card className="bg-card/30 border-border/50 flex-1 min-h-0 flex flex-col">
+            <CardHeader className="pb-3 border-b shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-primary" />
+                    Activity Stream
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-0.5">
+                    Live system event broadcast
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="max-h-[600px] overflow-y-auto custom-scrollbar relative px-8 py-8">
-                  {/* Modern Timeline Line */}
-                  <div className="absolute left-[51px] top-8 bottom-8 w-px bg-linear-to-b from-primary/50 via-border to-transparent opacity-30" />
+                <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                  {filteredLogs.length} events
+                </span>
+              </div>
+            </CardHeader>
 
-                  <div className="space-y-10 relative">
-                    <AnimatePresence mode="popLayout">
-                      {filteredLogs.length > 0 ? (
-                        filteredLogs.map((log) => (
-                          <motion.div
-                            key={log._id}
-                            layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            onClick={() => setSelectedLog(log)}
-                            className="flex gap-8 group relative cursor-pointer hover:bg-primary/2 p-2 -m-2 rounded-2xl transition-all"
-                          >
-                            <div className="relative z-10 pt-1">
-                              <div className="h-10 w-10 rounded-xl bg-background border-2 border-border flex items-center justify-center shadow-md group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-all duration-300 group-hover:scale-110">
-                                {EVENT_ICONS[log.action] || (
-                                  <Activity className="h-4 w-4" />
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex-1 space-y-2 pt-0.5">
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                  <span className="font-bold text-base tracking-tight text-foreground group-hover:text-primary transition-colors">
-                                    {log.action.replace(/_/g, " ")}
-                                  </span>
-                                  <Badge
-                                    className={`${CATEGORY_COLORS[log.category] || ""} border-none px-2 py-0 text-[9px] uppercase font-black tracking-widest rounded-sm`}
-                                  >
-                                    {log.category}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full">
-                                  <Clock className="h-3 w-3" />
-                                  {formatDistanceToNow(
-                                    new Date(log.createdAt),
-                                    {
-                                      addSuffix: true,
-                                    },
-                                  )}
-                                </div>
-                              </div>
-
-                              <p className="text-sm text-muted-foreground/80 leading-relaxed font-medium">
-                                {log.description}
-                              </p>
-
-                              <div className="flex items-center gap-6 pt-1 text-[10px] text-muted-foreground/40 font-mono">
-                                <span className="flex items-center gap-1.5 group-hover:text-foreground transition-colors">
-                                  <MapPin className="h-3 w-3" />{" "}
-                                  {log.metadata?.ip || "LOCAL_NODE"}
-                                </span>
-                                <span className="flex items-center gap-1.5 group-hover:text-foreground transition-colors border-l pl-4 border-border/20">
-                                  <Clock className="h-3 w-3" />
-                                  {format(
-                                    new Date(log.createdAt),
-                                    "MMM dd, HH:mm:ss",
-                                  )}
-                                </span>
-                                {log.metadata?.details?.deviceInfo && (
-                                  <span className="hidden md:flex items-center gap-1.5 group-hover:text-foreground transition-colors border-l pl-4 border-border/20">
-                                    <Globe className="h-3 w-3" />
-                                    {log.metadata.details.deviceInfo.os} /{" "}
-                                    {log.metadata.details.deviceInfo.browser}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-center py-32"
-                        >
-                          <div className="relative inline-block mb-6">
-                            <Activity className="h-16 w-16 text-muted-foreground/10 mx-auto" />
-                            <Search className="h-6 w-6 text-muted-foreground/20 absolute -right-2 -bottom-2" />
+            {/* Scrollable content area */}
+            <CardContent className="p-0 flex-1 min-h-0 overflow-y-auto">
+              <div className="divide-y divide-border/50">
+                <AnimatePresence mode="popLayout">
+                  {filteredLogs.length > 0 ? (
+                    filteredLogs.map((log) => (
+                      <motion.div
+                        key={log._id}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedLog(log)}
+                        className="flex gap-4 px-5 py-4 cursor-pointer hover:bg-muted/30 transition-colors group"
+                      >
+                        {/* Icon */}
+                        <div className="shrink-0 pt-0.5">
+                          <div className="h-8 w-8 rounded-lg bg-muted border flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                            {EVENT_ICONS[log.action] || (
+                              <Activity className="h-3.5 w-3.5" />
+                            )}
                           </div>
-                          <p className="text-muted-foreground font-bold tracking-tight">
-                            No telemetry data found matching your query
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-medium text-sm truncate">
+                                {log.action.replace(/_/g, " ")}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={`${CATEGORY_COLORS[log.category] || ""} border-none text-[9px] px-1.5 py-0 uppercase font-semibold shrink-0`}
+                              >
+                                {log.category}
+                              </Badge>
+                            </div>
+                            <span className="text-[11px] text-muted-foreground shrink-0 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDistanceToNow(new Date(log.createdAt), {
+                                addSuffix: true,
+                              })}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-muted-foreground truncate">
+                            {log.description}
                           </p>
-                          <Button
-                            variant="link"
-                            className="text-xs text-primary"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            Clear search filter
-                          </Button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+
+                          <div className="flex items-center gap-4 text-[10px] text-muted-foreground/60 font-mono">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {log.metadata?.ip || "local"}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {format(
+                                new Date(log.createdAt),
+                                "MMM dd, HH:mm:ss",
+                              )}
+                            </span>
+                            {log.metadata?.details?.deviceInfo && (
+                              <span className="hidden md:flex items-center gap-1">
+                                <Globe className="h-3 w-3" />
+                                {log.metadata.details.deviceInfo.os} /{" "}
+                                {log.metadata.details.deviceInfo.browser}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <Activity className="h-10 w-10 text-muted-foreground/20 mb-3" />
+                      <p className="text-sm text-muted-foreground font-medium">
+                        No events match your search
+                      </p>
+                      <Button
+                        variant="link"
+                        className="text-xs text-primary mt-1"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        Clear filter
+                      </Button>
+                    </div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* ACTIVITY DETAIL DIALOG */}
+      {/* DETAIL DIALOG */}
       <Dialog
         open={!!selectedLog}
         onOpenChange={(open) => !open && setSelectedLog(null)}
       >
-        <DialogContent className="max-w-xl bg-background border-border shadow-xl p-0 overflow-hidden">
+        <DialogContent
+          className="
+    w-[90vw]!
+    max-w-[50vw]!
+    h-[30vh]!
+    max-h-[60vh]!
+    p-0
+    overflow-hidden
+    rounded-2xl
+    border border-white/10
+    bg-background/80 backdrop-blur-xl
+    shadow-2xl
+
+    left-[50%] top-[50%]
+    translate-x-[-50%] translate-y-[-50%]
+  "
+        >
           {selectedLog && (
-            <div className="flex flex-col">
-              <div className="p-6 border-b border-border">
-                <DialogHeader className="space-y-1">
-                  <div className="flex items-center gap-2 mb-1">
+            <div className="flex h-full text-foreground">
+              {/* COLUMN 1 — EVENT */}
+              <div className="flex-[1.2] px-6 py-5 flex flex-col justify-between border-r border-white/10 min-w-0">
+                <div className="space-y-4">
+                  <DialogHeader className="space-y-2">
                     <Badge
-                      className={`${CATEGORY_COLORS[selectedLog.category]} border-none font-bold uppercase text-[9px] px-1.5 py-0 rounded-sm`}
+                      className={`${CATEGORY_COLORS[selectedLog.category]} text-[10px] px-2 py-0.5 uppercase tracking-wide`}
                     >
                       {selectedLog.category}
                     </Badge>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {selectedLog._id}
-                    </span>
-                  </div>
-                  <DialogTitle className="text-xl font-bold tracking-tight">
-                    {selectedLog.action.replace(/_/g, " ")}
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-muted-foreground font-medium">
-                    {selectedLog.description}
-                  </DialogDescription>
-                </DialogHeader>
+
+                    <DialogTitle className="text-lg font-semibold leading-tight tracking-tight">
+                      {selectedLog.action.replace(/_/g, " ")}
+                    </DialogTitle>
+
+                    <DialogDescription className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {selectedLog.description}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {selectedLog.metadata?.details?.deviceInfo && (
+                    <div className="flex gap-6 pt-3 border-t border-white/10">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase">
+                          OS
+                        </p>
+                        <p className="text-sm font-medium">
+                          {selectedLog.metadata.details.deviceInfo.os}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase">
+                          Browser
+                        </p>
+                        <p className="text-sm font-medium">
+                          {selectedLog.metadata.details.deviceInfo.browser}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[10px] font-mono text-muted-foreground/40 truncate">
+                  {selectedLog._id}
+                </p>
               </div>
 
-              <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh] custom-scrollbar">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              {/* COLUMN 2 — METADATA */}
+              <div className="flex-[1.2] px-6 py-5 border-r border-white/10 flex flex-col min-w-0">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
+                  Metadata
+                </p>
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
                   {[
                     {
                       label: "IP Address",
@@ -572,11 +522,11 @@ const AuditLogs = () => {
                       label: "Timestamp",
                       value: format(
                         new Date(selectedLog.createdAt),
-                        "yyyy-MM-dd HH:mm:ss",
+                        "MMM dd, yyyy HH:mm",
                       ),
                     },
                     {
-                      label: "Project ID",
+                      label: "Project",
                       value: selectedLog.projectId || "System",
                     },
                     {
@@ -584,48 +534,26 @@ const AuditLogs = () => {
                       value: selectedLog.developerId || "Unknown",
                     },
                   ].map((item, i) => (
-                    <div key={i} className="space-y-0.5">
-                      <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
+                    <div key={i}>
+                      <p className="text-[10px] uppercase text-muted-foreground mb-1">
                         {item.label}
                       </p>
-                      <p className="text-xs font-mono break-all text-foreground">
+                      <p className="font-mono text-sm break-all">
                         {item.value}
                       </p>
                     </div>
                   ))}
                 </div>
+              </div>
 
-                {selectedLog.metadata?.details?.deviceInfo && (
-                  <div className="pt-4 border-t border-border">
-                    <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground mb-3">
-                      Environment Information
-                    </p>
-                    <div className="flex gap-8">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground font-medium">
-                          OS
-                        </p>
-                        <p className="text-xs font-bold">
-                          {selectedLog.metadata.details.deviceInfo.os}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground font-medium">
-                          Browser
-                        </p>
-                        <p className="text-xs font-bold">
-                          {selectedLog.metadata.details.deviceInfo.browser}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {/* COLUMN 3 — PAYLOAD */}
+              <div className="flex-[1.6] px-6 py-5 flex flex-col min-w-0">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
+                  Raw Payload
+                </p>
 
-                <div className="pt-4 border-t border-border">
-                  <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground mb-3">
-                    Protocol Payload
-                  </p>
-                  <pre className="p-3 rounded-md bg-muted text-[11px] font-mono overflow-x-auto border border-border">
+                <div className="flex-1 rounded-xl border border-white/10 bg-black/40 overflow-hidden">
+                  <pre className="h-full w-full p-4 text-[12px] font-mono overflow-auto leading-relaxed text-green-400">
                     {JSON.stringify(
                       selectedLog.metadata?.details || {},
                       null,
@@ -634,22 +562,11 @@ const AuditLogs = () => {
                   </pre>
                 </div>
               </div>
-
-              <div className="p-4 bg-muted/20 border-t border-border flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedLog(null)}
-                  className="text-xs h-8"
-                >
-                  Close
-                </Button>
-              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 };
 

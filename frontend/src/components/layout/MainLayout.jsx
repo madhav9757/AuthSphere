@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import MobileNav from "@/components/layout/MobileNav";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { WifiOff } from "lucide-react";
 
@@ -47,7 +46,6 @@ const MainLayout = ({ children, showNavAndFooter = true }) => {
         {showNavAndFooter && (
           <>
             <Footer />
-            <MobileNav />
           </>
         )}
       </div>
