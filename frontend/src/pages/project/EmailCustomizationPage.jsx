@@ -74,7 +74,7 @@ const EmailCustomizationPage = () => {
   }
 
   return (
-    <div className="h-[93vh] w-[90vw] mx-auto flex flex-col gap-4 overflow-hidden py-4">
+    <div className="h-[91vh] w-[93vw] mx-auto flex flex-col gap-2 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b">
         <div className="flex items-center gap-4">

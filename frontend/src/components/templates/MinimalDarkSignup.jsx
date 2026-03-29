@@ -9,7 +9,7 @@ export const MinimalDarkSignup = () => {
     });
 
     return (
-        <div className="min-h-[700px] w-full flex items-center justify-center bg-[#09090b] p-4 font-sans relative overflow-hidden">
+        <div className="h-full w-full flex items-center justify-center bg-[#09090b] p-4 font-sans relative overflow-hidden">
             {/* Starfield Background Effect */}
              <div className="absolute inset-0 opacity-20">
                 <div className="absolute h-px w-px bg-white top-10 left-10 box-content shadow-[0_0_2px_#fff]"></div>
@@ -19,7 +19,7 @@ export const MinimalDarkSignup = () => {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_100%)]"></div>
              </div>
 
-            <div className="w-full max-w-md relative z-10">
+            <div className="w-full max-w-[90%] relative z-10">
                 {/* Header */}
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center w-14 h-14 bg-white/5 rounded-2xl mb-6 ring-1 ring-white/10 shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)]">

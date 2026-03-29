@@ -3,7 +3,7 @@ import { Command, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const SplitScreenLogin = () => {
     return (
-        <div className="w-full min-h-[700px] lg:grid lg:grid-cols-2 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(8,112,184,0.7)] bg-white text-slate-900 font-sans">
+        <div className="w-full h-full lg:grid lg:grid-cols-2 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(8,112,184,0.7)] bg-white text-slate-900 font-sans">
 
             {/* Left: Branding & Editorial Image */}
             <div className="hidden lg:flex flex-col justify-between bg-black relative overflow-hidden">
@@ -58,7 +58,7 @@ export const SplitScreenLogin = () => {
                   </a>
                </div>
 
-                <div className="w-full max-w-sm space-y-8">
+                <div className="w-full max-w-[80%] space-y-8">
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
                         <p className="text-slate-500">

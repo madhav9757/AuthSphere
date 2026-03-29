@@ -3,78 +3,101 @@ import { Lock, Mail, ArrowRight } from "lucide-react";
 
 export const GlassmorphismCard = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-900 relative overflow-hidden font-sans">
-      
-      {/* Dynamic Background */}
+    <div className="h-full w-full flex items-center justify-center bg-gray-900 relative overflow-hidden font-sans py-2.5">
+      {/* Dynamic Background Image */}
       <div className="absolute top-0 left-0 w-full h-full">
-         <img 
-            src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2670&auto=format&fit=crop" 
-            alt="Gradient" 
-            className="w-full h-full object-cover opacity-80"
-         />
-         <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+        <img
+          src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2670&auto=format&fit=crop"
+          alt="Gradient"
+          className="w-full h-full object-cover opacity-80"
+        />
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
       </div>
 
-      {/* Floating Blobs (Decoration) */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      {/* Fluid Decorative Blobs - No external CSS needed */}
+      <div className="absolute top-[15%] left-[10%] w-[40%] h-[40%] bg-purple-600 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 animate-pulse" />
+      <div className="absolute bottom-[10%] right-[10%] w-[45%] h-[45%] bg-blue-600 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 animate-pulse [animation-delay:2s]" />
+      <div className="absolute top-[40%] left-[30%] w-[30%] h-[30%] bg-pink-600 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 animate-pulse [animation-delay:4s]" />
 
-      {/* The Glass Card */}
-      <div className="relative w-full max-w-md p-8 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] z-10 transition-all hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.5)] hover:bg-white/15">
-        
-        <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-white/40 to-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center mb-4 shadow-inner">
-                <Lock className="w-8 h-8 text-white drop-shadow-md" />
-            </div>
-            <h2 className="text-3xl font-bold text-white drop-shadow-sm">Welcome Back</h2>
-            <p className="text-white/70 mt-2 text-sm">Enter your credentials to access the vault.</p>
+      {/* The Glass Card: Fully Fluid Structure */}
+      <div className="relative w-full max-w-[92%] md:max-w-[55%] lg:max-w-[32%] p-[10%] md:p-[6%] lg:p-[4%] rounded-[2.5rem] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-500 hover:bg-white/15">
+        {/* Header Section */}
+        <div className="flex flex-col items-center mb-[12%]">
+          <div className="w-[4.5rem] h-[4.5rem] rounded-[1.25rem] bg-gradient-to-tr from-white/30 to-white/5 backdrop-blur-md border border-white/20 flex items-center justify-center mb-[6%] shadow-inner">
+            <Lock className="w-[1.8rem] h-[1.8rem] text-white" />
+          </div>
+          <h2 className="text-[1.75rem] font-bold text-white tracking-tight text-center">
+            Security Portal
+          </h2>
+          <p className="text-white/60 mt-[2%] text-[0.85rem] text-center max-w-[85%] uppercase tracking-widest">
+            Authorized Access Only
+          </p>
         </div>
 
-        <form className="space-y-6">
-            <div className="space-y-2">
-                <label className="text-xs font-medium text-white/80 uppercase tracking-wider ml-1">Email</label>
-                <div className="relative group">
-                    <Mail className="absolute left-4 top-3.5 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
-                    <input 
-                        type="email" 
-                        placeholder="name@example.com"
-                        className="w-full bg-black/20 text-white placeholder-white/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-black/30 transition-all backdrop-blur-sm"
-                    />
-                </div>
+        {/* Fluid Form */}
+        <form className="flex flex-col gap-[1.25rem]">
+          {/* Email Field */}
+          <div className="flex flex-col gap-[0.4rem]">
+            <label className="text-[0.65rem] font-bold text-white/50 uppercase tracking-[0.2em] ml-[2%]">
+              Identity
+            </label>
+            <div className="relative group">
+              <Mail className="absolute left-[5%] top-1/2 -translate-y-1/2 h-[1.1rem] w-[1.1rem] text-white/40 group-focus-within:text-white transition-colors" />
+              <input
+                type="email"
+                placeholder="user@network.com"
+                className="w-full bg-black/30 text-white placeholder-white/20 border border-white/10 rounded-2xl py-[4.5%] pl-[16%] pr-[5%] focus:outline-none focus:border-white/40 focus:bg-black/40 transition-all backdrop-blur-md text-[0.95rem]"
+              />
             </div>
+          </div>
 
-            <div className="space-y-2">
-                <label className="text-xs font-medium text-white/80 uppercase tracking-wider ml-1">Password</label>
-                <div className="relative group">
-                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
-                    <input 
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full bg-black/20 text-white placeholder-white/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-black/30 transition-all backdrop-blur-sm"
-                    />
-                </div>
+          {/* Password Field */}
+          <div className="flex flex-col gap-[0.4rem]">
+            <label className="text-[0.65rem] font-bold text-white/50 uppercase tracking-[0.2em] ml-[2%]">
+              Passkey
+            </label>
+            <div className="relative group">
+              <Lock className="absolute left-[5%] top-1/2 -translate-y-1/2 h-[1.1rem] w-[1.1rem] text-white/40 group-focus-within:text-white transition-colors" />
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full bg-black/30 text-white placeholder-white/20 border border-white/10 rounded-2xl py-[4.5%] pl-[16%] pr-[5%] focus:outline-none focus:border-white/40 focus:bg-black/40 transition-all backdrop-blur-md text-[0.95rem]"
+              />
             </div>
+          </div>
 
-            <div className="flex items-center justify-between text-sm text-white/70">
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
-                    <input type="checkbox" className="rounded border-white/30 bg-white/10 text-pink-500 focus:ring-0 focus:ring-offset-0" />
-                    Remember me
-                </label>
-                <a href="#" className="hover:text-white hover:underline transition-colors">Forgot password?</a>
-            </div>
+          {/* Links Area */}
+          <div className="flex items-center justify-between text-[0.75rem] text-white/50 py-[1%] px-[1%]">
+            <label className="flex items-center gap-[0.5rem] cursor-pointer hover:text-white transition-colors">
+              <input
+                type="checkbox"
+                className="w-[0.9rem] h-[0.9rem] rounded border-white/20 bg-white/5 text-white focus:ring-0 focus:ring-offset-0"
+              />
+              Maintain Session
+            </label>
+            <a href="#" className="hover:text-white transition-colors">
+              Recovery
+            </a>
+          </div>
 
-            <button className="w-full bg-linear-to-r from-pink-500/80 to-purple-600/80 hover:from-pink-500 hover:to-purple-600 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 group backdrop-blur-md border border-white/10">
-                Sign In
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+          {/* Action Button */}
+          <button className="w-full bg-white text-black font-bold py-[4.5%] rounded-2xl transition-all hover:bg-opacity-90 active:scale-[0.98] flex items-center justify-center gap-[0.5rem] group text-[0.9rem] uppercase tracking-widest mt-[4%]">
+            Authenticate
+            <ArrowRight className="w-[1rem] h-[1rem] group-hover:translate-x-[20%] transition-transform" />
+          </button>
         </form>
 
-        <div className="mt-8 text-center">
-            <p className="text-white/60 text-sm">
-                Don't have an account?{" "}
-                <a href="#" className="text-white font-medium hover:underline hover:text-pink-200 transition-colors">Sign up</a>
-            </p>
+        {/* Footer */}
+        <div className="mt-[12%] text-center border-t border-white/10 pt-[8%]">
+          <p className="text-white/40 text-[0.75rem] tracking-wide">
+            New Operative?{" "}
+            <a
+              href="#"
+              className="text-white font-bold hover:text-blue-300 transition-colors uppercase ml-[1%]"
+            >
+              Enroll
+            </a>
+          </p>
         </div>
       </div>
     </div>

@@ -46,7 +46,7 @@ export const ModernSignup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] overflow-hidden relative">
+    <div className="h-full w-full flex items-center justify-center bg-[#f8fafc] overflow-hidden relative">
       {/* Background Decorative Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[120px] opacity-50" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-100 rounded-full blur-[120px] opacity-50" />
@@ -54,7 +54,7 @@ export const ModernSignup = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-md p-4"
+        className="relative z-10 w-full max-w-[90%] p-4"
       >
         <div className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-[2rem] p-8 md:p-10">
           <AnimatePresence mode="wait">

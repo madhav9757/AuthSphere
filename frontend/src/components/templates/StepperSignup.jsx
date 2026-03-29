@@ -94,14 +94,14 @@ export const StepperSignup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f9fafb] relative overflow-hidden">
+    <div className="h-full w-full flex items-center justify-center bg-[#f9fafb] relative overflow-hidden">
       {/* Ambient background */}
       <div className="absolute inset-0">
-        <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-200/40 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-blue-200/40 rounded-full blur-[120px]" />
+        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-200/40 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-[120px]" />
       </div>
 
-      <motion.div layout className="relative z-10 w-full max-w-[420px] px-6">
+      <motion.div layout className="relative z-10 w-full max-w-[90%] px-6">
         <div className="bg-white/70 backdrop-blur-xl border border-white rounded-[2.2rem] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.06)]">
           <AnimatePresence mode="wait">
             {!success ? (

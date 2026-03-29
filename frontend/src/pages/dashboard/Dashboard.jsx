@@ -31,6 +31,9 @@ import {
   FileSpreadsheet,
   Key,
   Download,
+  Search,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 import {
   AreaChart,
@@ -46,6 +49,7 @@ import { getDashboardStats } from "@/api/DeveloperAPI";
 import CreateProjectModal from "@/components/project/CreateProjectModal";
 import { format, formatDistanceToNow } from "date-fns";
 import { usePWA } from "@/hooks/usePWA";
+import { Input } from "@/components/ui/input";
 
 const Dashboard = () => {
   const { user, loading } = useAuthStore();
@@ -61,6 +65,8 @@ const Dashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activityRange, setActivityRange] = useState("30d");
 
   const fetchStats = async () => {
     try {
@@ -109,20 +115,19 @@ const Dashboard = () => {
     return null;
   };
 
+  const filteredUsers = stats.recentUsers.filter(
+    (u) =>
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.projectId.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   return (
     <div className="min-h-screen">
-      <div className="w-[95vw] mx-auto py-8 space-y-8">
+      <div className="w-[96vw] mx-auto space-y-4">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge
-                variant="outline"
-                className="text-[10px] font-mono uppercase tracking-wider border-primary/20 bg-primary/5 text-primary"
-              >
-                System Operational
-              </Badge>
-            </div>
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Welcome back, {user.username.split(" ")[0]}
@@ -150,36 +155,6 @@ const Dashboard = () => {
               <Code2 className="h-4 w-4 mr-2" />
               API Docs
             </Button>
-            <Button
-              size="sm"
-              onClick={() => setCreateOpen(true)}
-              className="whitespace-nowrap"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          </div>
-        </div>
-
-        {/* MOBILE COMPACT SUMMARY */}
-        <div className="md:hidden space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">
-                Live Sessions
-              </span>
-              <span className="text-2xl font-black">
-                {Math.round(stats.totalEndUsers * 0.4)}
-              </span>
-            </div>
-            <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-violet-500 uppercase tracking-tighter">
-                API Health
-              </span>
-              <span className="text-2xl font-black text-emerald-500">
-                99.9%
-              </span>
-            </div>
           </div>
         </div>
 
@@ -191,35 +166,62 @@ const Dashboard = () => {
               value: stats.totalProjects,
               icon: FolderKanban,
               color: "text-blue-500",
+              trend: "+2",
+              trendUp: true,
             },
             {
               label: "Total Users",
               value: stats.totalEndUsers,
               icon: Users,
               color: "text-emerald-500",
+              trend: "+12%",
+              trendUp: true,
             },
             {
               label: "Active Sessions",
               value: Math.round(stats.totalEndUsers * 0.4),
               icon: Activity,
               color: "text-violet-500",
+              trend: "-3%",
+              trendUp: false,
             },
             {
               label: "Avg Latency",
               value: "124ms",
               icon: Zap,
               color: "text-amber-500",
+              trend: "穩定",
+              trendUp: null,
             },
           ].map((metric, i) => (
             <Card
               key={i}
-              className="bg-card/50 border-border/50 hover:bg-card/70 transition-colors"
+              className="bg-card/50 border-border/50 hover:bg-card/70 transition-all hover:shadow-lg group"
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className={`p-2 rounded-lg bg-muted ${metric.color}`}>
                     <metric.icon className="h-4 w-4" />
                   </div>
+                  {metric.trend && (
+                    <div
+                      className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        metric.trendUp === true
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : metric.trendUp === false
+                            ? "bg-red-500/10 text-red-500"
+                            : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {metric.trendUp === true && (
+                        <ArrowUpRight className="h-3 w-3" />
+                      )}
+                      {metric.trendUp === false && (
+                        <ArrowDownRight className="h-3 w-3" />
+                      )}
+                      {metric.trend}
+                    </div>
+                  )}
                 </div>
                 <div className="text-2xl font-bold mb-1">
                   {statsLoading ? (
@@ -397,13 +399,26 @@ const Dashboard = () => {
           <TabsContent value="users">
             <Card className="bg-card/30 border-border/50">
               <CardHeader>
-                <CardTitle className="text-base">All Users</CardTitle>
-                <CardDescription className="text-xs">
-                  Complete user directory across all projects
-                </CardDescription>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-base">All Users</CardTitle>
+                    <CardDescription className="text-xs">
+                      Complete user directory across all projects
+                    </CardDescription>
+                  </div>
+                  <div className="relative w-full md:w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search users or projects..."
+                      className="pl-9 h-9 text-xs bg-muted/30"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="p-0">
-                {stats.recentUsers.length > 0 ? (
+                {filteredUsers.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-muted/30 border-y">
@@ -423,7 +438,7 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y">
-                        {stats.recentUsers.map((user) => (
+                        {filteredUsers.map((user) => (
                           <tr key={user._id} className="hover:bg-muted/20">
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
@@ -477,14 +492,31 @@ const Dashboard = () => {
                       Signup trends over the last 30 days
                     </CardDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/audit-logs")}
-                  >
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    Full Logs
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-muted/50 border rounded-lg p-1 hidden sm:flex">
+                      {["7d", "30d", "90d"].map((range) => (
+                        <button
+                          key={range}
+                          onClick={() => setActivityRange(range)}
+                          className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
+                            activityRange === range
+                              ? "bg-card text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {range.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/audit-logs")}
+                    >
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Full Logs
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="h-[400px]">
