@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useVerifyOTP, useResendOTP } from '@/hooks/useAuthQuery';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const otpSchema = z.object({
+  otp: z.string().length(6, "Code must be exactly 6 digits").regex(/^\d+$/, "Code must contain only numbers"),
+});
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +31,12 @@ const VerifyOTP = () => {
     const email = searchParams.get('email');
     const sdk_request = searchParams.get('sdk_request');
 
-    const [otp, setOtp] = useState('');
+    const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
+        resolver: zodResolver(otpSchema),
+        defaultValues: { otp: '' },
+    });
+    const otpValue = watch("otp");
+
     const [timer, setTimer] = useState(60);
     const [isResending, setIsResending] = useState(false);
 
@@ -46,15 +58,9 @@ const VerifyOTP = () => {
         return () => clearInterval(interval);
     }, [timer]);
 
-    const handleVerify = (e) => {
-        e.preventDefault();
-        if (otp.length !== 6) {
-            toast.error('Please enter a 6-digit code');
-            return;
-        }
-
+    const handleVerify = (data) => {
         verify(
-            { email, otp, sdk_request },
+            { email, otp: data.otp, sdk_request },
             {
                 onSuccess: (data) => {
                     toast.success('Identity verified successfully!');
@@ -117,9 +123,9 @@ const VerifyOTP = () => {
                         </CardHeader>
 
                         <CardContent className="space-y-6">
-                            <form onSubmit={handleVerify} className="space-y-6">
+                            <form onSubmit={handleSubmit(handleVerify)} className="space-y-6">
                                 <div className="space-y-3">
-                                    <Label htmlFor="otp" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                                    <Label htmlFor="otp" className={`text-xs font-bold uppercase tracking-widest ml-1 ${errors.otp ? "text-destructive" : "text-muted-foreground"}`}>
                                         6-Digit Verification Code
                                     </Label>
                                     <Input
@@ -128,18 +134,23 @@ const VerifyOTP = () => {
                                         inputMode="numeric"
                                         autoComplete="one-time-code"
                                         placeholder="0 0 0 0 0 0"
-                                        className="h-14 text-center text-2xl font-mono tracking-[0.5em] bg-background/50 border-border dark:border-white/10 focus:ring-primary/20 focus:border-primary/30 transition-all rounded-xl"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        className={`h-14 text-center text-2xl font-mono tracking-[0.5em] bg-background/50 border-border dark:border-white/10 focus:ring-primary/20 transition-all rounded-xl ${errors.otp ? "border-destructive focus:border-destructive" : "focus:border-primary/30"}`}
+                                        {...register("otp")}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setValue("otp", val, { shouldValidate: !!errors.otp });
+                                        }}
                                         disabled={isVerifying}
-                                        required
                                     />
+                                    {errors.otp && (
+                                        <p className="text-[10px] text-destructive font-medium ml-1">{errors.otp.message}</p>
+                                    )}
                                 </div>
 
                                 <Button
                                     type="submit"
                                     className="w-full h-12 text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-                                    disabled={isVerifying || otp.length !== 6}
+                                    disabled={isVerifying || otpValue.length !== 6}
                                 >
                                     {isVerifying ? (
                                         <>

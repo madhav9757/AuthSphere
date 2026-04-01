@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import {
   Mail,
   Lock,
@@ -9,14 +10,18 @@ import {
   EyeOff,
   CheckCircle2,
   Sparkles,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 export const StepperSignup = () => {
+  const { t } = useTranslation();
   const [mode, setMode] = useState("signup"); // signup | login
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const [form, setForm] = useState({
     email: "",
@@ -45,6 +50,11 @@ export const StepperSignup = () => {
 
   const nextStep = (e) => {
     e.preventDefault();
+    if (!canContinue()) {
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      return;
+    }
     setLoading(true);
 
     setTimeout(() => {
@@ -56,52 +66,53 @@ export const StepperSignup = () => {
 
   const steps = {
     1: {
-      title: "Your email address",
-      subtitle: "We’ll use this to identify and protect your account.",
+      title: t("stepper.email_title", "Your email address"),
+      subtitle: t("stepper.email_subtitle", "We’ll use this to identify and protect your account."),
       field: "email",
       type: "email",
-      placeholder: "you@example.com",
-      icon: <Mail size={18} />,
+      placeholder: t("stepper.email_placeholder", "you@example.com"),
+      icon: <Mail size={18} aria-hidden="true" />,
       hint: !form.email
-        ? "Enter a valid email address"
+        ? t("stepper.hint_email_req", "Enter a valid email address")
         : isEmailValid
-          ? "Looks good"
-          : "That email doesn’t look right",
+          ? t("stepper.hint_email_ok", "Looks good")
+          : t("stepper.hint_email_bad", "That email doesn’t look right"),
     },
     2: {
       title:
-        mode === "signup" ? "Choose your display name" : "Enter your password",
+        mode === "signup" ? t("stepper.name_title", "Choose your display name") : t("stepper.login_pw_title", "Enter your password"),
       subtitle:
         mode === "signup"
-          ? "This will appear on your profile and workspace."
-          : "Make sure no one is watching 👀",
+          ? t("stepper.name_subtitle", "This will appear on your profile and workspace.")
+          : t("stepper.login_pw_subtitle", "Make sure no one is watching 👀"),
       field: mode === "signup" ? "name" : "password",
       type: mode === "signup" ? "text" : "password",
-      placeholder: mode === "signup" ? "John Doe" : "Your secure password",
-      icon: mode === "signup" ? <User size={18} /> : <Lock size={18} />,
+      placeholder: mode === "signup" ? t("stepper.name_placeholder", "John Doe") : t("stepper.pw_placeholder", "Your secure password"),
+      icon: mode === "signup" ? <User size={18} aria-hidden="true" /> : <Lock size={18} aria-hidden="true" />,
+      hint: mode === "signup" ? null : (form.password.length < 6 ? t("stepper.hint_pw_short", "Minimum 6 characters") : null)
     },
     3: {
-      title: "Secure your account",
-      subtitle: "Use at least 10 characters for strong protection.",
+      title: t("stepper.secure_title", "Secure your account"),
+      subtitle: t("stepper.secure_subtitle", "Use at least 10 characters for strong protection."),
       field: "password",
       type: "password",
-      placeholder: "Create a strong password",
-      icon: <Lock size={18} />,
+      placeholder: t("stepper.secure_placeholder", "Create a strong password"),
+      icon: <Lock size={18} aria-hidden="true" />,
       hint: isPasswordStrong
-        ? "Strong password"
-        : "At least 10 characters required",
+        ? t("stepper.hint_pw_strong", "Strong password")
+        : t("stepper.hint_pw_req", "At least 10 characters required"),
     },
   };
 
   return (
     <div className="h-full w-full flex items-center justify-center bg-[#f9fafb] relative overflow-hidden">
       {/* Ambient background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-200/40 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-0 w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-[120px]" />
       </div>
 
-      <motion.div layout className="relative z-10 w-full max-w-[90%] px-6">
+      <motion.div layout className="relative z-10 w-full max-w-[90%] md:max-w-md px-6">
         <div className="bg-white/70 backdrop-blur-xl border border-white rounded-[2.2rem] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.06)]">
           <AnimatePresence mode="wait">
             {!success ? (
@@ -114,8 +125,8 @@ export const StepperSignup = () => {
               >
                 {/* Header */}
                 <header className="mb-10">
-                  <span className="text-xs uppercase tracking-widest text-indigo-500 font-semibold">
-                    {mode === "signup" ? "Create account" : "Welcome back"}
+                  <span className="text-xs uppercase tracking-widest text-indigo-500 font-semibold" aria-live="polite">
+                    {mode === "signup" ? t("stepper.create_acc_label", "Create account") : t("stepper.welcome_back_label", "Welcome back")}
                   </span>
                   <h1 className="text-2xl font-semibold text-slate-900 mt-2">
                     {steps[step].title}
@@ -126,7 +137,7 @@ export const StepperSignup = () => {
                 </header>
 
                 {/* Progress */}
-                <div className="flex items-center gap-2 mb-8">
+                <div className="flex items-center gap-2 mb-8" aria-hidden="true">
                   {Array.from({ length: totalSteps }).map((_, i) => (
                     <div
                       key={i}
@@ -137,15 +148,22 @@ export const StepperSignup = () => {
                   ))}
                 </div>
 
-                <form onSubmit={nextStep} className="space-y-6">
-                  <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <form onSubmit={nextStep} className="space-y-6" aria-label={t("stepper.form_aria", "Progressive Authentication Form")}>
+                  <motion.div animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}} transition={{ duration: 0.4 }} className="relative">
+                    <label htmlFor={steps[step].field} className="sr-only">
+                      {steps[step].title}
+                    </label>
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${shake ? 'text-red-500' : 'text-slate-400'}`}>
                       {steps[step].icon}
                     </div>
 
                     <input
+                      id={steps[step].field}
                       autoFocus
                       required
+                      aria-required="true"
+                      aria-invalid={shake ? "true" : "false"}
+                      aria-describedby={steps[step].hint ? "step-hint" : undefined}
                       type={
                         steps[step].type === "password" && showPassword
                           ? "text"
@@ -159,50 +177,50 @@ export const StepperSignup = () => {
                           [steps[step].field]: e.target.value,
                         })
                       }
-                      className="w-full py-4 pl-12 pr-12 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition"
+                      className={`w-full py-4 pl-12 pr-12 rounded-xl border outline-none transition ${shake ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-red-900 bg-red-50' : 'border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500'}`}
                     />
 
                     {steps[step].type === "password" && (
                       <button
                         type="button"
+                        aria-label={showPassword ? t("stepper.hide_pw", "Hide password") : t("stepper.show_pw", "Show password")}
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        className={`absolute right-4 top-1/2 -translate-y-1/2 ${shake ? 'text-red-500' : 'text-slate-400'}`}
                       >
                         {showPassword ? (
-                          <EyeOff size={18} />
+                          <EyeOff size={18} aria-hidden="true" />
                         ) : (
-                          <Eye size={18} />
+                          <Eye size={18} aria-hidden="true" />
                         )}
                       </button>
                     )}
-                  </div>
+                  </motion.div>
 
                   {steps[step].hint && (
-                    <p className="text-xs text-slate-400">{steps[step].hint}</p>
+                    <p id="step-hint" className={`text-xs ${shake ? 'text-red-500 font-medium' : 'text-slate-400'}`} role={shake ? "alert" : "status"}>
+                      {shake && <AlertCircle className="w-3 h-3 inline mr-1 -mt-0.5" />}
+                      {steps[step].hint}
+                    </p>
                   )}
 
                   <button
                     disabled={!canContinue() || loading}
-                    className="w-full bg-slate-900 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-40 transition"
+                    aria-live="polite"
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-40 transition shadow-lg shadow-slate-200"
                   >
                     {loading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1,
-                          ease: "linear",
-                        }}
-                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                      />
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                        {t("stepper.processing", "Processing...")}
+                      </>
                     ) : (
                       <>
                         {step === totalSteps
                           ? mode === "signup"
-                            ? "Create account"
-                            : "Sign in"
-                          : "Continue"}
-                        <ArrowRight size={16} />
+                            ? t("stepper.btn_create", "Create account")
+                            : t("stepper.btn_signin", "Sign in")
+                          : t("stepper.btn_continue", "Continue")}
+                        <ArrowRight size={16} aria-hidden="true" />
                       </>
                     )}
                   </button>
@@ -210,15 +228,16 @@ export const StepperSignup = () => {
 
                 {/* Footer */}
                 <div className="mt-10 text-center text-xs text-slate-400">
-                  {mode === "signup" ? "Already have an account?" : "New here?"}
+                  {mode === "signup" ? t("stepper.already_have", "Already have an account?") : t("stepper.new_here", "New here?")}
                   <button
                     onClick={() => {
                       setMode(mode === "signup" ? "login" : "signup");
                       setStep(1);
+                      setForm({ email: "", name: "", password: "" }); // Reset
                     }}
-                    className="ml-1 font-semibold text-indigo-600"
+                    className="ml-1 font-semibold text-indigo-600 hover:text-indigo-800 focus:outline-none focus:underline"
                   >
-                    {mode === "signup" ? "Sign in" : "Create account"}
+                    {mode === "signup" ? t("stepper.link_signin", "Sign in") : t("stepper.link_create", "Create account")}
                   </button>
                 </div>
               </motion.div>
@@ -227,24 +246,26 @@ export const StepperSignup = () => {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className="text-center py-8"
+                role="alert"
+                aria-live="assertive"
               >
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 className="w-10 h-10 text-green-600" />
+                  <CheckCircle2 className="w-10 h-10 text-green-600" aria-hidden="true" />
                 </div>
                 <h2 className="text-2xl font-bold">
-                  Welcome{form.name && `, ${form.name.split(" ")[0]}`}!
+                  {t("stepper.welcome", "Welcome")}{form.name && `, ${form.name.split(" ")[0]}`}!
                 </h2>
                 <p className="text-slate-500 mt-2">
-                  Your secure workspace is ready.
+                  {t("stepper.workspace_ready", "Your secure workspace is ready.")}
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-slate-400 text-xs tracking-widest uppercase">
+        <div className="mt-6 flex items-center justify-center gap-2 text-slate-400 text-xs tracking-widest uppercase" aria-hidden="true">
           <Sparkles size={14} />
-          Intelligent Authentication
+          {t("stepper.intelligent", "Intelligent Authentication")}
         </div>
       </motion.div>
     </div>

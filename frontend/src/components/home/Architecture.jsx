@@ -3,193 +3,223 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 import {
   Globe,
-  Cpu,
-  Terminal,
+  Smartphone,
+  Code2,
   ShieldCheck,
-  Zap,
-  Fingerprint,
-  Radio,
-  Server,
+  Cpu,
+  ScanFace,
+  ServerCog,
   Database,
-  Workflow,
-  BarChart3,
-  History,
-  Lock,
-  Search,
-  HardDrive,
+  GitMerge,
+  BarChart2,
+  KeyRound,
+  Layers,
   Share2,
 } from "lucide-react";
 
-const nodes = {
-  left: [
-    { id: "web", icon: Globe, title: "Web Client", color: "#3b82f6" }, // Blue
-    { id: "mobile", icon: Cpu, title: "Mobile", color: "#a855f7" }, // Purple
-    { id: "server", icon: Terminal, title: "Server SDK", color: "#f97316" }, // Orange
-    { id: "oauth", icon: ShieldCheck, title: "OAuth 2.1", color: "#ec4899" }, // Pink
-    { id: "iot", icon: Zap, title: "IoT Edge", color: "#eab308" }, // Yellow
-    {
-      id: "fingerprint",
-      icon: Fingerprint,
-      title: "Biometrics",
-      color: "#f43f5e",
-    }, // Rose
-  ],
-  right: [
-    { id: "rpc", icon: Server, title: "gRPC Cluster", color: "#10b981" }, // Emerald
-    { id: "db", icon: Database, title: "Postgres XL", color: "#f59e0b" }, // Amber
-    { id: "stream", icon: Workflow, title: "Kafka Mesh", color: "#6366f1" }, // Indigo
-    {
-      id: "analytics",
-      icon: BarChart3,
-      title: "Realtime BI",
-      color: "#06b6d4",
-    }, // Cyan
-    { id: "vault", icon: Lock, title: "Vault", color: "#8b5cf6" }, // Violet
-    { id: "cache", icon: HardDrive, title: "Redis", color: "#84cc16" }, // Lime
-  ],
-};
+/* ─── Node data ─── */
+const LEFT_NODES = [
+  { id: "web", icon: Globe, title: "Web Client", color: "#3b82f6" },
+  { id: "mobile", icon: Smartphone, title: "Mobile SDK", color: "#a855f7" },
+  { id: "server", icon: Code2, title: "Server SDK", color: "#f97316" },
+  { id: "oauth", icon: ShieldCheck, title: "OAuth 2.1", color: "#ec4899" },
+  { id: "iot", icon: Cpu, title: "IoT Edge", color: "#eab308" },
+  { id: "biometrics", icon: ScanFace, title: "Biometrics", color: "#f43f5e" },
+];
 
-const ArchNode = React.forwardRef((props, ref) => {
-  const { icon: Icon, title, color } = props;
-  return (
+const RIGHT_NODES = [
+  { id: "rpc", icon: ServerCog, title: "gRPC Cluster", color: "#10b981" },
+  { id: "db", icon: Database, title: "Postgres XL", color: "#f59e0b" },
+  { id: "stream", icon: GitMerge, title: "Kafka Mesh", color: "#6366f1" },
+  { id: "analytics", icon: BarChart2, title: "Realtime BI", color: "#06b6d4" },
+  { id: "vault", icon: KeyRound, title: "Vault HSM", color: "#8b5cf6" },
+  { id: "cache", icon: Layers, title: "Redis Cache", color: "#84cc16" },
+];
+
+/* ─── Single node card ─── */
+const ArchNode = React.forwardRef(({ icon: Icon, title, color }, ref) => (
+  <div
+    ref={ref}
+    className="group z-40 flex items-center gap-2.5 px-3 py-2.5 rounded-xl
+               bg-background border border-border/50 hover:border-border/90
+               hover:shadow-sm transition-all duration-200 w-full"
+  >
     <div
-      ref={ref}
-      className="z-40 flex items-center px-3 py-2.5 rounded-xl bg-background border border-border/60 hover:border-border transition-all duration-300 w-full max-w-[175px] group"
+      className="shrink-0 h-7 w-7 rounded-lg border flex items-center justify-center
+                 transition-transform duration-300 group-hover:scale-105"
+      style={{ backgroundColor: `${color}14`, borderColor: `${color}28` }}
     >
-      <div
-        style={{ backgroundColor: `${color}15`, borderColor: `${color}30` }}
-        className="p-2 rounded-lg border transition-all duration-500 group-hover:scale-105"
-      >
-        <Icon style={{ color: color }} className="h-4 w-4" />
-      </div>
-      <span className="ml-3 text-[11px] font-semibold tracking-tight text-foreground/70 group-hover:text-foreground transition-colors truncate">
-        {title}
-      </span>
+      <Icon style={{ color }} className="h-3.5 w-3.5" />
     </div>
-  );
-});
+    <span
+      className="text-[11px] font-semibold tracking-tight text-muted-foreground
+                     group-hover:text-foreground transition-colors truncate leading-none"
+    >
+      {title}
+    </span>
+  </div>
+));
 ArchNode.displayName = "ArchNode";
 
+/* ═══════════════════════════════════════════════════════════════ */
 const Architecture = () => {
   const containerRef = useRef(null);
   const coreRef = useRef(null);
+
   const leftRefs = React.useMemo(
-    () => nodes.left.map(() => React.createRef()),
+    () => LEFT_NODES.map(() => React.createRef()),
     [],
   );
   const rightRefs = React.useMemo(
-    () => nodes.right.map(() => React.createRef()),
+    () => RIGHT_NODES.map(() => React.createRef()),
     [],
   );
 
   return (
     <section
-      className="py-24 border-b bg-background relative overflow-hidden"
       ref={containerRef}
+      className="relative py-20 sm:py-28 overflow-hidden bg-transparent"
     >
-      {/* Precision Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      {/* ── Soft grid ── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-40 dark:opacity-20"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right,hsl(var(--border)/0.5) 1px,transparent 1px)," +
+            "linear-gradient(to bottom,hsl(var(--border)/0.5) 1px,transparent 1px)",
+          backgroundSize: "36px 36px",
+          maskImage:
+            "radial-gradient(ellipse 70% 60% at 50% 50%,#000 60%,transparent 100%)",
+        }}
+      />
 
-      <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col gap-3 mb-24 text-center">
+      <div className="relative z-10 mx-auto w-[92%] max-w-7xl">
+        {/* ── Section header ── */}
+        <div className="flex flex-col items-center gap-3 mb-16 sm:mb-20 text-center">
           <Badge
             variant="outline"
-            className="w-fit mx-auto rounded-full border-primary/20 bg-primary/5 text-primary font-bold tracking-wider text-[9px] px-3 py-0.5 uppercase"
+            className="rounded-full border-primary/20 bg-primary/5 text-primary
+                       text-[9px] font-bold tracking-[0.15em] uppercase px-3 py-0.5"
           >
             System Topology
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
+
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight
+                         text-foreground leading-tight"
+          >
             Integrated{" "}
             <span className="text-muted-foreground/40 font-light italic">
               Security Mesh
             </span>
           </h2>
-          <p className="text-base text-muted-foreground max-w-lg mx-auto font-normal">
-            A visual map of real-time data orchestration between edge nodes and
-            core infrastructure.
+
+          <p className="text-[13px] sm:text-sm text-muted-foreground max-w-sm sm:max-w-md leading-relaxed">
+            Real-time data orchestration between edge nodes and core
+            infrastructure — visualised end-to-end.
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-4 relative">
-          {/* Left Inputs */}
-          <div className="flex flex-col gap-4 w-full max-w-[175px]">
-            {nodes.left.map((node, i) => (
-              <ArchNode
-                key={node.id}
-                ref={leftRefs[i]}
-                icon={node.icon}
-                title={node.title}
-                color={node.color}
-              />
+        {/* ── Three-column diagram ── */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-6 relative">
+          {/* Left column */}
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 w-full lg:w-[185px] lg:shrink-0">
+            {LEFT_NODES.map((node, i) => (
+              <ArchNode key={node.id} ref={leftRefs[i]} {...node} />
             ))}
           </div>
 
-          {/* Core Hub - Solid & Defined */}
-          <div className="relative group">
+          {/* Center hub */}
+          <div className="relative flex items-center justify-center shrink-0 my-2 lg:my-0">
+            {/* Outer ring */}
+            <div className="absolute h-52 w-52 sm:h-60 sm:w-60 rounded-full border border-dashed border-border/30 animate-[spin_30s_linear_infinite]" />
+            <div className="absolute h-36 w-36 sm:h-40 sm:w-40 rounded-full border border-dashed border-border/20 animate-[spin_20s_linear_infinite_reverse]" />
+
+            {/* Hub card */}
             <div
               ref={coreRef}
-              className="z-50 size-44 rounded-[2.5rem] bg-background border border-border shadow-xl flex flex-col items-center justify-center p-8 text-center relative"
+              className="relative z-50 h-36 w-36 sm:h-40 sm:w-40 rounded-[2rem] bg-background
+                         border border-border shadow-[0_8px_40px_rgba(0,0,0,.08)]
+                         flex flex-col items-center justify-center gap-3 group"
             >
-              <div className="p-5 bg-muted rounded-3xl border border-border mb-4 transition-transform duration-500 group-hover:scale-110">
-                <Share2 className="h-8 w-8 text-foreground" />
+              <div
+                className="h-12 w-12 rounded-2xl bg-muted border border-border flex items-center
+                              justify-center transition-transform duration-500 group-hover:scale-105"
+              >
+                <Share2 className="h-5 w-5 text-foreground" />
               </div>
-              <span className="text-xs font-bold tracking-widest text-foreground uppercase">
-                AuthSphere
-              </span>
-              <div className="flex items-center gap-1.5 mt-2">
-                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-bold text-muted-foreground tracking-tighter uppercase">
-                  Primary Hub
+
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] font-bold tracking-[0.14em] text-foreground uppercase">
+                  AuthSphere
                 </span>
+                <div className="flex items-center gap-1">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  </span>
+                  <span className="text-[9px] font-semibold text-muted-foreground tracking-wider uppercase">
+                    Primary Hub
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Infrastructure */}
-          <div className="flex flex-col gap-4 w-full max-w-[175px]">
-            {nodes.right.map((node, i) => (
-              <ArchNode
-                key={node.id}
-                ref={rightRefs[i]}
-                icon={node.icon}
-                title={node.title}
-                color={node.color}
-              />
+          {/* Right column */}
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 w-full lg:w-[185px] lg:shrink-0">
+            {RIGHT_NODES.map((node, i) => (
+              <ArchNode key={node.id} ref={rightRefs[i]} {...node} />
             ))}
           </div>
         </div>
+
+        {/* ── Bottom legend ── */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-14 sm:mt-16">
+          {[
+            { dot: "bg-blue-500", label: "Client surfaces" },
+            { dot: "bg-primary", label: "AuthSphere core" },
+            { dot: "bg-emerald-500", label: "Backend infrastructure" },
+          ].map(({ dot, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+              <span className="text-[11px] text-muted-foreground">{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Colorful, Minimal Beams */}
-      {nodes.left.map((node, i) => (
+      {/* ── Beams: left → core ── */}
+      {LEFT_NODES.map((node, i) => (
         <AnimatedBeam
           key={`l-${node.id}`}
           containerRef={containerRef}
           fromRef={leftRefs[i]}
           toRef={coreRef}
-          duration={3 + i * 0.5}
-          curvature={i < 3 ? -40 : 40}
+          duration={3 + i * 0.45}
+          curvature={i < 3 ? -35 : 35}
           pathColor={node.color}
           gradientStartColor={node.color}
           gradientStopColor={node.color}
-          pathWidth={1.5}
-          pathOpacity={0.25} // Slightly higher opacity since we aren't using glows
+          pathWidth={1.2}
+          pathOpacity={0.22}
         />
       ))}
 
-      {nodes.right.map((node, i) => (
+      {/* ── Beams: core → right ── */}
+      {RIGHT_NODES.map((node, i) => (
         <AnimatedBeam
           key={`r-${node.id}`}
           containerRef={containerRef}
           fromRef={coreRef}
           toRef={rightRefs[i]}
           duration={3 + i * 0.4}
-          curvature={i < 3 ? -40 : 40}
+          curvature={i < 3 ? -35 : 35}
           pathColor={node.color}
           gradientStartColor={node.color}
           gradientStopColor={node.color}
-          pathWidth={1.5}
-          pathOpacity={0.25}
+          pathWidth={1.2}
+          pathOpacity={0.22}
         />
       ))}
     </section>

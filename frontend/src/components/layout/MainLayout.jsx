@@ -40,7 +40,7 @@ const MainLayout = ({ children, showNavAndFooter = true }) => {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
         {showNavAndFooter && <Navbar />}
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
         {showNavAndFooter && (
