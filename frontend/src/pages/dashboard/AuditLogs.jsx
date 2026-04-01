@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
 import { AnimatePresence, motion as _motion } from "framer-motion";
@@ -412,7 +413,6 @@ const MetaRow = ({ label, value, mono = false, copyable = false }) => {
 /* ── Detail dialog ── */
 const LogDetailDialog = ({ log, onClose }) => {
   const [showRaw, setShowRaw] = useState(false);
-  const meta = EVENT_META[log?.action];
 
   if (!log) return null;
 

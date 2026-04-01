@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Lock, User, ArrowRight, Github, Code2, Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 
 export const MinimalDarkSignup = () => {
     const { t } = useTranslation();

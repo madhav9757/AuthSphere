@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedBeam } from "@/components/ui/animated-beam";

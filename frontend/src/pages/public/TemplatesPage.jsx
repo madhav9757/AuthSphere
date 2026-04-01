@@ -181,10 +181,11 @@ const TemplatesPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const NavItem = ({ template }) => {
+  const renderNavItem = (template) => {
     const isActive = activeTab === template.id;
     return (
       <button
+        key={template.id}
         onClick={() => {
           setActiveTab(template.id);
           setIsMobileMenuOpen(false);
@@ -202,21 +203,19 @@ const TemplatesPage = () => {
     );
   };
 
-  const SectionLabel = ({ label }) => (
+  const renderSectionLabel = (label) => (
     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2 px-3 mt-1">
       {label}
     </p>
   );
 
-  const SidebarContent = () => (
+  const renderSidebarContent = () => (
     <div className="px-1 py-4 space-y-4">
       {loginTemplates.length > 0 && (
         <div>
-          <SectionLabel label="Login Views" />
+          {renderSectionLabel("Login Views")}
           <div className="space-y-0.5">
-            {loginTemplates.map((t) => (
-              <NavItem key={t.id} template={t} />
-            ))}
+            {loginTemplates.map((t) => renderNavItem(t))}
           </div>
         </div>
       )}
@@ -227,11 +226,9 @@ const TemplatesPage = () => {
 
       {signupTemplates.length > 0 && (
         <div>
-          <SectionLabel label="Signup Views" />
+          {renderSectionLabel("Signup Views")}
           <div className="space-y-0.5">
-            {signupTemplates.map((t) => (
-              <NavItem key={t.id} template={t} />
-            ))}
+            {signupTemplates.map((t) => renderNavItem(t))}
           </div>
         </div>
       )}
@@ -260,7 +257,7 @@ const TemplatesPage = () => {
                 </SheetTitle>
               </SheetHeader>
               <ScrollArea className=" h-full pr-4">
-                <SidebarContent />
+                {renderSidebarContent()}
               </ScrollArea>
             </SheetContent>
           </Sheet>
@@ -296,7 +293,7 @@ const TemplatesPage = () => {
         <aside className="w-56 shrink-0 border-r border-border/60 bg-muted/5 hidden md:flex flex-col">
           <ScrollArea className="flex-1">
             <div className="px-2">
-              <SidebarContent />
+              {renderSidebarContent()}
             </div>
           </ScrollArea>
         </aside>

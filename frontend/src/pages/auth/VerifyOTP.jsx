@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useVerifyOTP, useResendOTP } from '@/hooks/useAuthQuery';
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -31,11 +31,11 @@ const VerifyOTP = () => {
     const email = searchParams.get('email');
     const sdk_request = searchParams.get('sdk_request');
 
-    const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
+    const { register, handleSubmit, formState: { errors }, control, setValue } = useForm({
         resolver: zodResolver(otpSchema),
         defaultValues: { otp: '' },
     });
-    const otpValue = watch("otp");
+    const otpValue = useWatch({ control, name: "otp" }) || "";
 
     const [timer, setTimer] = useState(60);
     const [isResending, setIsResending] = useState(false);

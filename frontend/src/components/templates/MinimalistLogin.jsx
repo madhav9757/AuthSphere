@@ -11,7 +11,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 
 export const MinimalistLogin = () => {
   const { t } = useTranslation();

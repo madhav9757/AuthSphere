@@ -8,7 +8,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { useTranslation } from "react-i18next";
 
 export const AnimatedSignup = () => {

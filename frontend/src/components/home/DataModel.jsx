@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight } from "lucide-react";

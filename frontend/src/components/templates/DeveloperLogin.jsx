@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Terminal, ChevronRight, Cpu, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 
 export const DeveloperLogin = () => {
   const { t } = useTranslation();
   const [cursorVisible, setCursorVisible] = useState(true);
-  const [timestamp, setTimestamp] = useState("");
+  const [timestamp] = useState(() => new Date().toUTCString());
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ identity: "", passkey: "" });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setTimestamp(new Date().toUTCString());
     const interval = setInterval(() => setCursorVisible((v) => !v), 500);
     return () => clearInterval(interval);
   }, []);
