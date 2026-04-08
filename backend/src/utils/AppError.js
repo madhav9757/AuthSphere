@@ -47,7 +47,7 @@ export const handleError = (err, req, res, _next) => {
       console.error("ERROR 💥", err);
       res.status(500).json({
         status: "error",
-        message: "Something went very wrong!",
+        message: err.message,
       });
     }
   }

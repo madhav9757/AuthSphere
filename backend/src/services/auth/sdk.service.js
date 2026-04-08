@@ -43,8 +43,13 @@ class SDKService {
       throw new Error("Redirect URI not registered");
 
     const projectProvidersLower = project.providers.map((p) => p.toLowerCase());
-    if (!projectProvidersLower.includes(provider.toLowerCase()))
-      throw new Error(`${provider} not enabled`);
+    if (!projectProvidersLower.includes(provider.toLowerCase())) {
+      const error = new Error(`${provider} not enabled for project ${project.name}`);
+      error.isProviderNotEnabled = true;
+      error.provider = provider;
+      error.projectName = project.name;
+      throw error;
+    }
 
     return project;
   }

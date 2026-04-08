@@ -8,14 +8,27 @@ import logger from "../utils/logger.js";
 import { successResponse } from "../utils/response.js";
 import { catchAsync, AppError } from "../utils/AppError.js";
 
+import { renderProviderNotEnabled } from "../utils/errorPages.js";
+
 export const authRequests = sdkService.authRequests;
 export const authCodes = sdkService.authCodes;
 
 // ---------------------------
 // SDK AUTHORIZE ROUTE
 // ---------------------------
-export const authorize = catchAsync(async (req, res) => {
-  const project = await sdkService.validateAuthorizeRequest(req.query);
+export const authorize = catchAsync(async (req, res, next) => {
+  let project;
+  try {
+    project = await sdkService.validateAuthorizeRequest(req.query);
+  } catch (error) {
+    if (error.isProviderNotEnabled) {
+      return res.status(403).send(
+        renderProviderNotEnabled(error.provider, error.projectName)
+      );
+    }
+    return next(error);
+  }
+
   const requestId = sdkService.createAuthRequest(req.query, project._id);
 
   logger.info(`SDK Auth request created: ${requestId}`);
