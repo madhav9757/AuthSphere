@@ -94,6 +94,7 @@ export const refreshAccessToken = async (req, res) => {
         refreshToken: newRefreshToken,
       });
   } catch (error) {
+    console.error("Refresh token error:", error);
     return res.status(401).json({ message: "Invalid refresh token" });
   }
 };

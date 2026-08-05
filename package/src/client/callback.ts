@@ -87,8 +87,9 @@ export async function handleAuthCallback(): Promise<AuthResponse | null> {
     // ✅ VALIDATE RESPONSE STRUCTURE
     // Backend wraps response as {success, message, data: {accessToken, ...}}
     // Unwrap the envelope if present, fall back to root-level for compatibility.
-    const tokenData: AuthResponse = (data && (data as any).success && (data as any).data)
-      ? (data as any).data
+    const envelope = data as unknown as Record<string, unknown>;
+    const tokenData: AuthResponse = (envelope && envelope.success && envelope.data)
+      ? (envelope.data as AuthResponse)
       : data;
 
     if (!tokenData || !tokenData.accessToken || !tokenData.user) {

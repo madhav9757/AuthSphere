@@ -82,10 +82,10 @@ export async function loginLocal(params: { email: string; password: string }) {
     if (!loginResponse.ok) {
         // If not verified, the backend returns 403 with sdk_request
         if (loginResponse.status === 403 && data.error_code === "EMAIL_NOT_VERIFIED") {
-            const error = new AuthError(data.message);
-            (error as any).sdk_request = data.sdk_request;
-            (error as any).email = params.email;
-            throw error;
+            throw new AuthError(data.message, "EMAIL_NOT_VERIFIED", 403, {
+                sdk_request: data.sdk_request,
+                email: params.email,
+            });
         }
         throw new AuthError(data.message || "Login failed");
     }

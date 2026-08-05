@@ -2,12 +2,21 @@
 export class AuthError extends Error {
   public readonly code: string;
   public readonly statusCode?: number;
+  public readonly sdk_request?: string;
+  public readonly email?: string;
 
-  constructor(message: string, code = "AUTH_ERROR", statusCode?: number) {
+  constructor(
+    message: string,
+    code = "AUTH_ERROR",
+    statusCode?: number,
+    details?: { sdk_request?: string; email?: string }
+  ) {
     super(message);
     this.name = "AuthError";
     this.code = code;
     this.statusCode = statusCode;
+    if (details?.sdk_request) this.sdk_request = details.sdk_request;
+    if (details?.email) this.email = details.email;
 
     // Fix prototype chain for instanceof
     Object.setPrototypeOf(this, new.target.prototype);

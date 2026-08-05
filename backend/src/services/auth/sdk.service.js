@@ -8,7 +8,6 @@ import bcrypt from "bcryptjs";
 import { sendVerificationOTP } from "./email.service.js";
 import { logEvent } from "../../utils/auditLogger.js";
 import { triggerWebhook } from "../../utils/webhookSender.js";
-import { emitEvent } from "../core/socket.service.js";
 import redisService from "../core/redis.service.js";
 
 class SDKService {

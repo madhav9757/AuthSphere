@@ -58,27 +58,29 @@ export async function refreshTokens(): Promise<void> {
         throw new AuthError(errorData.message || errorData.error_description || "Token refresh failed");
       }
 
-      let data;
+      interface TokenRefreshPayload {
+        accessToken: string;
+        refreshToken: string;
+        expiresAt?: number;
+      }
+
+      let data: unknown;
       try {
-        data = await res.json() as {
-          success: boolean;
-          accessToken: string;
-          refreshToken: string;
-          expiresAt?: number;
-        };
+        data = await res.json();
       } catch {
         throw new AuthError("Invalid JSON response from server");
       }
 
-      // Backend wraps as {success, message, data: {accessToken, ...}} — unwrap if needed
-      const tokenData = (data && data.success && (data as any).data) ? (data as any).data : data;
+      const envelope = data as { success?: boolean; data?: TokenRefreshPayload };
+      const tokenData: TokenRefreshPayload = (envelope && envelope.success && envelope.data)
+        ? envelope.data
+        : (data as TokenRefreshPayload);
 
-      if (!tokenData.accessToken || !tokenData.refreshToken) {
+      if (!tokenData || !tokenData.accessToken || !tokenData.refreshToken) {
         console.error("Invalid token response:", data);
         throw new AuthError("Invalid token response from server");
       }
 
-      // ✅ STORE NEW TOKENS
       setAccessToken(tokenData.accessToken);
       setRefreshToken(tokenData.refreshToken);
 

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import os from "os";
 import { conf } from "./configs/env.js";
 
 const homeHandler = (req, res) => {

@@ -331,6 +331,7 @@ export async function discordLogin(req, res) {
     const context = getContextFromReq(req);
     res.redirect(getDiscordAuthURL(context));
   } catch (err) {
+    console.error("Discord Login Error:", err);
     res.status(500).send("Could not start Discord login");
   }
 }
@@ -371,6 +372,7 @@ export async function linkedinLogin(req, res) {
   try {
     res.redirect(getLinkedinAuthURL(getContextFromReq(req)));
   } catch (err) {
+    console.error("LinkedIn Login Error:", err);
     res.status(500).send("LinkedIn login failed");
   }
 }
@@ -405,6 +407,7 @@ export async function gitlabLogin(req, res) {
   try {
     res.redirect(getGitlabAuthURL(getContextFromReq(req)));
   } catch (err) {
+    console.error("GitLab Login Error:", err);
     res.status(500).send("GitLab login failed");
   }
 }
@@ -439,6 +442,7 @@ export async function twitchLogin(req, res) {
   try {
     res.redirect(getTwitchAuthURL(getContextFromReq(req)));
   } catch (err) {
+    console.error("Twitch Login Error:", err);
     res.status(500).send("Twitch login failed");
   }
 }
@@ -473,6 +477,7 @@ export async function bitbucketLogin(req, res) {
   try {
     res.redirect(getBitbucketAuthURL(getContextFromReq(req)));
   } catch (err) {
+    console.error("Bitbucket Login Error:", err);
     res.status(500).send("Bitbucket login failed");
   }
 }
@@ -507,6 +512,7 @@ export async function microsoftLogin(req, res) {
   try {
     res.redirect(getMicrosoftAuthURL(getContextFromReq(req)));
   } catch (err) {
+    console.error("Microsoft Login Error:", err);
     res.status(500).send("Microsoft login failed");
   }
 }

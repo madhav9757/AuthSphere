@@ -2,7 +2,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Project from "../src/models/project.model.js";
-import { conf } from "../src/configs/env.js";
 
 dotenv.config();
 
