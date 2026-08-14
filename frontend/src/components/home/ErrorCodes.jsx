@@ -1,109 +1,88 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-const ErrorCodes = ({ errorCodes }) => {
-  // Mapping codes to specific colors for a "colorful" but sleek look
-  const getStatusColor = (code) => {
-    if (code.startsWith("4")) return "text-amber-500 bg-amber-500";
-    if (code.startsWith("5")) return "text-rose-500 bg-rose-500";
-    return "text-blue-500 bg-blue-500";
-  };
+// 1. Move static data outside the component to prevent recreation on every render
+const STATUS_COLORS = [
+  { text: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+  {
+    text: "text-amber-500",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+  },
+  {
+    text: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+  },
+  { text: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  {
+    text: "text-indigo-500",
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/20",
+  },
+  {
+    text: "text-purple-500",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/20",
+  },
+  { text: "text-cyan-500", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
+  { text: "text-pink-500", bg: "bg-pink-500/10", border: "border-pink-500/20" },
+];
+
+const getStatusTheme = (index) => STATUS_COLORS[index % STATUS_COLORS.length];
+
+// 2. Extract the row item into its own component for better readability
+const ErrorCodeRow = ({ error, index }) => {
+  const theme = getStatusTheme(index);
+  const Icon = error.icon;
 
   return (
-    <section className="py-24 bg-transparent relative border-b overflow-hidden">
-      {/* Subtle background detail */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_2px_2px,rgba(0,0,0,0.03)_1px,transparent_0)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-
-      <div className="container max-w-7xl mx-auto px-6 relative z-10">
-        <div className="mb-20 flex flex-col items-start">
-          <Badge
-            variant="outline"
-            className="mb-4 border-primary/20 bg-primary/5 text-primary font-bold uppercase tracking-widest text-[9px] px-3 py-0.5 rounded-full"
+    <div className="flex flex-col sm:flex-row group border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+      {/* Left Column: Icon & Code */}
+      <div className="flex items-center gap-5 sm:w-2/5 p-5 sm:border-r border-border/50 shrink-0">
+        {Icon && (
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-none border ${theme.border} ${theme.bg}`}
           >
-            Dictionary v1.0
-          </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
-            Predictable{" "}
-            <span className="text-muted-foreground/40 font-light italic">
-              Response Flows
-            </span>
-          </h2>
-          <p className="text-lg text-muted-foreground font-normal max-w-2xl leading-relaxed">
-            Deterministic status codes for sub-millisecond error resolution.
-            Automate handling with machine-readable primitives.
-          </p>
-        </div>
-
-        <div className="max-w-6xl mx-auto border border-border/50 rounded-3xl bg-background shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-muted/40">
-              <TableRow className="hover:bg-transparent border-none">
-                <TableHead className="w-[160px] font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80 py-5 pl-10">
-                  Identifier
-                </TableHead>
-                <TableHead className="w-[220px] font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
-                  Status Label
-                </TableHead>
-                <TableHead className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80 pr-10">
-                  Resolution Analysis
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {errorCodes.map((err) => {
-                const colors = getStatusColor(err.code).split(" ");
-                return (
-                  <TableRow
-                    key={err.code}
-                    className="group border-b border-border/40 last:border-0 transition-all hover:bg-muted/20"
-                  >
-                    {/* The "Colorful" minimalist accent bar */}
-                    <TableCell className="relative font-mono text-sm py-8 pl-10">
-                      <div
-                        className={`absolute left-0 top-0 bottom-0 w-[3px] ${colors[1]} opacity-0 group-hover:opacity-100 transition-opacity`}
-                      />
-                      <span className={`${colors[0]} font-bold tracking-tight`}>
-                        {err.code}
-                      </span>
-                    </TableCell>
-
-                    <TableCell className="font-semibold text-[15px] text-foreground">
-                      {err.message}
-                    </TableCell>
-
-                    <TableCell className="pr-10">
-                      <div className="flex flex-col gap-3">
-                        <p className="text-muted-foreground text-sm leading-relaxed max-w-xl">
-                          {err.description}
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-tight py-1 px-3 rounded-full border ${colors[1]}/10 ${colors[0]} bg-background`}
-                          >
-                            <span className="text-muted-foreground/60">
-                              Solution:
-                            </span>
-                            {err.solution}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+            <Icon className={`w-5 h-5 ${theme.text}`} />
+          </div>
+        )}
+        <span
+          className={`font-mono text-base font-bold tracking-tight ${theme.text}`}
+        >
+          {error.code}
+        </span>
       </div>
-    </section>
+
+      {/* Right Column: Title & Description */}
+      <div className="flex flex-col justify-center p-5 sm:w-3/5">
+        <span className="text-base font-semibold text-foreground mb-1.5 tracking-tight">
+          {error.message}
+        </span>
+        <span className="text-sm text-foreground/80 leading-relaxed font-medium">
+          {error.description}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const ErrorCodes = ({ errorCodes = [] }) => {
+  return (
+    <div className="relative border border-border/50 rounded-none bg-background flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.1)]">
+      {/* Header */}
+      <div className="px-6 py-5 border-b border-border/50 bg-muted/10">
+        <h3 className="text-sm font-bold text-foreground/90 tracking-[0.2em] uppercase">
+          API Response Codes
+        </h3>
+      </div>
+
+      {/* List container */}
+      <div className="flex flex-col max-h-112.5 overflow-y-auto no-scrollbar">
+        {errorCodes.map((err, index) => (
+          <ErrorCodeRow key={err.code} error={err} index={index} />
+        ))}
+      </div>
+    </div>
   );
 };
 

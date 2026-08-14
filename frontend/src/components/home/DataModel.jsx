@@ -57,13 +57,6 @@ const DataModel = ({ schemas = [] }) => (
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14 sm:mb-16">
         <div className="flex flex-col gap-3">
-          <Badge
-            variant="outline"
-            className="w-fit rounded-full border-primary/20 bg-primary/5 text-primary
-                       text-[9px] font-bold tracking-[0.15em] uppercase px-3 py-0.5"
-          >
-            Technical Specification
-          </Badge>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-tight">
             Data{" "}
             <span className="text-muted-foreground/40 font-light italic">

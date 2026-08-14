@@ -97,14 +97,6 @@ const Architecture = () => {
       <div className="relative z-10 mx-auto w-[92%] max-w-7xl">
         {/* ── Section header ── */}
         <div className="flex flex-col items-center gap-3 mb-16 sm:mb-20 text-center">
-          <Badge
-            variant="outline"
-            className="rounded-full border-primary/20 bg-primary/5 text-primary
-                       text-[9px] font-bold tracking-[0.15em] uppercase px-3 py-0.5"
-          >
-            System Topology
-          </Badge>
-
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight
                          text-foreground leading-tight"

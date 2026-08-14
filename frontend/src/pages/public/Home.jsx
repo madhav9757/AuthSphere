@@ -7,10 +7,24 @@ import Architecture from "@/components/home/Architecture";
 import FunctionalSpecs from "@/components/home/FunctionalSpecs";
 import Integration from "@/components/home/Integration";
 import DataModel from "@/components/home/DataModel";
-import ErrorCodes from "@/components/home/ErrorCodes";
 
 // Icons
-import { Fingerprint, Terminal, Shield, Globe, Box, Database, Zap } from "lucide-react";
+import {
+  Fingerprint,
+  Terminal,
+  Shield,
+  Globe,
+  Box,
+  Database,
+  Zap,
+  Key,
+  Clock,
+  Activity,
+  Lock,
+  Smartphone,
+  Ban,
+  FileSignature,
+} from "lucide-react";
 
 // -----------------------------------------------------------------------------
 // STATIC CONTENT
@@ -83,6 +97,7 @@ const ERROR_CODES = [
       "The provided API key is missing, malformed, or has been revoked.",
     solution:
       "Check your dashboard for the correct key and ensure it has the required scopes.",
+    icon: Key,
   },
   {
     code: "AUTH_002",
@@ -91,6 +106,7 @@ const ERROR_CODES = [
       "The access token has expired. Use the refresh token to obtain a new one.",
     solution:
       "Implement refresh token rotation and call /oauth/token to get a new access_token.",
+    icon: Clock,
   },
   {
     code: "AUTH_003",
@@ -99,6 +115,7 @@ const ERROR_CODES = [
       "Too many requests from this IP or Project. Please wait before retrying.",
     solution:
       "Check X-RateLimit headers and implement exponential backoff in your client.",
+    icon: Activity,
   },
   {
     code: "AUTH_004",
@@ -107,6 +124,7 @@ const ERROR_CODES = [
       "The requested scope is invalid or exceeds the permissions of the client.",
     solution:
       "Verify the scope names in your request and ensure the project allows them.",
+    icon: Lock,
   },
   {
     code: "AUTH_005",
@@ -115,6 +133,7 @@ const ERROR_CODES = [
       "Multi-factor authentication is required to complete this action.",
     solution:
       "Redirect the user to the MFA verification flow before retrying the operation.",
+    icon: Smartphone,
   },
   {
     code: "AUTH_006",
@@ -123,6 +142,7 @@ const ERROR_CODES = [
       "The request origin (CORS) is not whitelisted for this project.",
     solution:
       "Add your domain to the 'Allowed Origins' list in the project settings.",
+    icon: Globe,
   },
   {
     code: "AUTH_007",
@@ -131,6 +151,7 @@ const ERROR_CODES = [
       "The project has been deactivated due to billing or policy violations.",
     solution:
       "Contact AuthSphere support or check the billing console for status updates.",
+    icon: Ban,
   },
   {
     code: "AUTH_008",
@@ -139,6 +160,7 @@ const ERROR_CODES = [
       "The webhook HMAC-SHA256 signature does not match the payload.",
     solution:
       "Ensure you are using the correct Webhook Secret and raw request body.",
+    icon: FileSignature,
   },
 ];
 
@@ -223,13 +245,13 @@ const Home = () => {
       />
 
       {/* Top-right primary glow */}
-      <div className="fixed top-0 right-0 w-[600px] h-[500px] pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_top_right,rgba(var(--primary-rgb),0.07),transparent_70%)]" />
+      <div className="fixed top-0 right-0 w-150 h-125 pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_top_right,rgba(var(--primary-rgb),0.07),transparent_70%)]" />
 
       {/* Bottom-left secondary glow */}
-      <div className="fixed bottom-0 left-0 w-[500px] h-[400px] pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_bottom_left,rgba(var(--primary-rgb),0.04),transparent_70%)]" />
+      <div className="fixed bottom-0 left-0 w-125 h-100 pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_bottom_left,rgba(var(--primary-rgb),0.04),transparent_70%)]" />
 
       {/* ── Sections ── */}
-      <Hero user={user} />
+      <Hero user={user} errorCodes={ERROR_CODES} />
 
       <SectionDivider />
       <Architecture />
@@ -242,9 +264,6 @@ const Home = () => {
 
       <SectionDivider />
       <DataModel schemas={DATA_SCHEMAS} />
-
-      <SectionDivider />
-      <ErrorCodes errorCodes={ERROR_CODES} />
     </div>
   );
 };

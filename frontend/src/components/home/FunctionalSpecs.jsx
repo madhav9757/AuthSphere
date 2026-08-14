@@ -92,14 +92,6 @@ const FunctionalSpecs = ({ modules }) => (
     <div className="mx-auto w-[92%] max-w-7xl">
       {/* ── Header ── */}
       <div className="flex flex-col gap-3 mb-14 sm:mb-20">
-        <Badge
-          variant="outline"
-          className="w-fit rounded-full border-primary/20 bg-primary/5 text-primary
-                     text-[9px] font-bold tracking-[0.15em] uppercase px-3 py-0.5"
-        >
-          Technical Architecture
-        </Badge>
-
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-tight">
           Enterprise{" "}
           <span className="text-muted-foreground/40 font-light italic">
