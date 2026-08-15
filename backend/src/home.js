@@ -2,44 +2,45 @@ import mongoose from "mongoose";
 import { conf } from "./configs/env.js";
 
 const homeHandler = (req, res) => {
-    const memory = process.memoryUsage();
-    const uptime = process.uptime();
+  const memory = process.memoryUsage();
+  const uptime = process.uptime();
 
-    const apiData = {
-        status: "OPERATIONAL",
-        service: "AUTH-SPHERE-V2",
-        metadata: {
-            version: "2.4.0-STABLE",
-            environment: (process.env.NODE_ENV || "production").toUpperCase(),
-            region: process.env.VERCEL_REGION || "LOCAL-NODE",
-            timestamp: new Date().toISOString()
-        },
-        system: {
-            uptime: `${Math.floor(uptime / 3600)}H ${Math.floor((uptime % 3600) / 60)}M ${Math.floor(uptime % 60)}S`,
-            memory_usage: `${Math.round(memory.rss / 1024 / 1024)}MB`,
-            node_v: process.version,
-            platform: process.platform.toUpperCase(),
-            db_status: mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED"
-        },
-        api_gateways: {
-            authentication: "/api/v1/auth",
-            developer_hub: "/api/v1/developers",
-            management: "/api/v1/projects",
-            monitoring: "/health"
-        },
-        resources: {
-            documentation: "https://authsphere.vercel.app/docs",
-            repository: "https://github.com/madhav9757/AuthSphere",
-            status_page: "https://status.authsphere.io",
-            frontend: conf.frontendUrl
-        }
-    };
+  const apiData = {
+    status: "OPERATIONAL",
+    service: "AUTH-SPHERE-V2",
+    metadata: {
+      version: "2.4.0-STABLE",
+      environment: (process.env.NODE_ENV || "production").toUpperCase(),
+      region: process.env.VERCEL_REGION || "LOCAL-NODE",
+      timestamp: new Date().toISOString(),
+    },
+    system: {
+      uptime: `${Math.floor(uptime / 3600)}H ${Math.floor((uptime % 3600) / 60)}M ${Math.floor(uptime % 60)}S`,
+      memory_usage: `${Math.round(memory.rss / 1024 / 1024)}MB`,
+      node_v: process.version,
+      platform: process.platform.toUpperCase(),
+      db_status:
+        mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED",
+    },
+    api_gateways: {
+      authentication: "/api/v1/auth",
+      developer_hub: "/api/v1/developers",
+      management: "/api/v1/projects",
+      monitoring: "/health",
+    },
+    resources: {
+      documentation: "https://authsphere.vercel.app/docs",
+      repository: "https://github.com/madhav9757/AuthSphere",
+      status_page: "https://status.authsphere.io",
+      frontend: conf.frontendUrl,
+    },
+  };
 
-    if (req.accepts('html')) {
-        return res.send(generateTerminalUI(apiData));
-    }
+  if (req.accepts("html")) {
+    return res.send(generateTerminalUI(apiData));
+  }
 
-    res.status(200).json(apiData);
+  res.status(200).json(apiData);
 };
 
 const generateTerminalUI = (d) => `
@@ -101,7 +102,7 @@ const generateTerminalUI = (d) => `
                     </div>
                     <div class="flex justify-between items-end border-b pb-4 border-gray-100">
                         <span class="text-[10px] font-bold text-gray-400">DATABASE</span>
-                        <span class="text-xl font-800 ${d.system.db_status === 'CONNECTED' ? 'text-black' : 'text-red-500'}">${d.system.db_status}</span>
+                        <span class="text-xl font-800 ${d.system.db_status === "CONNECTED" ? "text-black" : "text-red-500"}">${d.system.db_status}</span>
                     </div>
                     <div class="flex justify-between items-end border-b pb-4 border-gray-100">
                         <span class="text-[10px] font-bold text-gray-400">ACTIVE_UPTIME</span>
@@ -142,7 +143,9 @@ const generateTerminalUI = (d) => `
             <section class="space-y-4">
                 <h2 class="text-[10px] font-800 tracking-[0.5em] text-gray-400 uppercase">Gateway_Mappings</h2>
                 <div class="border-2 border-black bg-white divide-y-2 divide-black">
-                    ${Object.entries(d.api_gateways).map(([name, path]) => `
+                    ${Object.entries(d.api_gateways)
+                      .map(
+                        ([name, path]) => `
                         <a href="${path}" class="p-6 flex justify-between items-center group hover:bg-black transition-colors">
                             <div>
                                 <span class="text-[9px] font-bold text-gray-400 group-hover:text-gray-500 uppercase block mb-1">${name}</span>
@@ -152,7 +155,9 @@ const generateTerminalUI = (d) => `
                                 <span class="font-bold">-></span>
                             </div>
                         </a>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
             </section>
 

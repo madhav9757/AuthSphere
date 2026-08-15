@@ -35,6 +35,7 @@ The backend architecture enforces authentication on all requests and issues veri
 ## API Endpoints
 
 ### Projects & Users
+
 - `GET /api/v1/projects`: List identity environments.
 - `POST /api/v1/projects`: Provision a new identity vault.
 - `PATCH /api/v1/projects/:id`: Update security policies and configuration.
@@ -43,6 +44,7 @@ The backend architecture enforces authentication on all requests and issues veri
 - `PATCH /api/v1/projects/:id/users/:uId/block`: Toggle account suspension.
 
 ### Authentication
+
 - `POST /api/v1/auth/exchange`: PKCE code exchange.
 - `POST /api/v1/auth/register`: Local identity creation.
 - `POST /api/v1/auth/login-local`: Email/password authentication.
@@ -50,12 +52,14 @@ The backend architecture enforces authentication on all requests and issues veri
 - `GET /auth/:provider`: Initiation point for social identity handshakes.
 
 ### Telemetry
+
 - `GET /api/v1/logs/:projectId`: Retrieve audit logs.
 - `POST /api/v1/webhooks/test`: Dispatch test payloads to configured endpoints.
 
 ## Setup
 
 **Prerequisites**:
+
 - Node.js v20+
 - MongoDB instance (local or Atlas)
 
@@ -75,10 +79,10 @@ The API will run on `http://localhost:8000` by default.
 
 ## Tech Stack
 
-| Component         | Technology                            |
-| ----------------- | ------------------------------------- |
-| **Runtime**       | Node.js (v20+)                        |
-| **Framework**     | Express.js                            |
-| **Database**      | MongoDB, Mongoose ODM                 |
-| **Security**      | Node `crypto`, JWT (RFC 7519)         |
-| **Email**         | Nodemailer                            |
+| Component     | Technology                    |
+| ------------- | ----------------------------- |
+| **Runtime**   | Node.js (v20+)                |
+| **Framework** | Express.js                    |
+| **Database**  | MongoDB, Mongoose ODM         |
+| **Security**  | Node `crypto`, JWT (RFC 7519) |
+| **Email**     | Nodemailer                    |

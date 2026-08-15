@@ -29,7 +29,7 @@ export async function getDiscordUser(code) {
       code,
       redirect_uri: conf.DISCORD_REDIRECT_URI,
     }),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
   );
 
   const { access_token } = tokenRes.data;

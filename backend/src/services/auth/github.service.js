@@ -46,11 +46,12 @@ export async function getGithubUser(code) {
         headers: {
           Accept: "application/json",
         },
-      }
+      },
     );
 
     const { access_token } = tokenRes.data;
-    if (!access_token) throw new Error("Failed to get access token from GitHub");
+    if (!access_token)
+      throw new Error("Failed to get access token from GitHub");
 
     // Get user info
     const userRes = await axios.get("https://api.github.com/user", {

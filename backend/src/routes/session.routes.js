@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { 
-  getDeveloperSessions, 
-  revokeSession, 
-  revokeAllOtherSessions, 
-  revokeAllSessions 
+import {
+  getDeveloperSessions,
+  revokeSession,
+  revokeAllOtherSessions,
+  revokeAllSessions,
 } from "../controllers/session.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { trackSessionActivity } from "../middlewares/sessionTracker.js";

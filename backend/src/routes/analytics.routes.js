@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { 
-  getAnalyticsOverview, 
-  getAnalyticsCharts, 
-  getRecentActivity 
+import {
+  getAnalyticsOverview,
+  getAnalyticsCharts,
+  getRecentActivity,
 } from "../controllers/analytics.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { trackSessionActivity } from "../middlewares/sessionTracker.js";

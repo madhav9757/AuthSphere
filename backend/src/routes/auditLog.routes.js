@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getProjectLogs, getGlobalLogs } from "../controllers/auditLog.controller.js";
+import {
+  getProjectLogs,
+  getGlobalLogs,
+} from "../controllers/auditLog.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();

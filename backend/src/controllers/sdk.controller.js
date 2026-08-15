@@ -22,9 +22,9 @@ export const authorize = catchAsync(async (req, res, next) => {
     project = await sdkService.validateAuthorizeRequest(req.query);
   } catch (error) {
     if (error.isProviderNotEnabled) {
-      return res.status(403).send(
-        renderProviderNotEnabled(error.provider, error.projectName)
-      );
+      return res
+        .status(403)
+        .send(renderProviderNotEnabled(error.provider, error.projectName));
     }
     return next(error);
   }

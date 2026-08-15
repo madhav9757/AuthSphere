@@ -43,7 +43,9 @@ class SDKService {
 
     const projectProvidersLower = project.providers.map((p) => p.toLowerCase());
     if (!projectProvidersLower.includes(provider.toLowerCase())) {
-      const error = new Error(`${provider} not enabled for project ${project.name}`);
+      const error = new Error(
+        `${provider} not enabled for project ${project.name}`,
+      );
       error.isProviderNotEnabled = true;
       error.provider = provider;
       error.projectName = project.name;
