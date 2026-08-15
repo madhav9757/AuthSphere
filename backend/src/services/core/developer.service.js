@@ -155,7 +155,7 @@ class DeveloperService {
     });
     const projects = await Project.find({ developer: developerId }).select(
       "_id",
-    );
+    ).lean();
     const projectIds = projects.map((p) => p._id);
 
     const totalEndUsers = await EndUser.countDocuments({
@@ -166,7 +166,8 @@ class DeveloperService {
       .select("email username createdAt projectId")
       .populate("projectId", "name")
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(5)
+      .lean();
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
