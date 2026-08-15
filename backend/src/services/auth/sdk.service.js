@@ -9,6 +9,7 @@ import { sendVerificationOTP } from "./email.service.js";
 import { logEvent } from "../../utils/auditLogger.js";
 import { triggerWebhook } from "../../utils/webhookSender.js";
 import redisService from "../core/redis.service.js";
+import { isPasswordPwned } from "../../utils/pwnedPassword.js";
 
 class SDKService {
   constructor() {
@@ -242,6 +243,11 @@ class SDKService {
       projectId: project._id,
     });
     if (existingUser) throw new Error("User already exists");
+
+    const isPwned = await isPasswordPwned(password);
+    if (isPwned) {
+      throw new Error("This password has appeared in a data breach. Please choose a different password.");
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const user = await EndUser.create({

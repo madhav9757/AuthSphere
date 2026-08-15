@@ -23,6 +23,8 @@ const developerSessionSchema = new mongoose.Schema(
       city: String,
       country: String,
       countryCode: String,
+      latitude: Number,
+      longitude: Number,
     },
     isValid: {
       type: Boolean,
