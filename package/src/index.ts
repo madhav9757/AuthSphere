@@ -95,4 +95,9 @@ const AuthSphere = {
   toggleUserVerification,
 };
 
+// =======================
+// React
+// =======================
+export * from "./react";
+
 export default AuthSphere;
