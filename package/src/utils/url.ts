@@ -1,6 +1,6 @@
 export function buildUrl(
   base: string,
-  params: Record<string, string | undefined>
+  params: Record<string, string | undefined>,
 ) {
   const url = new URL(base);
 

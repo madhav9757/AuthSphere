@@ -3,11 +3,26 @@
 import { handleAuthCallback } from "./client/callback";
 import { redirectToLogin } from "./client/redirect";
 import { initAuth } from "./config/options";
-import { getToken, getUser, isAuthenticated, logout, ensureAuthenticated } from "./client/session";
+import {
+  getToken,
+  getUser,
+  isAuthenticated,
+  logout,
+  ensureAuthenticated,
+} from "./client/session";
 import { fetchWithAuth } from "./client/api";
 import { AuthError } from "./utils/errors";
-import { register, loginLocal, verifyOTP, resendVerification } from "./client/local";
-import { getProjectUsers, deleteProjectUser, toggleUserVerification } from "./client/management";
+import {
+  register,
+  loginLocal,
+  verifyOTP,
+  resendVerification,
+} from "./client/local";
+import {
+  getProjectUsers,
+  deleteProjectUser,
+  toggleUserVerification,
+} from "./client/management";
 
 // =======================
 // Config
@@ -19,8 +34,17 @@ export { initAuth } from "./config/options";
 // =======================
 export { redirectToLogin } from "./client/redirect";
 export { handleAuthCallback } from "./client/callback";
-export { register, loginLocal, verifyOTP, resendVerification } from "./client/local";
-export { getProjectUsers, deleteProjectUser, toggleUserVerification } from "./client/management";
+export {
+  register,
+  loginLocal,
+  verifyOTP,
+  resendVerification,
+} from "./client/local";
+export {
+  getProjectUsers,
+  deleteProjectUser,
+  toggleUserVerification,
+} from "./client/management";
 
 // =======================
 // Session
@@ -46,12 +70,7 @@ export { AuthError } from "./utils/errors";
 // =======================
 // Types
 // =======================
-export type {
-  AuthConfig,
-  AuthUser,
-  AuthTokens,
-  Provider,
-} from "./types";
+export type { AuthConfig, AuthUser, AuthTokens, Provider } from "./types";
 
 // =======================
 // Default Export (DX Friendly)

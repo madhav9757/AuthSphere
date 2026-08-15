@@ -8,7 +8,7 @@ import { AuthError } from "../utils/errors";
  */
 export async function fetchWithAuth(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const attemptFetch = async (token: string): Promise<Response> => {
     const headers = new Headers({
@@ -34,11 +34,13 @@ export async function fetchWithAuth(
   if (!token) throw new AuthError("Not authenticated");
 
   let response: Response;
- try {
-  response = await attemptFetch(token);
-} catch (err) {
-  throw new AuthError("Network error. Please try again: " + (err as Error).message);
-}
+  try {
+    response = await attemptFetch(token);
+  } catch (err) {
+    throw new AuthError(
+      "Network error. Please try again: " + (err as Error).message,
+    );
+  }
 
   // Retry once on 401
   if (response.status === 401) {

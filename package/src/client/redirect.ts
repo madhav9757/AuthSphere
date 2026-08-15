@@ -1,5 +1,9 @@
 import { getConfig } from "../config/options";
-import { generateCodeVerifier, generateCodeChallenge, generateState } from "../utils/pkce";
+import {
+  generateCodeVerifier,
+  generateCodeChallenge,
+  generateState,
+} from "../utils/pkce";
 import { setCodeVerifier, setState } from "../utils/storage";
 import type { Provider } from "../types";
 
@@ -36,7 +40,9 @@ export async function redirectToLogin(provider: Provider): Promise<void> {
     state,
   };
 
-  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  Object.entries(params).forEach(([key, value]) =>
+    url.searchParams.set(key, value),
+  );
 
   // Redirect
   window.location.href = url.toString();

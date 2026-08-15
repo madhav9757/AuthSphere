@@ -65,7 +65,9 @@ const onLogin = async (credentials) => {
     if (res?.redirect) window.location.href = res.redirect;
   } catch (err) {
     if (err.message.includes("not verified")) {
-      navigate(`/verify-otp?email=${credentials.email}&sdk_request=${err.sdk_request}`);
+      navigate(
+        `/verify-otp?email=${credentials.email}&sdk_request=${err.sdk_request}`,
+      );
     }
   }
 };
@@ -90,7 +92,9 @@ const Callback = () => {
     processed.current = true;
 
     if (params.get("error") === "email_not_verified") {
-      navigate(`/verify-otp?email=${params.get("email")}&sdk_request=${params.get("sdk_request") || ""}`);
+      navigate(
+        `/verify-otp?email=${params.get("email")}&sdk_request=${params.get("sdk_request") || ""}`,
+      );
       return;
     }
 
@@ -133,22 +137,24 @@ const onVerify = async (otpValue) => {
 
 ## Configuration Options
 
-| Parameter     | Type      | Required | Description                                              |
-| ------------- | --------- | -------- | -------------------------------------------------------- |
-| `publicKey`   | `string`  | Yes      | Your project's public key from the dashboard.            |
-| `projectId`   | `string`  | Yes      | Your project's unique ID.                                |
-| `redirectUri` | `string`  | Yes      | URI to redirect back to after authentication.            |
-| `baseUrl`     | `string`  | No       | Custom API server URL (Defaults to Production).          |
-| `storage`     | `Storage` | No       | Custom persistence layer (Defaults to `localStorage`).   |
+| Parameter     | Type      | Required | Description                                            |
+| ------------- | --------- | -------- | ------------------------------------------------------ |
+| `publicKey`   | `string`  | Yes      | Your project's public key from the dashboard.          |
+| `projectId`   | `string`  | Yes      | Your project's unique ID.                              |
+| `redirectUri` | `string`  | Yes      | URI to redirect back to after authentication.          |
+| `baseUrl`     | `string`  | No       | Custom API server URL (Defaults to Production).        |
+| `storage`     | `Storage` | No       | Custom persistence layer (Defaults to `localStorage`). |
 
 ## Security
 
 The SDK adheres to IETF Best Current Practices (BCP) for browser-based applications:
+
 - Enforces PKCE to prevent authorization code injection.
 - Validates state to protect against Cross-Site Request Forgery (CSRF).
 - Minimizes token exposure in compliance with strict Content Security Policies (CSP).
 
 ---
+
 <div align="center">
   <p>Licensed under the <a href="./LICENSE">MIT License</a>.</p>
 </div>

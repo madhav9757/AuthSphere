@@ -43,9 +43,9 @@ export async function refreshTokens(): Promise<void> {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             refreshToken, // Changed from refresh_token to refreshToken
-            publicKey,    // Changed from public_key to publicKey
+            publicKey, // Changed from public_key to publicKey
           }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -55,7 +55,11 @@ export async function refreshTokens(): Promise<void> {
         } catch {
           errorData = { message: `HTTP ${res.status}: Token refresh failed` };
         }
-        throw new AuthError(errorData.message || errorData.error_description || "Token refresh failed");
+        throw new AuthError(
+          errorData.message ||
+            errorData.error_description ||
+            "Token refresh failed",
+        );
       }
 
       interface TokenRefreshPayload {
@@ -71,10 +75,14 @@ export async function refreshTokens(): Promise<void> {
         throw new AuthError("Invalid JSON response from server");
       }
 
-      const envelope = data as { success?: boolean; data?: TokenRefreshPayload };
-      const tokenData: TokenRefreshPayload = (envelope && envelope.success && envelope.data)
-        ? envelope.data
-        : (data as TokenRefreshPayload);
+      const envelope = data as {
+        success?: boolean;
+        data?: TokenRefreshPayload;
+      };
+      const tokenData: TokenRefreshPayload =
+        envelope && envelope.success && envelope.data
+          ? envelope.data
+          : (data as TokenRefreshPayload);
 
       if (!tokenData || !tokenData.accessToken || !tokenData.refreshToken) {
         console.error("Invalid token response:", data);
@@ -84,7 +92,7 @@ export async function refreshTokens(): Promise<void> {
       setAccessToken(tokenData.accessToken);
       setRefreshToken(tokenData.refreshToken);
 
-      const expiresAt = tokenData.expiresAt || (Date.now() + 24 * 60 * 60 * 1000);
+      const expiresAt = tokenData.expiresAt || Date.now() + 24 * 60 * 60 * 1000;
       setExpiresAt(expiresAt);
 
       console.log("✓ Tokens refreshed successfully");
@@ -99,10 +107,11 @@ export async function refreshTokens(): Promise<void> {
     } catch (err) {
       console.error("Token refresh failed:", err);
       clearAll();
-      const error = err instanceof AuthError 
-        ? err 
-        : new AuthError("Token refresh failed: " + (err as Error).message);
-      
+      const error =
+        err instanceof AuthError
+          ? err
+          : new AuthError("Token refresh failed: " + (err as Error).message);
+
       if (onAuthError) onAuthError(error);
       throw error;
     } finally {

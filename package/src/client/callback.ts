@@ -22,7 +22,8 @@ export async function handleAuthCallback(): Promise<AuthResponse | null> {
 
   // ✅ CHECK FOR ERROR RESPONSE
   if (error) {
-    const errorDescription = params.get("error_description") || "Authentication failed";
+    const errorDescription =
+      params.get("error_description") || "Authentication failed";
     throw new AuthError(`${error}: ${errorDescription}`);
   }
 
@@ -74,7 +75,11 @@ export async function handleAuthCallback(): Promise<AuthResponse | null> {
       } catch {
         errorData = { message: `HTTP ${res.status}: Token exchange failed` };
       }
-      throw new AuthError(errorData.message || errorData.error_description || "Token exchange failed");
+      throw new AuthError(
+        errorData.message ||
+          errorData.error_description ||
+          "Token exchange failed",
+      );
     }
 
     let data: AuthResponse;
@@ -88,9 +93,10 @@ export async function handleAuthCallback(): Promise<AuthResponse | null> {
     // Backend wraps response as {success, message, data: {accessToken, ...}}
     // Unwrap the envelope if present, fall back to root-level for compatibility.
     const envelope = data as unknown as Record<string, unknown>;
-    const tokenData: AuthResponse = (envelope && envelope.success && envelope.data)
-      ? (envelope.data as AuthResponse)
-      : data;
+    const tokenData: AuthResponse =
+      envelope && envelope.success && envelope.data
+        ? (envelope.data as AuthResponse)
+        : data;
 
     if (!tokenData || !tokenData.accessToken || !tokenData.user) {
       console.error("Invalid token response:", data);
@@ -103,7 +109,7 @@ export async function handleAuthCallback(): Promise<AuthResponse | null> {
     setUser(tokenData.user);
 
     // Use expiresAt from server or calculate default
-    const expiresAt = tokenData.expiresAt || (Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = tokenData.expiresAt || Date.now() + 24 * 60 * 60 * 1000;
     setExpiresAt(expiresAt);
 
     console.log("✓ Authentication successful:", tokenData.user.email);

@@ -9,7 +9,7 @@ export class AuthError extends Error {
     message: string,
     code = "AUTH_ERROR",
     statusCode?: number,
-    details?: { sdk_request?: string; email?: string }
+    details?: { sdk_request?: string; email?: string },
   ) {
     super(message);
     this.name = "AuthError";
