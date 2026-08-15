@@ -173,9 +173,17 @@ const Login = () => {
               </div>
 
               {/* Local Login Form */}
-              <form onSubmit={handleSubmit(handleLocalLogin)} className="space-y-3">
+              <form
+                onSubmit={handleSubmit(handleLocalLogin)}
+                className="space-y-3"
+              >
                 <div className="space-y-2">
-                  <Label htmlFor="email" className={errors.email ? "text-destructive" : ""}>Email</Label>
+                  <Label
+                    htmlFor="email"
+                    className={errors.email ? "text-destructive" : ""}
+                  >
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -185,12 +193,19 @@ const Login = () => {
                     className={errors.email ? "border-destructive" : ""}
                   />
                   {errors.email && (
-                    <p className="text-[10px] text-destructive font-medium">{errors.email.message}</p>
+                    <p className="text-[10px] text-destructive font-medium">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className={errors.password ? "text-destructive" : ""}>Password</Label>
+                    <Label
+                      htmlFor="password"
+                      className={errors.password ? "text-destructive" : ""}
+                    >
+                      Password
+                    </Label>
                     <Link
                       to="#"
                       className="text-xs text-primary hover:underline"
@@ -206,7 +221,9 @@ const Login = () => {
                     className={errors.password ? "border-destructive" : ""}
                   />
                   {errors.password && (
-                    <p className="text-[10px] text-destructive font-medium">{errors.password.message}</p>
+                    <p className="text-[10px] text-destructive font-medium">
+                      {errors.password.message}
+                    </p>
                   )}
                 </div>
 

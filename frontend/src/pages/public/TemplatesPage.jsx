@@ -292,9 +292,7 @@ const TemplatesPage = () => {
         {/* Sidebar (Desktop only) */}
         <aside className="w-56 shrink-0 border-r border-border/60 bg-muted/5 hidden md:flex flex-col">
           <ScrollArea className="flex-1">
-            <div className="px-2">
-              {renderSidebarContent()}
-            </div>
+            <div className="px-2">{renderSidebarContent()}</div>
           </ScrollArea>
         </aside>
 

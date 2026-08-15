@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'sonner';
-import { routes } from './routes/routes';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import useAuthStore, { setupAuthListeners } from './store/authStore';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+import { routes } from "./routes/routes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import useAuthStore, { setupAuthListeners } from "./store/authStore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,11 +28,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           {routes.map((route, index) => (
-            <Route
-              key={index}
-              path={route.path}
-              element={route.element}
-            />
+            <Route key={index} path={route.path} element={route.element} />
           ))}
         </Routes>
         <Toaster position="top-right" richColors />

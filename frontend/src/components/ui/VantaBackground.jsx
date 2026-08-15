@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import useThemeStore from '@/store/themeStore';
+import React, { useEffect, useRef } from "react";
+import useThemeStore from "@/store/themeStore";
 
 const VantaBackground = ({ children }) => {
   const vantaRef = useRef(null);
@@ -7,30 +7,38 @@ const VantaBackground = ({ children }) => {
   const { theme } = useThemeStore();
 
   useEffect(() => {
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
 
     // Wait for VANTA to be available
     const initVanta = () => {
-      if (window.VANTA && window.THREE && vantaRef.current && !vantaEffect.current) {
+      if (
+        window.VANTA &&
+        window.THREE &&
+        vantaRef.current &&
+        !vantaEffect.current
+      ) {
         vantaEffect.current = window.VANTA.BIRDS({
           el: vantaRef.current,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
+          minHeight: 200.0,
+          minWidth: 200.0,
+          scale: 1.0,
+          scaleMobile: 1.0,
           backgroundColor: isDark ? 0x0e0e0e : 0xffffff,
           color1: isDark ? 0x6366f1 : 0x000000,
           color2: isDark ? 0x8b5cf6 : 0x333333,
           quantity: 3,
           birdSize: 1.2,
-          wingSpan: 25.00,
-          speedLimit: 5.00,
-          separation: 50.00,
-          alignment: 50.00,
-          cohesion: 50.00
+          wingSpan: 25.0,
+          speedLimit: 5.0,
+          separation: 50.0,
+          alignment: 50.0,
+          cohesion: 50.0,
         });
       } else if (vantaEffect.current) {
         // Update existing effect
@@ -64,7 +72,10 @@ const VantaBackground = ({ children }) => {
   }, []);
 
   return (
-    <div ref={vantaRef} className="relative min-h-screen w-full transition-colors duration-500">
+    <div
+      ref={vantaRef}
+      className="relative min-h-screen w-full transition-colors duration-500"
+    >
       {children}
     </div>
   );

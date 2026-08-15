@@ -449,8 +449,8 @@ const ProjectUsersCard = ({ projectId }) => {
                 <p className="text-sm font-medium mb-0.5">Verification</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Verified users have confirmed email ownership. If email
-                  verification is required in settings, unverified users
-                  cannot authenticate.
+                  verification is required in settings, unverified users cannot
+                  authenticate.
                 </p>
               </div>
             </div>
@@ -461,9 +461,9 @@ const ProjectUsersCard = ({ projectId }) => {
               <div>
                 <p className="text-sm font-medium mb-0.5">Blocking</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Blocked users retain their profile for auditing but all
-                  login attempts are rejected. Active sessions are
-                  terminated immediately.
+                  Blocked users retain their profile for auditing but all login
+                  attempts are rejected. Active sessions are terminated
+                  immediately.
                 </p>
               </div>
             </div>
@@ -474,9 +474,9 @@ const ProjectUsersCard = ({ projectId }) => {
               <div>
                 <p className="text-sm font-medium mb-0.5">Deletion</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Permanently removes the user and all associated data.
-                  This is irreversible — consider blocking instead to
-                  preserve audit trails.
+                  Permanently removes the user and all associated data. This is
+                  irreversible — consider blocking instead to preserve audit
+                  trails.
                 </p>
               </div>
             </div>

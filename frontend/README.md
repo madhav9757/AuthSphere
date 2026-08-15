@@ -26,6 +26,7 @@ The frontend serves as the primary visual interface for platform engineers to ma
 ## Setup
 
 **Prerequisites**:
+
 - Node.js v20+
 - AuthSphere API Engine running locally (or pointing to production)
 
@@ -44,11 +45,11 @@ The application will be available at `http://localhost:5173`.
 
 ## Tech Stack
 
-| Component         | Technology                            |
-| ----------------- | ------------------------------------- |
-| **Framework**     | React 19, Vite                        |
-| **Styling**       | Tailwind CSS v4                       |
-| **UI Components** | Radix UI, Shadcn UI                   |
-| **State**         | Zustand                               |
-| **Animations**    | Framer Motion                         |
-| **Routing**       | React Router 7                        |
+| Component         | Technology          |
+| ----------------- | ------------------- |
+| **Framework**     | React 19, Vite      |
+| **Styling**       | Tailwind CSS v4     |
+| **UI Components** | Radix UI, Shadcn UI |
+| **State**         | Zustand             |
+| **Animations**    | Framer Motion       |
+| **Routing**       | React Router 7      |

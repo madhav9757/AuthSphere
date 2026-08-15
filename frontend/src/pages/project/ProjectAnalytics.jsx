@@ -328,10 +328,7 @@ const ProjectAnalytics = () => {
                             stroke="none"
                           >
                             {providerData.map((_, i) => (
-                              <Cell
-                                key={i}
-                                fill={COLORS[i % COLORS.length]}
-                              />
+                              <Cell key={i} fill={COLORS[i % COLORS.length]} />
                             ))}
                           </Pie>
                           <Tooltip
@@ -372,10 +369,7 @@ const ProjectAnalytics = () => {
                           <span className="text-[10px] font-bold">
                             {(
                               (item.value /
-                                providerData.reduce(
-                                  (a, b) => a + b.value,
-                                  0,
-                                )) *
+                                providerData.reduce((a, b) => a + b.value, 0)) *
                               100
                             ).toFixed(0)}
                             %
@@ -414,10 +408,7 @@ const ProjectAnalytics = () => {
                   { name: "Session Store", status: "Active" },
                   { name: "Edge Network", status: "Active" },
                 ].map((service, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between"
-                  >
+                  <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                       <span className="text-xs">{service.name}</span>

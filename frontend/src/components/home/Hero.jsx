@@ -178,8 +178,8 @@ const Hero = ({ user, errorCodes }) => {
             </div>
           </div>
           {/* ─── Right: Interactive/Data Demo ─── */}
-          <div 
-            className="flex-1 w-full lg:max-w-xl xl:max-w-2xl relative anim-fade-up" 
+          <div
+            className="flex-1 w-full lg:max-w-xl xl:max-w-2xl relative anim-fade-up"
             style={{ animationDelay: "400ms" }}
           >
             <ErrorCodes errorCodes={errorCodes} />

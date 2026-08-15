@@ -276,10 +276,8 @@ const ProjectKeysCard = ({ project, onKeysRotated }) => {
                   <span className="text-purple-400">import</span>{" "}
                   <span className="text-blue-300">AuthSphere</span>{" "}
                   <span className="text-purple-400">from</span>{" "}
-                  <span className="text-emerald-400">
-                    "@authspherejs/sdk"
-                  </span>
-                  ;{"\n\n"}
+                  <span className="text-emerald-400">"@authspherejs/sdk"</span>;
+                  {"\n\n"}
                   <span className="text-blue-300">AuthSphere</span>.
                   <span className="text-yellow-300">initAuth</span>({`{`}
                   {"\n  "}publicKey:{" "}

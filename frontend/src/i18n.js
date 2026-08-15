@@ -1,5 +1,5 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 
 // Minimal resources for demonstration.
 // In a real app, these would be loaded from JSON files.
@@ -41,20 +41,18 @@ const resources = {
       "animated.error_password": "Min 6 characters",
       "animated.processing": "Processing...",
       "animated.join_now": "Join Now",
-      "animated.have_account": "I have an account"
-    }
-  }
+      "animated.have_account": "I have an account",
+    },
+  },
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: "en", // default language
-    fallbackLng: "en",
-    interpolation: {
-      escapeValue: false // react already safes from xss
-    }
-  });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: "en", // default language
+  fallbackLng: "en",
+  interpolation: {
+    escapeValue: false, // react already safes from xss
+  },
+});
 
 export default i18n;
