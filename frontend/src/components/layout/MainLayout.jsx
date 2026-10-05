@@ -21,7 +21,7 @@ const MainLayout = ({ children, showNavAndFooter = true }) => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col relative z-0 overflow-hidden bg-background font-sans">
+    <div className="min-h-screen flex flex-col relative z-0 overflow-hidden bg-background font-sans selection:bg-primary/20">
       {isOffline && (
         <div className="fixed top-0 left-0 right-0 z-100 bg-destructive text-destructive-foreground py-1 text-center text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
           <WifiOff className="h-3 w-3" />

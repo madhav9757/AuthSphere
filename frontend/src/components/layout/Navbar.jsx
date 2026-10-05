@@ -89,7 +89,7 @@ const Navbar = () => {
           : "bg-background/40 backdrop-blur-md",
       ].join(" ")}
     >
-      <div className="mx-auto w-[92%] max-w-7xl h-16 flex items-center justify-between gap-4">
+      <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
           <div className="relative h-8 w-8 rounded-lg border border-border/70 bg-background flex items-center justify-center shadow-sm transition-all duration-200 group-hover:shadow-md group-hover:border-border">
@@ -226,7 +226,7 @@ const Navbar = () => {
 
 /* ════════════════════════════════════════════════════════════════
    Notification dropdown
-   ════════════════════════════════════════════════════════════════ */
+   ═════════════════════════════════════════���══════════════════════ */
 const NotificationDropdown = ({
   notifications,
   unreadCount,
@@ -414,7 +414,7 @@ const UserMenu = ({ user, initials, logout, loggingOut, navigate }) => (
 
 /* ════════════════════════════════════════════════════════════════
    Mobile slide-over menu
-   ════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════���═════ */
 const MobileMenu = ({
   navLinks,
   location,

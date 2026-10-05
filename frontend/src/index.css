@@ -150,14 +150,19 @@
     @apply bg-background text-foreground antialiased;
     background-image:
       radial-gradient(
-        circle at 12% 0%,
-        color-mix(in oklch, var(--primary) 12%, transparent),
-        transparent 30rem
+        circle at 8% -5%,
+        color-mix(in oklch, var(--primary) 16%, transparent),
+        transparent 32rem
       ),
       radial-gradient(
-        circle at 88% 18%,
-        color-mix(in oklch, oklch(0.7 0.16 190) 8%, transparent),
-        transparent 26rem
+        circle at 92% 8%,
+        color-mix(in oklch, oklch(0.72 0.16 190) 10%, transparent),
+        transparent 28rem
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--background) 94%, var(--primary)),
+        var(--background)
       );
     font-family:
       "Inter",
@@ -185,6 +190,30 @@
 
   .surface-gradient {
     @apply bg-gradient-to-br from-background via-background to-muted/70;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-primary;
+  }
+
+  .grid-glow {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in oklch, var(--border) 45%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--border) 45%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 32px 32px;
+    mask-image: linear-gradient(to bottom, black, transparent 80%);
   }
 
   .text-balance {

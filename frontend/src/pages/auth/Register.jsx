@@ -97,7 +97,7 @@ const Register = () => {
 
   return (
     <VantaBackground>
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
         <div className="w-full max-w-md space-y-6">
           <Link
             to="/"
@@ -107,7 +107,8 @@ const Register = () => {
             Back to Home
           </Link>
 
-          <Card className="bg-card/80 dark:bg-card/20 border-black/5 dark:border-white/10 backdrop-blur-md shadow-xl dark:shadow-2xl">
+          <Card className="glass overflow-hidden rounded-3xl shadow-2xl shadow-primary/10">
+            <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-primary to-cyan-400" />
             <CardHeader className="space-y-2 text-center">
               <div className="flex justify-center mb-2">
                 <div className="h-12 w-12 rounded-lg border bg-background/50 flex items-center justify-center">

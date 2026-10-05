@@ -127,13 +127,17 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="w-[96vw] mx-auto space-y-4">
+      <div className="page-shell space-y-8">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Welcome back, {user.username.split(" ")[0]}
+          <div className="space-y-2">
+            <p className="eyebrow">Control center</p>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Dashboard
+            </h1>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              Welcome back, {user.username.split(" ")[0]}. Monitor identity
+              activity and keep every project moving.
             </p>
           </div>
 

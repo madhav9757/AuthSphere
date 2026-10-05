@@ -219,13 +219,15 @@ const Settings = () => {
   }
 
   return (
-    <div className="container mx-auto py-10 px-6 max-w-5xl">
-      <div className="flex flex-col gap-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
+    <div className="page-shell max-w-6xl space-y-8">
+      <div className="flex flex-col gap-3">
+        <p className="eyebrow">Workspace configuration</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           Developer Settings
         </h1>
-        <p className="text-muted-foreground">
-          Manage your account, preferences, and developer experience.
+        <p className="max-w-2xl text-muted-foreground">
+          Manage your account, preferences, and developer experience from one
+          focused control panel.
         </p>
       </div>
 
