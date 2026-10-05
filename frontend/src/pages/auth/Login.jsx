@@ -105,7 +105,7 @@ const Login = () => {
             Back to Home
           </Link>
 
-          <Card className="bg-card/80 dark:bg-card/20 border-black/5 dark:border-white/10 backdrop-blur-md shadow-xl dark:shadow-2xl">
+          <Card className="glass overflow-hidden rounded-2xl shadow-2xl shadow-primary/5">
             <CardHeader className="space-y-2 text-center">
               <div className="flex justify-center mb-2">
                 <div className="h-12 w-12 rounded-lg border bg-background/50 flex items-center justify-center">
@@ -145,7 +145,7 @@ const Login = () => {
                   <button
                     key={p.id}
                     onClick={() => handleSocialLogin(p.id)}
-                    className="flex flex-col items-center justify-center p-2 rounded-lg border bg-card hover:bg-muted/50 transition-all gap-1 group"
+                    className="group flex flex-col items-center justify-center gap-1 rounded-xl border border-border/70 bg-background/40 p-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/5"
                     title={`Sign in with ${p.label}`}
                   >
                     <img

@@ -62,7 +62,7 @@ const TrustPill = ({ children }) => (
 const Hero = ({ user, errorCodes }) => {
   const { isInstallable, installPWA } = usePWA();
   return (
-    <section className="relative pt-28 pb-36 overflow-hidden">
+    <section className="relative overflow-hidden px-4 pb-28 pt-20 sm:px-6 sm:pt-28 lg:pb-36">
       <style>{STYLES}</style>
       {/* ── Orbital background ── */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
@@ -97,7 +97,7 @@ const Hero = ({ user, errorCodes }) => {
         </OrbitingCircles>
       </div>
       {/* ── Main layout ── */}
-      <div className="relative z-20 mx-auto w-[92%] max-w-7xl">
+      <div className="relative z-20 mx-auto w-full max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-16 xl:gap-24 items-start justify-between">
           {/* ─── Left: copy ─── */}
           <div className="flex-1 lg:pt-8 max-w-2xl">
@@ -105,7 +105,11 @@ const Hero = ({ user, errorCodes }) => {
               className="anim-fade-up mb-6"
               style={{ animationDelay: "80ms" }}
             >
-              <h1 className="text-5xl md:text-6xl lg:text-[80px] font-semibold tracking-[-0.04em] leading-[0.9] text-foreground">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <span className="size-1.5 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
+                Infrastructure for identity
+              </div>
+              <h1 className="text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-foreground sm:text-6xl lg:text-[80px]">
                 AuthSphere
                 <br />
                 <span className="text-muted-foreground/60 font-light">

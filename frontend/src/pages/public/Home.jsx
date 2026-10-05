@@ -245,10 +245,10 @@ const Home = () => {
       />
 
       {/* Top-right primary glow */}
-      <div className="fixed top-0 right-0 w-150 h-125 pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_top_right,rgba(var(--primary-rgb),0.07),transparent_70%)]" />
+      <div className="pointer-events-none fixed right-0 top-0 -z-20 h-125 w-150 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_70%)]" />
 
       {/* Bottom-left secondary glow */}
-      <div className="fixed bottom-0 left-0 w-125 h-100 pointer-events-none -z-20 bg-[radial-gradient(ellipse_at_bottom_left,rgba(var(--primary-rgb),0.04),transparent_70%)]" />
+      <div className="pointer-events-none fixed bottom-0 left-0 -z-20 h-100 w-125 bg-[radial-gradient(ellipse_at_bottom_left,color-mix(in_oklch,var(--primary)_6%,transparent),transparent_70%)]" />
 
       {/* ── Sections ── */}
       <Hero user={user} errorCodes={ERROR_CODES} />
